@@ -2877,6 +2877,42 @@ function App() {
                 </div>
               </div>
             </div>
+
+            <aside className="flex flex-col gap-4 xl:sticky xl:top-28 xl:self-start">
+              <div className="rounded-3xl border border-white/80 bg-white/85 p-5 shadow-soft backdrop-blur">
+                <p className="text-xs font-extrabold uppercase tracking-widest text-sage-600">Today’s focus</p>
+                <div className="mt-4 flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-50 text-sage-800 shadow-sm">
+                    <WeatherGlyph mood={weatherOptions.find((item) => item.label === selectedMood) || moods[2]} size="text-xl" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-extrabold text-ink">{selectedMood}</p>
+                    <p className="text-sm font-semibold text-sage-700">Let this page match how today feels.</p>
+                  </div>
+                </div>
+                <p className="mt-4 text-sm leading-7 text-sage-700">{latestEntry ? `Last time you wrote "${latestEntry.title}". You can continue that thread or start something new.` : 'No pressure — a single honest line is already enough for today.'}</p>
+              </div>
+
+              <div className="rounded-3xl border border-sage-100 bg-gradient-to-br from-sage-50 to-white p-5 shadow-sm">
+                <p className="text-xs font-extrabold uppercase tracking-widest text-sage-600">Quick return</p>
+                <div className="mt-4 grid gap-2">
+                  <button className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 text-left text-sm font-extrabold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-sage-50" onClick={() => navigateToTab('memories')} type="button">
+                    <span className="inline-flex items-center gap-2"><BookOpen size={16} /> Open memories</span>
+                    <span>{entries.length}</span>
+                  </button>
+                  <button className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 text-left text-sm font-extrabold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-sage-50" onClick={() => navigateToTab('insights')} type="button">
+                    <span className="inline-flex items-center gap-2"><CalendarDays size={16} /> View check-ins</span>
+                    <span>{weeklyCheckIns}/{weeklyGoal}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-sand-100 bg-gradient-to-br from-sand-50 to-white p-5 shadow-sm">
+                <p className="text-xs font-extrabold uppercase tracking-widest text-sand-600">Quiet reminder</p>
+                <p className="mt-3 text-xl font-extrabold leading-relaxed text-ink">You do not need to finish the whole story today.</p>
+                <p className="mt-3 text-sm leading-7 text-sage-700">Keep a detail, a feeling, or one tiny memory. The rest can wait for you another day.</p>
+              </div>
+            </aside>
           </div>
           {saveReward && (
             <div className="reward-toast mt-5 rounded-3xl border border-sage-100 bg-sage-900 p-5 font-extrabold leading-7 text-white shadow-soft">
