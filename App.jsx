@@ -2827,6 +2827,30 @@ function App() {
                     ))}
                   </div>
                 </div>
+
+                <div className="rounded-[1.75rem] bg-gradient-to-br from-sage-900 via-sage-800 to-sage-700 p-5 text-white shadow-soft">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-white/70">Quiet snapshot</p>
+                      <h3 className="mt-2 text-xl font-extrabold leading-tight">Your page is already becoming a little archive.</h3>
+                    </div>
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-2xl shadow-inner">{rewardLevel.emoji}</div>
+                  </div>
+                  <div className="mt-5 grid grid-cols-2 gap-3">
+                    <div className="rounded-2xl bg-white/10 p-3 backdrop-blur">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/60">Pages kept</p>
+                      <p className="mt-2 text-2xl font-extrabold">{entries.length}</p>
+                    </div>
+                    <div className="rounded-2xl bg-white/10 p-3 backdrop-blur">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/60">Soft streak</p>
+                      <p className="mt-2 text-2xl font-extrabold">{streak}</p>
+                    </div>
+                  </div>
+                  <p className="mt-4 text-sm leading-7 text-white/80">{weeklyCheckIns >= weeklyGoal ? 'This week already has enough gentle attention in it.' : `${weeklyGoal - weeklyCheckIns} more check-in${weeklyGoal - weeklyCheckIns === 1 ? '' : 's'} if you want to fill this week softly.`}</p>
+                  <button className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-extrabold text-sage-900 shadow-lift transition hover:-translate-y-0.5 hover:bg-sage-50" onClick={() => navigateToTab('memories')} type="button">
+                    <BookOpen size={15} /> Visit your memories
+                  </button>
+                </div>
               </div>
             </div>
           </div>
