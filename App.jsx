@@ -2775,26 +2775,45 @@ function App() {
           </div>
 
           <div className="mt-6 rounded-[1.75rem] bg-gradient-to-r from-sage-50 via-white to-sand-50 p-6 shadow-inner ring-1 ring-white/70">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div>
+            <div className="grid gap-6 lg:grid-cols-12">
+              <div className="lg:col-span-7">
                 <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-sage-700"><Feather size={16} /> Gentle prompt</div>
                 <p className="max-w-2xl font-display text-2xl font-bold leading-relaxed text-sage-950">{activePrompt}</p>
                 <p className="mt-3 text-sm font-semibold text-sage-700">Take what helps, skip the rest, and answer only the part that feels kind to say.</p>
+                <button className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-extrabold text-sage-900 shadow-lift transition hover:-translate-y-1 hover:bg-sage-50" onClick={() => setActivePrompt(prompts[(prompts.indexOf(activePrompt) + 1) % prompts.length])} type="button">
+                  <Sparkles size={15} /> New prompt
+                </button>
               </div>
-              <button className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-extrabold text-sage-900 shadow-lift transition hover:-translate-y-1 hover:bg-sage-50" onClick={() => setActivePrompt(prompts[(prompts.indexOf(activePrompt) + 1) % prompts.length])} type="button">
-                <Sparkles size={15} /> New prompt
-              </button>
-            </div>
-            <div className="mt-5 rounded-3xl bg-white/75 p-4 ring-1 ring-sage-100/70">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-500">Small ways to begin</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {['What happened today', 'How it felt', 'What I need now', 'One good thing'].map((starter) => (
-                  <button key={starter} className="rounded-full border border-sage-100 bg-white px-3.5 py-2 text-sm font-bold text-sage-700 transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50" onClick={() => addStarterLine(starter)} type="button">
-                    {starter}
-                  </button>
-                ))}
+
+              <div className="flex flex-col gap-4 lg:col-span-5">
+                <div className="rounded-3xl bg-white/75 p-4 shadow-sm ring-1 ring-sage-100/70">
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-500">Today's little joys</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {quickEmojis.slice(0, 8).map((emoji) => (
+                      <button
+                        key={emoji}
+                        className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-xl shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:ring-2 hover:ring-sage-200"
+                        onClick={() => addStarterLine(emoji)}
+                        type="button"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-3 text-[11px] font-bold text-sage-600">Tap to add a small spark to your entry.</p>
+                </div>
+
+                <div className="rounded-3xl bg-white/75 p-4 shadow-sm ring-1 ring-sage-100/70">
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-500">Small ways to begin</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {['What happened today', 'One good thing'].map((starter) => (
+                      <button key={starter} className="rounded-full border border-sage-100 bg-white px-3.5 py-2 text-sm font-bold text-sage-700 transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50" onClick={() => addStarterLine(starter)} type="button">
+                        {starter}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <p className="mt-3 text-sm font-semibold leading-6 text-sage-700">Tap one if the page feels too empty — it will place a soft starter line into your diary.</p>
             </div>
           </div>
 
@@ -3034,32 +3053,32 @@ function App() {
                 const mood = weatherOptions.find((item) => item.label === effectiveMoodLabel) || weatherOptions.find(m => m.label === entry.mood) || moods[2];
                 return (
                   <article
-                    className="group cursor-pointer rounded-3xl border border-sage-100 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lift"
+                    className="group w-full cursor-pointer rounded-3xl border border-sage-100 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lift"
                     key={entry.id}
                     onClick={() => setSelectedEntry(entry)}
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-2 flex flex-wrap items-center gap-2 text-sm font-bold text-sage-700"><WeatherGlyph mood={mood} size="text-base" />{entry.mood} · {formatDate(entry.createdAt)}</div>
-                        <h3 className="text-xl font-extrabold text-ink">{entry.title}</h3>
-                        <p className="mt-3 whitespace-pre-line leading-7 text-sage-800">
-                          {(() => {
-                            const tempDiv = document.createElement('div');
-                            tempDiv.innerHTML = entry.body || entry.prompt || '';
-                            const images = tempDiv.querySelectorAll('img');
-                            let preview = tempDiv.textContent || tempDiv.innerText || '';
-                            if (images.length > 0) preview = '📷 ' + preview;
-                            return preview.trim();
-                          })()}
-                        </p>
-                        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-sage-500">
+                    <div className="flex flex-col gap-1">
+                      <div className="mb-1 flex flex-wrap items-center gap-2 text-sm font-bold text-sage-700"><WeatherGlyph mood={mood} size="text-base" />{entry.mood} · {formatDate(entry.createdAt)}</div>
+                      <h3 className="text-xl font-extrabold leading-tight text-ink">{entry.title}</h3>
+                      <p className="mt-3 whitespace-pre-line leading-7 text-sage-800">
+                        {(() => {
+                          const tempDiv = document.createElement('div');
+                          tempDiv.innerHTML = entry.body || entry.prompt || '';
+                          const images = tempDiv.querySelectorAll('img');
+                          let preview = tempDiv.textContent || tempDiv.innerText || '';
+                          if (images.length > 0) preview = '📷 ' + preview;
+                          return preview.trim();
+                        })()}
+                      </p>
+                      <div className="mt-5 flex items-center justify-between gap-4 border-t border-sage-50 pt-4">
+                        <div className="flex flex-wrap items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-sage-500">
                           <span className="rounded-full bg-sage-50 px-3 py-1">Open full page</span>
                           {entry.image && <span className="rounded-full bg-sand-50 px-3 py-1 text-sand-700">Photo saved</span>}
                         </div>
+                        <button className="shrink-0 rounded-full p-2 text-sage-300 opacity-60 transition hover:bg-rose-50 hover:text-rose-500 group-hover:opacity-100" onClick={(event) => { event.stopPropagation(); deleteEntry(entry.id); }} type="button" aria-label="Delete entry">
+                          <Trash2 size={18} />
+                        </button>
                       </div>
-                      <button className="shrink-0 rounded-full p-2 text-sage-400 opacity-70 transition hover:bg-rose-50 hover:text-rose-500 group-hover:opacity-100" onClick={() => deleteEntry(entry.id)} type="button" aria-label="Delete entry">
-                        <Trash2 size={18} />
-                      </button>
                     </div>
                   </article>
                 );
