@@ -2817,7 +2817,7 @@ function App() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4 xl:grid-cols-[1.3fr_0.9fr]">
+          <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.85fr)] xl:grid-cols-[1.3fr_0.9fr]">
             <div className="grid gap-4 lg:grid-cols-3">
               <div className="rounded-3xl border border-sage-100 bg-white p-5 shadow-sm lg:col-span-3">
                 <div className="flex items-center justify-between gap-3">
@@ -2878,7 +2878,7 @@ function App() {
               </div>
             </div>
 
-            <aside className="flex flex-col gap-4 xl:sticky xl:top-28 xl:self-start">
+            <aside className="flex flex-col gap-4 lg:sticky lg:top-28 lg:self-start">
               <div className="rounded-3xl border border-white/80 bg-white/85 p-5 shadow-soft backdrop-blur">
                 <p className="text-xs font-extrabold uppercase tracking-widest text-sage-600">Today’s focus</p>
                 <div className="mt-4 flex items-center gap-3">
