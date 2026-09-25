@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Online Diary with Lock | Quiet Journal Journey</title>
+    <meta name="description" content="Learn how Quiet Journal Journey works as an online diary with lock support, optional PIN privacy, calm journaling tools, and personal reflection features." />
+    <meta name="keywords" content="online diary with lock, online diary with password, secure diary, private diary lock, password journal" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://quietjournaljourney.vercel.app/online-diary-with-lock.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Online Diary with Lock | Quiet Journal Journey" />
+    <meta property="og:description" content="A privacy-focused page about using Quiet Journal Journey as an online diary with optional lock protection." />
+    <meta property="og:url" content="https://quietjournaljourney.vercel.app/online-diary-with-lock.html" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Online Diary with Lock | Quiet Journal Journey" />
+    <meta name="twitter:description" content="Use Quiet Journal Journey as an online diary with lock support, mood reflection, and a soft private writing experience." />
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap');
+
+:root {
+  --bg: #f7f4ec;
+  --card: rgba(255, 255, 255, 0.82);
+  --card-strong: #ffffff;
+  --ink: #21312b;
+  --muted: #567065;
+  --accent: #45643b;
+  --accent-soft: #e3efdb;
+  --line: rgba(69, 100, 59, 0.14);
+  --shadow: 0 18px 50px rgba(47, 70, 58, 0.09);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(222, 239, 214, 0.85), transparent 34%),
+    radial-gradient(circle at top right, rgba(255, 245, 224, 0.9), transparent 30%),
+    linear-gradient(180deg, #f7f5ef 0%, #f2efe6 100%);
+  line-height: 1.65;
+}
+
+a { color: inherit; }
+.container {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+}
+.topbar {
+  padding: 18px 0 0;
+}
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.brand {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.chip {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.72);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 14px;
+  text-decoration: none;
+}
+.hero {
+  padding: 48px 0 24px;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 0.9fr;
+  gap: 24px;
+}
+.card {
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+.hero-copy {
+  padding: 38px;
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.hero h1 {
+  margin: 18px 0 14px;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2.6rem, 5vw, 4.6rem);
+  line-height: 0.96;
+}
+.hero p {
+  margin: 0;
+  font-size: 1.04rem;
+  color: var(--muted);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 14px 20px;
+  font-weight: 700;
+}
+.button-primary {
+  background: var(--accent);
+  color: white;
+}
+.button-secondary {
+  background: rgba(255,255,255,0.78);
+  border: 1px solid var(--line);
+}
+.hero-side {
+  padding: 28px;
+}
+.hero-side h2,
+.section h2 {
+  margin: 0 0 10px;
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  line-height: 1.1;
+}
+.hero-side p,
+.section-intro,
+.muted {
+  color: var(--muted);
+}
+.metric-grid,
+.grid-3,
+.grid-2,
+.link-grid,
+.faq-grid {
+  display: grid;
+  gap: 16px;
+}
+.metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 18px; }
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.link-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.faq-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.mini-card,
+.feature,
+.faq,
+.prompt,
+.step,
+.link-card {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.76);
+  border-radius: 22px;
+}
+.mini-card,
+.feature,
+.faq,
+.prompt,
+.step,
+.link-card { padding: 18px; }
+.mini-card strong,
+.feature h3,
+.faq h3,
+.prompt h3,
+.step h3,
+.link-card h3 {
+  display: block;
+  margin-bottom: 8px;
+}
+.section {
+  padding: 18px 0 24px;
+}
+.section-shell {
+  padding: 28px;
+}
+.section-shell + .section-shell {
+  margin-top: 18px;
+}
+.list {
+  padding-left: 20px;
+  margin: 14px 0 0;
+}
+.list li + li { margin-top: 10px; }
+.related {
+  padding: 14px 0 56px;
+}
+.footer {
+  padding: 0 0 56px;
+}
+.footer p {
+  margin: 0;
+  color: var(--muted);
+  text-align: center;
+}
+@media (max-width: 980px) {
+  .hero-grid,
+  .grid-3,
+  .grid-2,
+  .link-grid,
+  .faq-grid,
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-copy,
+  .hero-side,
+  .section-shell {
+    padding: 24px;
+  }
+}
+    </style>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Online Diary with Lock",
+        "url": "https://quietjournaljourney.vercel.app/online-diary-with-lock.html",
+        "description": "A landing page for privacy-minded visitors looking for an online diary with lock protection.",
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "Quiet Journal Journey",
+          "url": "https://quietjournaljourney.vercel.app/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="/">Quiet Journal Journey</a>
+        <div class="chip-row">
+          <a class="chip" href="/private-online-diary.html">Private online diary</a>
+          <a class="chip" href="/mood-journal.html">Mood journal</a>
+          <a class="chip" href="/journal-prompts.html">Journal prompts</a>
+          <a class="chip" href="/daily-reflection-journal.html">Daily reflection</a>
+        </div>
+      </div>
+    </div>
+
+    <header class="hero">
+      <div class="container hero-grid">
+        <section class="card hero-copy">
+          <div class="eyebrow">Core SEO page</div>
+          <h1>Online diary with lock for softer, more private journaling.</h1>
+          <p>
+            Quiet Journal Journey can be used as an online diary with lock support for people who want personal writing with an added layer of browser privacy. It keeps journaling calm while still offering optional protection.
+          </p>
+          <div class="actions">
+            <a class="button button-primary" href="/">Open Quiet Journal Journey</a>
+            <a class="button button-secondary" href="/private-online-diary.html">See the private diary page</a>
+          </div>
+        </section>
+        <aside class="card hero-side">
+          <h2>Privacy without a harsh experience</h2>
+          <p>
+            Some people want a diary lock because they share a device, leave a browser open, or simply feel more comfortable when there is a privacy step before writing.
+          </p>
+          <div class="metric-grid">
+            <div class="mini-card"><strong>Optional PIN</strong>Add a browser PIN when you want a light privacy gate before the journal opens.</div>
+            <div class="mini-card"><strong>Change or remove later</strong>You can update the PIN or remove it if your needs change.</div>
+            <div class="mini-card"><strong>Google sign-in support</strong>Signed-in entries stay associated with your own account.</div>
+            <div class="mini-card"><strong>Calm experience first</strong>The journal still feels gentle and welcoming instead of security-heavy.</div>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container card section-shell">
+          <h2>Who looks for an online diary with lock</h2>
+          <div class="grid-3">
+            <article class="feature">
+              <h3>Shared device users</h3>
+              <p>If more than one person uses the same browser or computer, a PIN adds peace of mind before the diary opens.</p>
+            </article>
+            <article class="feature">
+              <h3>Privacy-minded writers</h3>
+              <p>Some journalers simply feel safer and more honest when there is a lightweight protective step in place.</p>
+            </article>
+            <article class="feature">
+              <h3>People returning to journaling</h3>
+              <p>Feeling secure often makes it easier to start writing again, especially when entries are emotional or personal.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container card section-shell">
+          <h2>How Quiet Journal Journey handles privacy</h2>
+          <ul class="list">
+            <li>The optional browser PIN adds a soft lock step before someone can enter the journal area.</li>
+            <li>You can show or hide the PIN while typing so setup feels less frustrating.</li>
+            <li>You can change or remove the PIN later inside the lock settings flow.</li>
+            <li>When you sign in, entries are stored under your own account for cloud-based separation.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container card section-shell">
+          <h2>Frequently asked questions</h2>
+          <div class="faq-grid">
+            <article class="faq">
+              <h3>Does the lock make the diary hard to use?</h3>
+              <p>No. The lock is optional and designed to feel simple, so it supports privacy without making journaling feel heavy.</p>
+            </article>
+            <article class="faq">
+              <h3>Can I change the PIN later?</h3>
+              <p>Yes. Quiet Journal Journey already includes options to change or remove the lock PIN.</p>
+            </article>
+            <article class="faq">
+              <h3>Is this only for privacy?</h3>
+              <p>No. The app also supports mood tracking, prompts, photos, custom styling, and calm daily reflection.</p>
+            </article>
+            <article class="faq">
+              <h3>What if I mainly want emotional check-ins?</h3>
+              <p>Visit the related <a href="/mood-journal.html">mood journal page</a> for the emotional reflection side of the product.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="related">
+        <div class="container card section-shell">
+          <h2>Related journal pages</h2>
+          <div class="link-grid">
+            <article class="link-card"><h3>Private online diary</h3><p class="muted">Read the main private journaling page.</p><a href="/private-online-diary.html">Open page</a></article>
+            <article class="link-card"><h3>Mood journal</h3><p class="muted">See how mood reflection fits into the experience.</p><a href="/mood-journal.html">Open page</a></article>
+            <article class="link-card"><h3>Journal prompts</h3><p class="muted">Use prompts when you want help getting started.</p><a href="/journal-prompts.html">Open page</a></article>
+            <article class="link-card"><h3>Daily reflection</h3><p class="muted">Try a softer end-of-day writing rhythm.</p><a href="/daily-reflection-journal.html">Open page</a></article>
+            <article class="link-card"><h3>Main app</h3><p class="muted">Return to the main journaling experience.</p><a href="/">Open app</a></article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>Quiet Journal Journey — private writing, optional lock protection, and calmer daily journaling.</p>
+      </div>
+    </footer>
+  </body>
+</html>

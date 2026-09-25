@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://quietjournaljourney.vercel.app/sitemap.xml
