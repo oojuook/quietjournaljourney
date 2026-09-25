@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daily Reflection Journal | Quiet Journal Journey</title>
+    <meta name="description" content="Explore a daily reflection journal routine with Quiet Journal Journey for calmer evening check-ins, short reviews, and personal writing habits." />
+    <meta name="keywords" content="daily reflection journal, daily journaling habit, evening journal, reflection journal, daily reflection prompts" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://quietjournaljourney.vercel.app/daily-reflection-journal.html" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Daily Reflection Journal | Quiet Journal Journey" />
+    <meta property="og:description" content="A calmer daily reflection journal guide for evening check-ins, small habits, and personal clarity." />
+    <meta property="og:url" content="https://quietjournaljourney.vercel.app/daily-reflection-journal.html" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Daily Reflection Journal | Quiet Journal Journey" />
+    <meta name="twitter:description" content="Use this daily reflection journal guide to build a softer writing habit and calmer end-of-day check-ins." />
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap');
+
+:root {
+  --bg: #f7f4ec;
+  --card: rgba(255, 255, 255, 0.82);
+  --card-strong: #ffffff;
+  --ink: #21312b;
+  --muted: #567065;
+  --accent: #45643b;
+  --accent-soft: #e3efdb;
+  --line: rgba(69, 100, 59, 0.14);
+  --shadow: 0 18px 50px rgba(47, 70, 58, 0.09);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(222, 239, 214, 0.85), transparent 34%),
+    radial-gradient(circle at top right, rgba(255, 245, 224, 0.9), transparent 30%),
+    linear-gradient(180deg, #f7f5ef 0%, #f2efe6 100%);
+  line-height: 1.65;
+}
+
+a { color: inherit; }
+.container {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+}
+.topbar {
+  padding: 18px 0 0;
+}
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.brand {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.chip {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.72);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 14px;
+  text-decoration: none;
+}
+.hero {
+  padding: 48px 0 24px;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 0.9fr;
+  gap: 24px;
+}
+.card {
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+.hero-copy {
+  padding: 38px;
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.hero h1 {
+  margin: 18px 0 14px;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2.6rem, 5vw, 4.6rem);
+  line-height: 0.96;
+}
+.hero p {
+  margin: 0;
+  font-size: 1.04rem;
+  color: var(--muted);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 14px 20px;
+  font-weight: 700;
+}
+.button-primary {
+  background: var(--accent);
+  color: white;
+}
+.button-secondary {
+  background: rgba(255,255,255,0.78);
+  border: 1px solid var(--line);
+}
+.hero-side {
+  padding: 28px;
+}
+.hero-side h2,
+.section h2 {
+  margin: 0 0 10px;
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  line-height: 1.1;
+}
+.hero-side p,
+.section-intro,
+.muted {
+  color: var(--muted);
+}
+.metric-grid,
+.grid-3,
+.grid-2,
+.link-grid,
+.faq-grid {
+  display: grid;
+  gap: 16px;
+}
+.metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 18px; }
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.link-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.faq-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.mini-card,
+.feature,
+.faq,
+.prompt,
+.step,
+.link-card {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.76);
+  border-radius: 22px;
+}
+.mini-card,
+.feature,
+.faq,
+.prompt,
+.step,
+.link-card { padding: 18px; }
+.mini-card strong,
+.feature h3,
+.faq h3,
+.prompt h3,
+.step h3,
+.link-card h3 {
+  display: block;
+  margin-bottom: 8px;
+}
+.section {
+  padding: 18px 0 24px;
+}
+.section-shell {
+  padding: 28px;
+}
+.section-shell + .section-shell {
+  margin-top: 18px;
+}
+.list {
+  padding-left: 20px;
+  margin: 14px 0 0;
+}
+.list li + li { margin-top: 10px; }
+.related {
+  padding: 14px 0 56px;
+}
+.footer {
+  padding: 0 0 56px;
+}
+.footer p {
+  margin: 0;
+  color: var(--muted);
+  text-align: center;
+}
+@media (max-width: 980px) {
+  .hero-grid,
+  .grid-3,
+  .grid-2,
+  .link-grid,
+  .faq-grid,
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-copy,
+  .hero-side,
+  .section-shell {
+    padding: 24px;
+  }
+}
+    </style>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Daily reflection journal",
+        "description": "A support page for building a daily reflection journal routine with calm prompts and simple writing steps.",
+        "author": {
+          "@type": "Organization",
+          "name": "Quiet Journal Journey"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Quiet Journal Journey"
+        },
+        "mainEntityOfPage": "https://quietjournaljourney.vercel.app/daily-reflection-journal.html"
+      }
+    </script>
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="/">Quiet Journal Journey</a>
+        <div class="chip-row">
+          <a class="chip" href="/private-online-diary.html">Private online diary</a>
+          <a class="chip" href="/mood-journal.html">Mood journal</a>
+          <a class="chip" href="/online-diary-with-lock.html">Diary with lock</a>
+          <a class="chip" href="/journal-prompts.html">Journal prompts</a>
+        </div>
+      </div>
+    </div>
+
+    <header class="hero">
+      <div class="container hero-grid">
+        <section class="card hero-copy">
+          <div class="eyebrow">Support SEO page</div>
+          <h1>Daily reflection journal for calmer evenings and clearer thoughts.</h1>
+          <p>
+            A daily reflection journal does not need to be long or intense. Quiet Journal Journey supports small evening check-ins, end-of-day clarity, and journaling habits that can survive busy weeks.
+          </p>
+          <div class="actions">
+            <a class="button button-primary" href="/">Open Quiet Journal Journey</a>
+            <a class="button button-secondary" href="/journal-prompts.html">Use reflection prompts</a>
+          </div>
+        </section>
+        <aside class="card hero-side">
+          <h2>Why daily reflection works</h2>
+          <p>
+            Reflection helps you notice what mattered, release what feels unresolved, and close the day with a little more awareness than you started with.
+          </p>
+          <div class="metric-grid">
+            <div class="mini-card"><strong>Small daily habit</strong>One short entry each day builds more insight than rare, overly ambitious journaling sessions.</div>
+            <div class="mini-card"><strong>Clearer patterns</strong>Regular reflection helps you notice repeating moods, stressors, and sources of support.</div>
+            <div class="mini-card"><strong>Softer endings</strong>Evening writing can help the day feel more complete before sleep.</div>
+            <div class="mini-card"><strong>Gentle accountability</strong>A calm ritual makes self-awareness easier to sustain.</div>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container card section-shell">
+          <h2>A simple daily reflection journal routine</h2>
+          <div class="grid-2">
+            <article class="step">
+              <h3>1. Start with one sentence</h3>
+              <p>Write one line about the day before trying to summarize everything.</p>
+            </article>
+            <article class="step">
+              <h3>2. Name one feeling</h3>
+              <p>Choose the emotion that stayed with you the longest or felt the most important.</p>
+            </article>
+            <article class="step">
+              <h3>3. Capture one lesson</h3>
+              <p>Ask what the day showed you about your needs, energy, relationships, or pace.</p>
+            </article>
+            <article class="step">
+              <h3>4. End with one intention</h3>
+              <p>Close with a small act of care or a simple direction for tomorrow.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container card section-shell">
+          <h2>Daily reflection prompts</h2>
+          <div class="grid-3">
+            <article class="prompt">
+              <h3>For hard days</h3>
+              <p>What felt heavier than expected, and what would help me feel a little safer tomorrow?</p>
+            </article>
+            <article class="prompt">
+              <h3>For ordinary days</h3>
+              <p>What small moment mattered more than it seemed at the time?</p>
+            </article>
+            <article class="prompt">
+              <h3>For growth</h3>
+              <p>Where did I respond differently today than an older version of me might have?</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="related">
+        <div class="container card section-shell">
+          <h2>Related journal pages</h2>
+          <div class="link-grid">
+            <article class="link-card"><h3>Private online diary</h3><p class="muted">See the main private writing page.</p><a href="/private-online-diary.html">Open page</a></article>
+            <article class="link-card"><h3>Mood journal</h3><p class="muted">Add emotional pattern tracking to reflection.</p><a href="/mood-journal.html">Open page</a></article>
+            <article class="link-card"><h3>Diary with lock</h3><p class="muted">Explore the privacy-focused landing page.</p><a href="/online-diary-with-lock.html">Open page</a></article>
+            <article class="link-card"><h3>Journal prompts</h3><p class="muted">Get more prompt ideas for writing days.</p><a href="/journal-prompts.html">Open page</a></article>
+            <article class="link-card"><h3>Main app</h3><p class="muted">Return to the full journaling experience.</p><a href="/">Open app</a></article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>Quiet Journal Journey — calmer daily reflection, gentle habits, and personal journaling space.</p>
+      </div>
+    </footer>
+  </body>
+</html>

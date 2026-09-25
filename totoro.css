@@ -1,0 +1,172 @@
+/* Totoro Animation CSS */
+.totoro-container {
+  position: relative;
+  margin-top: 20px;
+  flex: 1;
+  min-height: 420px;
+  padding: 20px 20px 54px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  overflow: visible;
+}
+
+.totoro-container-compact {
+  min-height: 260px;
+  padding: 14px 12px 24px;
+  margin-top: 14px;
+}
+
+.totoro {
+  font-size: 80px;
+  animation: totoroBreathe 4s ease-in-out infinite;
+  position: relative;
+  z-index: 2;
+}
+
+.totoro-leaf {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 50px;
+  animation: leafFloat 3s ease-in-out infinite;
+  z-index: 3;
+}
+
+@keyframes totoroBreathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-8px) scale(1.03); }
+}
+
+@keyframes leafFloat {
+  0%, 100% { transform: translateX(-50%) translateY(0) rotate(-5deg); }
+  50% { transform: translateX(-50%) translateY(-4px) rotate(5deg); }
+}
+
+.rain-drop {
+  position: absolute;
+  width: 2px;
+  height: 10px;
+  background: rgba(255,255,255,0.6);
+  bottom: 100%;
+  animation: rainFall 1.5s linear infinite;
+  border-radius: 2px;
+}
+
+@keyframes rainFall {
+  0% { transform: translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(200px); opacity: 0; }
+}
+
+/* Tiny Soot Sprites */
+.soot-sprite {
+  position: absolute;
+  font-size: 20px;
+  bottom: 20px;
+  animation: sootBounce 2s ease-in-out infinite;
+}
+
+@keyframes sootBounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(10deg); }
+}
+
+.companion-img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+.companion-bounce {
+  animation: totoroBounce 1.2s ease-in-out infinite;
+}
+
+@keyframes totoroBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-15px) scale(1.05); }
+}
+
+.companion-spin {
+  animation: totoroSpin 4s linear infinite;
+}
+
+@keyframes totoroSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.companion-wave {
+  animation: totoroWave 2.5s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+@keyframes totoroWave {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+.companion-none {
+  animation: none;
+}
+
+.companion-float {
+  animation: totoroFloat 3s ease-in-out infinite;
+}
+
+@keyframes totoroFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.companion-wiggle {
+  animation: totoroWiggle 1.5s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+@keyframes totoroWiggle {
+  0%, 100% { transform: rotate(-8deg) scale(1); }
+  50% { transform: rotate(8deg) scale(1.02); }
+}
+
+.journal-inline-img,
+.prose-journal img {
+  max-width: 100% !important;
+  height: auto !important;
+  cursor: default;
+  display: block;
+  border-radius: 1rem;
+  margin: 1rem auto;
+}
+
+.companion-media-frame {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: min(100%, 420px);
+  max-height: 320px;
+}
+
+.companion-video {
+  display: block;
+  max-width: min(100%, 420px);
+  max-height: 320px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 1rem;
+  background: transparent;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.12));
+}
+
+.journal-inline-img.selected-media,
+.prose-journal img.selected-media {
+  outline: none;
+  box-shadow: 0 4px 12px rgba(36, 49, 46, 0.08);
+  cursor: move !important;
+}
