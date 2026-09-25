@@ -1395,6 +1395,7 @@ function App() {
   const calendarDays = useMemo(() => buildCalendarDays(calendarMonth), [calendarMonth]);
   const selectedDateEntries = entriesByDate[selectedCalendarDate] || [];
   const selectedImportantDate = importantDates[selectedCalendarDate] || null;
+  const importantDateCount = useMemo(() => Object.keys(importantDates).length, [importantDates]);
 
   const rewardLevel = useMemo(() => {
     if (entries.length >= 30) return { title: 'Moon Keeper', emoji: '🌙', next: 'Your quiet archive is glowing.' };
@@ -2924,6 +2925,35 @@ function App() {
                 <p className="text-xs font-extrabold uppercase tracking-widest text-sand-600">Quiet reminder</p>
                 <p className="mt-3 text-xl font-extrabold leading-relaxed text-ink">You do not need to finish the whole story today.</p>
                 <p className="mt-3 text-sm leading-7 text-sage-700">Keep a detail, a feeling, or one tiny memory. The rest can wait for you another day.</p>
+              </div>
+
+              <div className="rounded-3xl border border-rose-100 bg-gradient-to-br from-rose-50 to-white p-5 shadow-sm">
+                <p className="text-xs font-extrabold uppercase tracking-widest text-rose-500">Keepsake next</p>
+                <div className="mt-4 flex items-start gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm">{nextAchievement.emoji}</div>
+                  <div>
+                    <p className="text-lg font-extrabold text-ink">{nextAchievement.title}</p>
+                    <p className="mt-1 text-sm leading-6 text-sage-700">{nextAchievement.hint}</p>
+                  </div>
+                </div>
+                <p className="mt-4 text-sm font-semibold leading-6 text-sage-700">{rewardLevel.next}</p>
+              </div>
+
+              <div className="rounded-3xl border border-sage-100 bg-white p-5 shadow-sm">
+                <p className="text-xs font-extrabold uppercase tracking-widest text-sage-600">Gentle next step</p>
+                <div className="mt-4 grid gap-2">
+                  <button className="flex items-center justify-between rounded-2xl bg-sage-50 px-4 py-3 text-left text-sm font-extrabold text-sage-800 transition hover:-translate-y-0.5 hover:bg-sage-100" onClick={() => addStarterLine('Today feels')} type="button">
+                    <span className="inline-flex items-center gap-2"><Feather size={16} /> Name the feeling</span>
+                  </button>
+                  <button className="flex items-center justify-between rounded-2xl bg-sage-50 px-4 py-3 text-left text-sm font-extrabold text-sage-800 transition hover:-translate-y-0.5 hover:bg-sage-100" onClick={() => addStarterLine('A small thing I want to remember')} type="button">
+                    <span className="inline-flex items-center gap-2"><Sparkles size={16} /> Keep one detail</span>
+                  </button>
+                  <button className="flex items-center justify-between rounded-2xl bg-sage-50 px-4 py-3 text-left text-sm font-extrabold text-sage-800 transition hover:-translate-y-0.5 hover:bg-sage-100" onClick={() => navigateToTab('insights')} type="button">
+                    <span className="inline-flex items-center gap-2"><CalendarDays size={16} /> Visit calendar</span>
+                    <span>{importantDateCount}</span>
+                  </button>
+                </div>
+                <p className="mt-4 text-sm leading-7 text-sage-700">{importantDateCount > 0 ? `${importantDateCount} marked ${importantDateCount === 1 ? 'date is' : 'dates are'} waiting in your journal calendar.` : 'If a date matters, mark it in your journal calendar so it stays close when you come back.'}</p>
               </div>
             </aside>
           </div>
