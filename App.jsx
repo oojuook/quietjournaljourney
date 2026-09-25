@@ -2892,68 +2892,57 @@ function App() {
               </div>
             </div>
 
-            <aside className="flex flex-col gap-4 lg:sticky lg:top-28 lg:self-start">
-              <div className="rounded-3xl border border-white/80 bg-white/85 p-5 shadow-soft backdrop-blur">
-                <p className="text-xs font-extrabold uppercase tracking-widest text-sage-600">Today’s focus</p>
-                <div className="mt-4 flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-50 text-sage-800 shadow-sm">
-                    <WeatherGlyph mood={weatherOptions.find((item) => item.label === selectedMood) || moods[2]} size="text-xl" />
+            <aside className="flex flex-col gap-6 lg:sticky lg:top-28 lg:self-start">
+              <div className="group relative overflow-hidden rounded-[2rem] border border-white/80 bg-gradient-to-br from-white/95 to-white/75 p-6 shadow-lift backdrop-blur transition duration-300 hover:shadow-soft">
+                <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-sage-50/50 blur-2xl group-hover:bg-sage-100/60"></div>
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-sage-600">Atmosphere</p>
+                <div className="mt-5 flex items-center gap-4">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-white text-3xl shadow-soft transition group-hover:scale-110">
+                    <WeatherGlyph mood={weatherOptions.find((item) => item.label === selectedMood) || moods[2]} size="text-2xl" />
                   </div>
                   <div>
-                    <p className="text-lg font-extrabold text-ink">{selectedMood}</p>
-                    <p className="text-sm font-semibold text-sage-700">Let this page match how today feels.</p>
+                    <p className="text-xl font-extrabold text-ink">{selectedMood}</p>
+                    <p className="text-sm font-semibold text-sage-700">Matching your energy today.</p>
                   </div>
                 </div>
-                <p className="mt-4 text-sm leading-7 text-sage-700">{latestEntry ? `Last time you wrote "${latestEntry.title}". You can continue that thread or start something new.` : 'No pressure — a single honest line is already enough for today.'}</p>
+                <p className="mt-5 text-sm leading-7 text-sage-700">{latestEntry ? `Continuing "${latestEntry.title}".` : 'Ready for your first detail.'}</p>
               </div>
 
-              <div className="rounded-3xl border border-sage-100 bg-gradient-to-br from-sage-50 to-white p-5 shadow-sm">
-                <p className="text-xs font-extrabold uppercase tracking-widest text-sage-600">Quick return</p>
-                <div className="mt-4 grid gap-2">
-                  <button className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 text-left text-sm font-extrabold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-sage-50" onClick={() => navigateToTab('memories')} type="button">
-                    <span className="inline-flex items-center gap-2"><BookOpen size={16} /> Open memories</span>
-                    <span>{entries.length}</span>
-                  </button>
-                  <button className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 text-left text-sm font-extrabold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-sage-50" onClick={() => navigateToTab('insights')} type="button">
-                    <span className="inline-flex items-center gap-2"><CalendarDays size={16} /> View check-ins</span>
-                    <span>{weeklyCheckIns}/{weeklyGoal}</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="rounded-3xl border border-sand-100 bg-gradient-to-br from-sand-50 to-white p-5 shadow-sm">
-                <p className="text-xs font-extrabold uppercase tracking-widest text-sand-600">Quiet reminder</p>
-                <p className="mt-3 text-xl font-extrabold leading-relaxed text-ink">You do not need to finish the whole story today.</p>
-                <p className="mt-3 text-sm leading-7 text-sage-700">Keep a detail, a feeling, or one tiny memory. The rest can wait for you another day.</p>
-              </div>
-
-              <div className="rounded-3xl border border-rose-100 bg-gradient-to-br from-rose-50 to-white p-5 shadow-sm">
-                <p className="text-xs font-extrabold uppercase tracking-widest text-rose-500">Keepsake next</p>
-                <div className="mt-4 flex items-start gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm">{nextAchievement.emoji}</div>
+              <div className="rounded-[2rem] border border-white/80 bg-white/78 p-6 shadow-soft backdrop-blur-xl">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-rose-600">Journey progress</p>
+                <div className="mt-5 flex items-start gap-4">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.5rem] bg-rose-50 text-3xl shadow-sm ring-4 ring-rose-50/50">{nextAchievement.emoji}</div>
                   <div>
                     <p className="text-lg font-extrabold text-ink">{nextAchievement.title}</p>
-                    <p className="mt-1 text-sm leading-6 text-sage-700">{nextAchievement.hint}</p>
+                    <p className="mt-1 text-sm leading-relaxed text-sage-700">{nextAchievement.hint}</p>
                   </div>
                 </div>
-                <p className="mt-4 text-sm font-semibold leading-6 text-sage-700">{rewardLevel.next}</p>
+                <div className="mt-5 h-2 w-full overflow-hidden rounded-full bg-rose-100/50">
+                  <div className="h-full bg-rose-400 transition-all duration-700" style={{ width: `${(unlockedAchievementCount / achievementBadges.length) * 100}%` }}></div>
+                </div>
+                <p className="mt-4 text-[13px] font-bold text-rose-800">{rewardLevel.next}</p>
               </div>
 
-              <div className="rounded-3xl border border-sage-100 bg-white p-5 shadow-sm">
-                <p className="text-xs font-extrabold uppercase tracking-widest text-sage-600">Gentle next step</p>
-                <div className="mt-4 grid gap-2">
-                  <button className="flex items-center justify-between rounded-2xl bg-sage-50 px-4 py-3 text-left text-sm font-extrabold text-sage-800 transition hover:-translate-y-0.5 hover:bg-sage-100" onClick={() => addStarterLine('Today feels')} type="button">
-                    <span className="inline-flex items-center gap-2"><Feather size={16} /> Name the feeling</span>
-                  </button>
-                  <button className="flex items-center justify-between rounded-2xl bg-sage-50 px-4 py-3 text-left text-sm font-extrabold text-sage-800 transition hover:-translate-y-0.5 hover:bg-sage-100" onClick={() => addStarterLine('A small thing I want to remember')} type="button">
-                    <span className="inline-flex items-center gap-2"><Sparkles size={16} /> Keep one detail</span>
-                  </button>
-                  <button className="flex items-center justify-between rounded-2xl bg-sage-50 px-4 py-3 text-left text-sm font-extrabold text-sage-800 transition hover:-translate-y-0.5 hover:bg-sage-100" onClick={() => navigateToTab('insights')} type="button">
-                    <span className="inline-flex items-center gap-2"><CalendarDays size={16} /> Visit calendar</span>
-                    <span>{importantDateCount}</span>
-                  </button>
+              <div className="rounded-[2rem] border border-white/80 bg-white/95 p-6 shadow-soft">
+                <div className="mb-5 flex items-center justify-between">
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-sage-600">Soft actions</p>
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sage-50 text-sage-600 shadow-inner">
+                    <Compass size={14} />
+                  </div>
                 </div>
-                <p className="mt-4 text-sm leading-7 text-sage-700">{importantDateCount > 0 ? `${importantDateCount} marked ${importantDateCount === 1 ? 'date is' : 'dates are'} waiting in your journal calendar.` : 'If a date matters, mark it in your journal calendar so it stays close when you come back.'}</p>
+                <div className="grid gap-3">
+                  {[
+                    { label: 'Name the feeling', icon: Feather, onClick: () => addStarterLine('Today feels'), color: 'text-sage-700' },
+                    { label: 'Keep one detail', icon: Sparkles, onClick: () => addStarterLine('A small thing I want to remember'), color: 'text-amber-700' },
+                    { label: 'View check-ins', icon: CalendarDays, onClick: () => navigateToTab('insights'), count: importantDateCount, color: 'text-rose-700' }
+                  ].map((btn) => (
+                    <button key={btn.label} className="group flex items-center justify-between rounded-2xl bg-sage-50/50 px-5 py-3.5 text-left text-sm font-extrabold text-sage-800 ring-1 ring-sage-100/50 transition duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-soft hover:ring-white" onClick={btn.onClick} type="button">
+                      <span className={`inline-flex items-center gap-3 ${btn.color}`}><btn.icon size={17} /> {btn.label}</span>
+                      {btn.count !== undefined && <span className="rounded-full bg-white px-2 py-0.5 text-[10px] shadow-inner">{btn.count}</span>}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-5 border-t border-sage-100 pt-5 text-sm leading-relaxed text-sage-700 italic">"You do not need to finish the whole story today."</p>
               </div>
             </aside>
           </div>
