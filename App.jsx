@@ -3133,12 +3133,20 @@ function App() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-white/70 bg-white/80 p-5 shadow-soft backdrop-blur sm:p-6 lg:p-8">
-            <div className="mb-5 flex items-center gap-3">
-              <CalendarDays className="text-sage-700" size={18} />
-              <h2 className="text-xl font-extrabold text-ink sm:text-2xl">Your positivity archive</h2>
+          <div className="flex h-full flex-col rounded-3xl border border-white/70 bg-white/80 p-5 shadow-soft backdrop-blur sm:p-6 lg:p-8">
+            <div className="mb-5 flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <CalendarDays className="text-sage-700" size={18} />
+                <div>
+                  <h2 className="text-xl font-extrabold text-ink sm:text-2xl">Your positivity archive</h2>
+                  <p className="mt-1 text-sm font-semibold text-sage-700">Open any page to read the full memory without wasting the rest of this box.</p>
+                </div>
+              </div>
+              <div className="rounded-full bg-sage-100 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.18em] text-sage-700">
+                {entries.length} saved
+              </div>
             </div>
-            <div className="max-h-96 space-y-4 overflow-y-auto pr-2">
+            <div className="flex-1 space-y-4 overflow-y-auto pr-2 min-h-[32rem] xl:min-h-0">
               {!entries.length && <p className="rounded-3xl bg-white p-5 font-semibold leading-7 text-sage-900 shadow-inner">No entries yet. Start with one sentence if that is all you have today.</p>}
               {entries.map((entry) => {
                 const effectiveMoodLabel = { 'Grounded': 'Happy', 'Soft': 'Calm', 'Okay': 'Neutral', 'Heavy': 'Sad', 'Stormy': 'Anxious' }[entry.mood] || entry.mood;
@@ -3152,7 +3160,7 @@ function App() {
                     <div className="flex flex-col gap-1">
                       <div className="mb-1 flex flex-wrap items-center gap-2 text-sm font-bold text-sage-700"><WeatherGlyph mood={mood} size="text-base" />{entry.mood} · {formatDate(entry.createdAt)}</div>
                       <h3 className="text-xl font-extrabold leading-tight text-ink">{entry.title}</h3>
-                      <p className="mt-3 whitespace-pre-line leading-7 text-sage-800">
+                      <p className="mt-3 whitespace-pre-line break-words leading-7 text-sage-800">
                         {(() => {
                           const tempDiv = document.createElement('div');
                           tempDiv.innerHTML = entry.body || entry.prompt || '';
