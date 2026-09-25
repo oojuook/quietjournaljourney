@@ -2553,67 +2553,80 @@ function App() {
 
       {activeTab === 'home' && (
       <section className="mx-auto max-w-7xl px-6 py-4">
-        <div className="rounded-3xl border border-sage-100 bg-white/85 p-6 shadow-lift backdrop-blur">
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-3xl bg-sage-100 text-sage-800 shadow-sm">
-                  <Sparkles size={22} />
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex-1">
+            <div className="rounded-[2.5rem] border border-sage-100 bg-white p-8 shadow-soft backdrop-blur lg:p-10">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <h2 className="font-display text-4xl font-bold leading-tight text-ink lg:text-5xl">{homeSections.find((s) => s.id === activeHomeSection)?.label || 'Overview'}</h2>
+                  <p className="mt-4 max-w-2xl text-lg leading-relaxed text-sage-800">{activeHomeSection === 'overview' ? (latestEntry ? `Your last page is still here. ${rewardLevel.next}` : 'This is your quiet corner. One page at a time is enough.') : 'Browse gently. Only one section stays open to keep your screen calm.'}</p>
+                </div>
+                <a className="inline-flex shrink-0 items-center gap-2 rounded-full bg-sage-900 px-6 py-4 text-sm font-extrabold text-white shadow-lift transition hover:-translate-y-1 hover:bg-sage-800" href="#journal" onClick={() => navigateToTab('write')}>
+                  <PenLine size={18} /> Open today’s page
+                </a>
+              </div>
+
+              <div className="mt-10 grid gap-3 rounded-[2rem] bg-sage-50/70 p-3 sm:grid-cols-2 lg:grid-cols-5">
+                {homeSections.map((section) => (
+                  <button
+                    key={section.id}
+                    className={`rounded-[1.5rem] px-5 py-4 text-left transition ${activeHomeSection === section.id ? 'bg-white text-sage-950 shadow-md' : 'text-sage-500 hover:bg-white/60 hover:text-sage-800'}`}
+                    onClick={() => openHomeSection(section.id)}
+                    type="button"
+                  >
+                    <div className="flex items-center gap-2 text-sm font-extrabold"><section.icon size={16} /> {section.label}</div>
+                  </button>
+                ))}
+              </div>
+
+              {activeHomeSection === 'overview' && (
+              <div className="mt-10 grid gap-4 sm:grid-cols-3">
+                <div className="rounded-3xl bg-sage-50/50 p-6 text-center ring-1 ring-sage-100/50">
+                  <p className="text-xs font-extrabold uppercase tracking-widest text-sage-500">Streak</p>
+                  <p className="mt-2 text-3xl font-extrabold text-ink">{streak} day{streak === 1 ? '' : 's'}</p>
+                </div>
+                <div className="rounded-3xl bg-rose-50/50 p-6 text-center ring-1 ring-rose-100/50">
+                  <p className="text-xs font-extrabold uppercase tracking-widest text-rose-500">This week</p>
+                  <p className="mt-2 text-3xl font-extrabold text-ink">{weeklyCheckIns}/{weeklyGoal}</p>
+                </div>
+                <div className="rounded-3xl bg-sand-50/50 p-6 text-center ring-1 ring-sand-100/50">
+                  <p className="text-xs font-extrabold uppercase tracking-widest text-sand-500">Reward</p>
+                  <p className="mt-2 text-3xl font-extrabold text-ink">{rewardLevel.emoji}</p>
+                </div>
+              </div>
+              )}
+            </div>
+          </div>
+
+          <aside className="lg:w-[320px] xl:w-[360px] lg:sticky lg:top-28">
+            <div className="rounded-[2.5rem] border border-white/80 bg-white/70 p-6 shadow-soft backdrop-blur-xl">
+              <div className="flex items-center gap-4 border-b border-sage-100 pb-5">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-100 text-sage-800 shadow-sm">
+                  <WeatherGlyph mood={weatherOptions.find((item) => item.label === selectedMood) || moods[2]} size="text-xl" />
                 </div>
                 <div>
-                  <p className="text-sm font-extrabold uppercase tracking-widest text-sage-700">Browse one quiet page at a time</p>
-                  <h2 className="mt-2 text-2xl font-extrabold text-ink">{homeSections.find((section) => section.id === activeHomeSection)?.label || 'Overview'}</h2>
-                  <p className="mt-2 max-w-2xl leading-7 text-sage-900">{activeHomeSection === 'overview' ? (latestEntry ? `Your last page is still here for you. ${rewardLevel.next}` : 'This can stay a quiet little corner for you. One page is enough to begin.') : 'Only one home section opens at a time, so the site feels calmer instead of endless.'}</p>
+                  <p className="text-sm font-extrabold text-ink">Today’s focus</p>
+                  <p className="text-xs font-semibold text-sage-600">{selectedMood} mood</p>
                 </div>
               </div>
-              <a className="inline-flex shrink-0 items-center gap-2 rounded-full bg-sage-900 px-5 py-3 text-sm font-extrabold text-white shadow-lift transition hover:-translate-y-1 hover:bg-sage-800" href="#journal" onClick={() => navigateToTab('write')}>
-                <PenLine size={17} /> Open today’s page
-              </a>
-            </div>
+              
+              <div className="py-6">
+                <p className="text-lg font-bold leading-relaxed text-ink italic opacity-90">“You do not need to finish the whole story today.”</p>
+                <p className="mt-4 text-sm leading-7 text-sage-800">Keep a detail, a feeling, or one tiny memory. The rest can wait for you another day.</p>
+              </div>
 
-            <div className="grid gap-2 rounded-[1.75rem] bg-sage-50/90 p-2 sm:grid-cols-2 xl:grid-cols-5">
-              {homeSections.map((section) => (
-                <button
-                  key={section.id}
-                  className={`rounded-[1.2rem] px-4 py-3 text-left transition ${activeHomeSection === section.id ? 'bg-white text-sage-950 shadow-sm' : 'text-sage-500 hover:bg-white/75 hover:text-sage-800'}`}
-                  onClick={() => openHomeSection(section.id)}
-                  type="button"
-                >
-                  <div className="flex items-center gap-2 text-sm font-extrabold"><section.icon size={15} /> {section.label}</div>
-                  <p className="mt-1 text-xs font-semibold">{section.detail}</p>
+              <div className="grid gap-2 border-t border-sage-100 pt-5">
+                <button className="flex items-center justify-between rounded-2xl bg-white/80 px-5 py-4 text-sm font-extrabold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-white" onClick={() => navigateToTab('memories')} type="button">
+                  <span className="inline-flex items-center gap-2"><BookOpen size={16} /> Memories</span>
+                  <span className="opacity-50">{entries.length}</span>
                 </button>
-              ))}
-            </div>
-
-            {activeHomeSection === 'overview' && (
-            <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[32rem]">
-              <div className="rounded-[1.75rem] border border-sage-100 bg-white/85 p-4 shadow-sm">
-                <p className="text-xs font-extrabold uppercase tracking-widest text-sage-600">Gentle rhythm</p>
-                <p className="mt-2 text-2xl font-extrabold text-sage-950">{streak} day{streak === 1 ? '' : 's'}</p>
-                <p className="mt-1 text-sm font-semibold text-sage-700">Showing up softly still counts.</p>
-                <div className="mt-3 h-2 rounded-full bg-sage-100">
-                  <div className="h-full rounded-full bg-sage-500" style={{ width: `${Math.min(100, Math.max(streak, 1) * 12)}%` }} />
-                </div>
-              </div>
-              <div className="rounded-[1.75rem] border border-rose-100 bg-white/85 p-4 shadow-sm">
-                <p className="text-xs font-extrabold uppercase tracking-widest text-rose-600">This week</p>
-                <p className="mt-2 text-2xl font-extrabold text-sage-950">{weeklyCheckIns}/{weeklyGoal}</p>
-                <p className="mt-1 text-sm font-semibold text-sage-700">Small check-ins are enough.</p>
-                <div className="mt-3 h-2 rounded-full bg-rose-100">
-                  <div className="h-full rounded-full bg-rose-400" style={{ width: `${Math.min(100, (weeklyCheckIns / weeklyGoal) * 100)}%` }} />
-                </div>
-              </div>
-              <div className="rounded-[1.75rem] border border-sand-100 bg-white/85 p-4 shadow-sm">
-                <p className="text-xs font-extrabold uppercase tracking-widest text-sand-600">Next keepsake</p>
-                <p className="mt-2 text-2xl font-extrabold text-sage-950">{entriesToNextReward === 0 ? 'Here now' : `${entriesToNextReward} away`}</p>
-                <p className="mt-1 text-sm font-semibold text-sage-700">Another page opens the next bloom.</p>
-                <div className="mt-3 h-2 rounded-full bg-sand-100">
-                  <div className="h-full rounded-full bg-sand-400" style={{ width: `${entriesToNextReward === 0 ? 100 : Math.max(18, 100 / (entriesToNextReward + 1))}%` }} />
-                </div>
+                <button className="flex items-center justify-between rounded-2xl bg-white/80 px-5 py-4 text-sm font-extrabold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-white" onClick={() => navigateToTab('insights')} type="button">
+                  <span className="inline-flex items-center gap-2"><CalendarDays size={16} /> Insights</span>
+                  <span className="opacity-50">{weeklyCheckIns}/{weeklyGoal}</span>
+                </button>
               </div>
             </div>
-            )}
-          </div>
+          </aside>
         </div>
       </section>
       )}
