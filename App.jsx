@@ -1111,6 +1111,12 @@ function App() {
   const [petHappiness, setPetHappiness] = useState(60);
   const [petTreats, setPetTreats] = useState(0);
   const [petMood, setPetMood] = useState('walking');
+  const [importantDates, setImportantDates] = useState(() => {
+    const saved = localStorage.getItem('quiet-journal-important-dates');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [importanceModalOpen, setImportanceModalOpen] = useState(false);
+  const [importanceDraft, setImportanceDraft] = useState('');
   const [petPosition, setPetPosition] = useState({ x: 20, y: 40 });
   const [petDirection, setPetDirection] = useState(1);
   const [petBubble, setPetBubble] = useState('');
@@ -1258,6 +1264,10 @@ function App() {
   }, [companion]);
 
   useEffect(() => {
+    localStorage.setItem('quiet-journal-important-dates', JSON.stringify(importantDates));
+  }, [importantDates]);
+
+  useEffect(() => {
     return enableCompanionResize(companionMediaRef);
   }, [companionSelected, companion.size, companion.x, companion.y, companionIsVideo, companionIsUploadedMedia]);
 
@@ -1384,6 +1394,7 @@ function App() {
   }, {}), [entries]);
   const calendarDays = useMemo(() => buildCalendarDays(calendarMonth), [calendarMonth]);
   const selectedDateEntries = entriesByDate[selectedCalendarDate] || [];
+  const selectedImportantDate = importantDates[selectedCalendarDate] || null;
 
   const rewardLevel = useMemo(() => {
     if (entries.length >= 30) return { title: 'Moon Keeper', emoji: '🌙', next: 'Your quiet archive is glowing.' };
@@ -2215,6 +2226,45 @@ function App() {
     setQuoteIndex(0);
   }
 
+  function toggleImportantDate(dateKey) {
+    setSelectedCalendarDate(dateKey);
+    const existing = importantDates[dateKey];
+    if (existing) {
+      const { [dateKey]: _, ...rest } = importantDates;
+      setImportantDates(rest);
+    } else {
+      setImportanceDraft('');
+      setImportanceModalOpen(true);
+    }
+  }
+
+  function saveImportantDate() {
+    if (!importanceDraft.trim()) {
+      setImportanceModalOpen(false);
+      return;
+    }
+    setImportantDates({
+      ...importantDates,
+      [selectedCalendarDate]: {
+        note: importanceDraft.trim(),
+        createdAt: new Date().toISOString()
+      }
+    });
+    setImportanceModalOpen(false);
+    setImportanceDraft('');
+  }
+
+  function addStarterLine(label) {
+    const starter = `<p><strong>${label}</strong></p><p><br></p>`;
+    const currentHtml = entryBodyRef.current?.innerHTML || body || '';
+    const nextHtml = currentHtml && currentHtml !== '<br>' ? `${currentHtml}${currentHtml.endsWith('>') ? '' : '<br>'}<p><br></p>${starter}` : starter;
+    if (entryBodyRef.current) {
+      entryBodyRef.current.innerHTML = nextHtml;
+      entryBodyRef.current.focus();
+    }
+    setBody(nextHtml);
+  }
+
   function deleteCustomWeather(label) {
     setCustomWeathers(customWeathers.filter((weather) => weather.label !== label));
     if (selectedMood === label) setSelectedMood('Calm');
@@ -2735,6 +2785,17 @@ function App() {
                 <Sparkles size={15} /> New prompt
               </button>
             </div>
+            <div className="mt-5 rounded-3xl bg-white/75 p-4 ring-1 ring-sage-100/70">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-500">Small ways to begin</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {['What happened today', 'How it felt', 'What I need now', 'One good thing'].map((starter) => (
+                  <button key={starter} className="rounded-full border border-sage-100 bg-white px-3.5 py-2 text-sm font-bold text-sage-700 transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50" onClick={() => addStarterLine(starter)} type="button">
+                    {starter}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-3 text-sm font-semibold leading-6 text-sage-700">Tap one if the page feels too empty — it will place a soft starter line into your diary.</p>
+            </div>
           </div>
 
           <div className="mt-6 grid gap-4 xl:grid-cols-[1.3fr_0.9fr]">
@@ -2894,25 +2955,62 @@ function App() {
             <div className="mt-2 grid grid-cols-7 gap-1">
               {calendarDays.map((day, index) => {
                 const dayEntries = day ? entriesByDate[day.dateKey] || [] : [];
+                const hasImportantDate = day ? Boolean(importantDates[day.dateKey]) : false;
                 const isSelected = day?.dateKey === selectedCalendarDate;
                 const isToday = day?.dateKey === todayISO();
                 return day ? (
                   <button
                     className={`relative aspect-square rounded-2xl border text-sm font-extrabold transition hover:-translate-y-0.5 ${isSelected ? 'border-sage-800 bg-sage-900 text-white shadow-lift' : isToday ? 'border-sage-300 bg-sage-100 text-sage-900' : 'border-sage-100 bg-white text-sage-800 hover:bg-sage-50'}`}
                     key={day.dateKey}
-                    onClick={() => setSelectedCalendarDate(day.dateKey)}
+                    onClick={() => {
+                      setSelectedCalendarDate(day.dateKey);
+                      setImportanceModalOpen(false);
+                    }}
                     type="button"
                   >
                     {day.day}
+                    {hasImportantDate && <span className={`absolute right-1.5 top-1.5 text-[10px] ${isSelected ? 'text-sand-100' : 'text-rose-500'}`}>✦</span>}
                     {dayEntries.length > 0 && <span className={`absolute bottom-1 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full ${isSelected ? 'bg-white' : 'bg-sage-700'}`} />}
                   </button>
                 ) : <div key={`blank-${index}`} />;
               })}
             </div>
             <div className="mt-5 rounded-3xl bg-white p-4 shadow-inner">
-              <p className="text-xs font-extrabold uppercase tracking-widest text-sage-600">{selectedCalendarDate}</p>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-extrabold uppercase tracking-widest text-sage-600">{selectedCalendarDate}</p>
+                  <p className="mt-1 text-sm font-semibold text-sage-700">Mark meaningful days and keep one small note with them.</p>
+                </div>
+                <button className={`rounded-full px-4 py-2 text-sm font-extrabold transition ${selectedImportantDate ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' : 'bg-sage-900 text-white hover:bg-sage-800'}`} onClick={() => toggleImportantDate(selectedCalendarDate)} type="button">
+                  {selectedImportantDate ? 'Remove important date' : 'Mark as important'}
+                </button>
+              </div>
+              {selectedImportantDate && (
+                <div className="mt-4 rounded-2xl border border-rose-100 bg-rose-50/80 p-4">
+                  <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-rose-600">Important note</p>
+                  <p className="mt-2 text-sm font-semibold leading-6 text-sage-800">{selectedImportantDate.note}</p>
+                </div>
+              )}
+              {importanceModalOpen && (
+                <div className="mt-4 rounded-2xl border border-sage-100 bg-sage-50/90 p-4">
+                  <label className="block text-sm font-bold text-sage-800">
+                    Why does this day matter?
+                    <textarea
+                      className="mt-3 min-h-[96px] w-full rounded-2xl border border-sage-100 bg-white px-4 py-3 font-semibold leading-6 text-sage-900 outline-none transition focus:border-sage-300"
+                      maxLength={180}
+                      onChange={(event) => setImportanceDraft(event.target.value)}
+                      placeholder="Birthday, milestone, hard day, sweet memory..."
+                      value={importanceDraft}
+                    />
+                  </label>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button className="rounded-full bg-sage-900 px-4 py-2 text-sm font-extrabold text-white transition hover:bg-sage-800" onClick={saveImportantDate} type="button">Save note</button>
+                    <button className="rounded-full border border-sage-200 bg-white px-4 py-2 text-sm font-extrabold text-sage-700 transition hover:bg-sage-50" onClick={() => setImportanceModalOpen(false)} type="button">Cancel</button>
+                  </div>
+                </div>
+              )}
               {selectedDateEntries.length ? (
-                <div className="mt-3 space-y-3">
+                <div className="mt-4 space-y-3">
                   {selectedDateEntries.map((entry) => (
                     <button className="w-full rounded-2xl border border-sage-100 bg-sage-50 p-3 text-left transition hover:bg-white" key={entry.id} onClick={() => setSelectedEntry(entry)} type="button">
                       <p className="font-extrabold text-sage-950">{entry.title}</p>
@@ -2920,7 +3018,7 @@ function App() {
                     </button>
                   ))}
                 </div>
-              ) : <p className="mt-3 text-sm font-semibold leading-6 text-sage-700">No entry for this date yet. Pick this day as your next little check-in.</p>}
+              ) : <p className="mt-4 text-sm font-semibold leading-6 text-sage-700">No entry for this date yet. Pick this day as your next little check-in.</p>}
             </div>
           </div>
 
@@ -2941,24 +3039,28 @@ function App() {
                     onClick={() => setSelectedEntry(entry)}
                   >
                     <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <div className="mb-2 flex items-center gap-2 text-sm font-bold text-sage-700"><WeatherGlyph mood={mood} size="text-base" />{entry.mood} · {formatDate(entry.createdAt)}</div>
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-2 flex flex-wrap items-center gap-2 text-sm font-bold text-sage-700"><WeatherGlyph mood={mood} size="text-base" />{entry.mood} · {formatDate(entry.createdAt)}</div>
                         <h3 className="text-xl font-extrabold text-ink">{entry.title}</h3>
+                        <p className="mt-3 whitespace-pre-line leading-7 text-sage-800">
+                          {(() => {
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = entry.body || entry.prompt || '';
+                            const images = tempDiv.querySelectorAll('img');
+                            let preview = tempDiv.textContent || tempDiv.innerText || '';
+                            if (images.length > 0) preview = '📷 ' + preview;
+                            return preview.trim();
+                          })()}
+                        </p>
+                        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-sage-500">
+                          <span className="rounded-full bg-sage-50 px-3 py-1">Open full page</span>
+                          {entry.image && <span className="rounded-full bg-sand-50 px-3 py-1 text-sand-700">Photo saved</span>}
+                        </div>
                       </div>
-                      <button className="rounded-full p-2 text-sage-400 opacity-70 transition hover:bg-rose-50 hover:text-rose-500 group-hover:opacity-100" onClick={() => deleteEntry(entry.id)} type="button" aria-label="Delete entry">
+                      <button className="shrink-0 rounded-full p-2 text-sage-400 opacity-70 transition hover:bg-rose-50 hover:text-rose-500 group-hover:opacity-100" onClick={() => deleteEntry(entry.id)} type="button" aria-label="Delete entry">
                         <Trash2 size={18} />
                       </button>
                     </div>
-                    <p className="mt-3 line-clamp-4 whitespace-pre-line leading-7 text-sage-800">
-                      {(() => {
-                        const tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = entry.body || entry.prompt || '';
-                        const images = tempDiv.querySelectorAll('img');
-                        let preview = tempDiv.textContent || tempDiv.innerText || '';
-                        if (images.length > 0) preview = '📷 ' + preview;
-                        return preview.trim();
-                      })()}
-                    </p>
                   </article>
                 );
               })}
