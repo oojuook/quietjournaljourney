@@ -979,7 +979,7 @@ function PrivacyGate({ hasPin, onUnlock, onCreatePin }) {
                 <ShieldCheck size={18} /> Private by default
               </div>
               <h1 className="font-display text-5xl font-bold leading-tight text-sage-900">Quiet Journal Journey</h1>
-              <p className="mt-5 text-lg leading-8 text-sage-800">A calm space for daily reflection, mood tracking, guided prompts, and tiny reminders that you are allowed to soften.</p>
+              <p className="mt-5 text-lg leading-8 text-sage-800">A calm space for private diary writing, daily reflection, and gentle mood check-ins you can keep returning to.</p>
             </div>
             <div className="mt-12 flex items-center gap-3 rounded-3xl bg-white/65 p-4 text-sm text-sage-800">
               <Lock size={19} /> Entries stay in this browser using local storage.
@@ -1473,16 +1473,16 @@ function App() {
   }, [entries.length]);
   const journalQuest = useMemo(() => ([
     { label: 'Notice how today feels', done: Boolean(selectedMood) },
-    { label: 'Give this page a soft name', done: Boolean(title.trim() || draftText) },
+    { label: 'Give today\'s page a simple title', done: Boolean(title.trim() || draftText) },
     { label: 'Keep one honest detail', done: draftText.length >= 40 }
   ]), [draftText, selectedMood, title]);
   const completedQuestCount = journalQuest.filter((step) => step.done).length;
   const journalNudge = useMemo(() => {
-    if (streak >= 7) return 'You have made this space feel familiar now. Keep returning gently, never forcefully.';
-    if (weeklyCheckIns >= weeklyGoal) return 'You have already given yourself enough attention this week. Anything extra is a bonus.';
-    if (selectedMood === 'Anxious' || selectedMood === 'Sad') return 'Let this page stay soft. A few honest lines is more than enough today.';
+    if (streak >= 7) return 'You have made this space feel familiar now. Let your diary stay warm and steady, never pressured.';
+    if (weeklyCheckIns >= weeklyGoal) return 'You have already given yourself enough attention this week. Anything extra can simply be a small diary note for yourself.';
+    if (selectedMood === 'Anxious' || selectedMood === 'Sad') return 'Let this page stay soft. A short diary entry can help you release a feeling without needing to explain everything.';
     if (draftText.length >= 40) return 'There is already something worth keeping here. Add one more detail only if it feels right.';
-    return 'You do not need to write a lot. A title, one line, or a feeling is already a real check-in.';
+    return 'You do not need to write a lot. A title, one line, or one honest sentence is already enough for today\'s diary page.';
   }, [draftText.length, selectedMood, streak, weeklyCheckIns]);
   const latestEntry = entries[0] || null;
   const latestEntrySnippet = useMemo(() => {
@@ -2391,7 +2391,7 @@ function App() {
               </div>
               <div>
                 <p className="font-display text-2xl font-bold text-sage-900">Quiet Journal Journey</p>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sage-600">Private online diary</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sage-600">Private diary, close at heart</p>
               </div>
             </a>
               <div className="site-nav-links hidden flex-1 items-center justify-center gap-8 lg:flex xl:gap-10">
@@ -2471,9 +2471,13 @@ function App() {
                 <div className="inline-flex items-center gap-2 rounded-full bg-sage-200/90 px-4 py-2 text-sm font-bold text-sage-950 shadow-sm">
                   <Sparkles size={17} /> A calm place to write a diary online
                 </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-sage-100 bg-white/90 px-4 py-2 text-sm font-bold text-sage-700 shadow-sm">
+                  <Quote size={15} /> Private online diary · journal · mood check-in
+                </div>
               </div>
-              <h1 className="max-w-3xl font-display text-5xl font-bold leading-[0.96] tracking-tight text-sage-950 md:text-6xl">Private online diary and journal for gentle daily writing.</h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-sage-800">If you are wondering where to write a diary online, this softer journal space lets you keep private entries, track your mood, and return to quiet daily reflection.</p>
+              <h1 className="max-w-3xl font-display text-5xl font-bold leading-[0.96] tracking-tight text-sage-950 md:text-6xl">Your quiet corner for honest pages.</h1>
+              <p className="mt-4 max-w-3xl text-xl font-semibold leading-8 text-sage-900">Quiet Journal Journey helps you keep a private online diary, mood journal, and daily reflection space that feels softer to return to.</p>
+              <p className="mt-4 max-w-2xl text-lg leading-8 text-sage-800">If you are wondering where to write a diary online, this calmer journal space gives you private entries, gentle prompts, and a place to notice what the day actually felt like.</p>
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <a className="inline-flex items-center gap-2 rounded-full bg-sage-900 px-5 py-3 text-sm font-extrabold text-white shadow-lift transition hover:-translate-y-1 hover:bg-sage-800" href="#journal" onClick={() => navigateToTab('write')}>
@@ -2507,41 +2511,46 @@ function App() {
               <div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
                 <div className="flex min-h-[250px] h-full flex-col justify-between rounded-[1.8rem] border border-white/80 bg-gradient-to-br from-white/90 to-sage-50/70 p-5 shadow-lift backdrop-blur">
                   <div>
-                    <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">A softer starting point</p>
-                    <h3 className="mt-3 text-2xl font-extrabold leading-tight text-ink">Keep the journal calm, polished, and ready for small honest pages.</h3>
-                    <p className="mt-3 max-w-2xl text-sm leading-7 text-sage-800">Your home area now leads into writing, memories, and insights more clearly, while still leaving the writing space itself as the main attraction.</p>
+                    <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">How people use it</p>
+                    <h3 className="mt-3 text-2xl font-extrabold leading-tight text-ink">Start with the page that matches what you were actually searching for.</h3>
+                    <p className="mt-3 max-w-2xl text-sm leading-7 text-sage-800">Some people want a private online diary, some want an online journal, and some just need a gentle answer to where they can write. These paths keep the homepage cleaner while helping visitors find the right place faster.</p>
                   </div>
                   <div className="mt-5 flex flex-wrap gap-2 text-xs font-bold text-sage-800">
-                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Private by default</span>
-                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Gentle daily reflection</span>
-                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Cleaner navigation</span>
+                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Private online diary</span>
+                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Where to write a diary online</span>
+                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Online journal guidance</span>
+                  </div>
+                  <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                    <a className="rounded-[1.2rem] border border-sage-100 bg-white/95 px-4 py-4 text-sm font-bold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50" href="/private-online-diary.html">Private online diary</a>
+                    <a className="rounded-[1.2rem] border border-sage-100 bg-white/95 px-4 py-4 text-sm font-bold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50" href="/where-to-write-a-diary-online.html">Where to write a diary online</a>
+                    <a className="rounded-[1.2rem] border border-sage-100 bg-white/95 px-4 py-4 text-sm font-bold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50" href="/online-journal.html">Online journal</a>
                   </div>
                 </div>
                 <div className="flex min-h-[250px] h-full flex-col justify-between rounded-[1.8rem] border border-sage-100 bg-white/88 p-5 shadow-sm backdrop-blur">
                   <div>
-                    <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Today’s atmosphere</p>
+                    <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Mood check-in</p>
                     <div className="mt-4 flex items-center gap-3">
                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-50 text-sage-800 shadow-sm">
                         <WeatherGlyph mood={weatherOptions.find((item) => item.label === selectedMood) || moods[2]} size="text-xl" />
                       </div>
                       <div>
                         <p className="text-lg font-extrabold text-ink">{selectedMood}</p>
-                        <p className="text-sm font-semibold text-sage-600">Matched to your current page.</p>
+                        <p className="text-sm font-semibold text-sage-600">A quick emotional marker for today’s page.</p>
                       </div>
                     </div>
                   </div>
                   <div className="mt-5 flex flex-wrap gap-2 text-xs font-bold text-sage-700">
-                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Private</span>
-                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Reflective</span>
-                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Uncluttered</span>
+                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Mood journal</span>
+                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Private reflection</span>
+                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Easy check-ins</span>
                   </div>
                   <div className="mt-5 grid gap-3 rounded-2xl bg-sage-50/85 px-4 py-4 text-sm text-sage-700 ring-1 ring-sage-100/80">
                     <div>
                       <p className="font-extrabold text-sage-900">Carried into today’s page</p>
-                      <p className="mt-1 leading-6">The same softer mood follows into your writing room, so the homepage and editor feel like one quiet space.</p>
+                      <p className="mt-1 leading-6">A quick mood label makes it easier to return later, notice patterns, and keep the writing flow softer instead of more complicated.</p>
                     </div>
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-sage-700">
-                      <Sparkles size={14} /> Calm visual rhythm
+                      <Sparkles size={14} /> Gentle pattern-tracking
                     </div>
                   </div>
                 </div>
@@ -2553,14 +2562,14 @@ function App() {
         <aside className="flex flex-col gap-5 lg:col-span-4">
           <div className="rounded-[1.9rem] border border-white/80 bg-white/72 p-5 shadow-soft backdrop-blur-xl">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Move around gently</p>
-              <span className="rounded-full border border-sage-100 bg-sage-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-sage-800">Main spaces</span>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Start where it helps most</p>
+              <span className="rounded-full border border-sage-100 bg-sage-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-sage-800">Core spaces</span>
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
               {[
-                { id: 'write', label: 'Write', detail: 'Start with one line', icon: PenLine, tone: 'bg-sage-100 text-sage-800' },
-                { id: 'memories', label: 'Memories', detail: 'Open past pages', icon: BookOpen, tone: 'bg-sand-100 text-sand-600' },
-                { id: 'insights', label: 'Insights', detail: 'See your patterns', icon: Sparkles, tone: 'bg-teal-100 text-teal-700' }
+                { id: 'write', label: 'Write', detail: 'Begin with one honest line', icon: PenLine, tone: 'bg-sage-100 text-sage-800' },
+                { id: 'memories', label: 'Memories', detail: 'Return to saved pages', icon: BookOpen, tone: 'bg-sand-100 text-sand-600' },
+                { id: 'insights', label: 'Insights', detail: 'See moods over time', icon: Sparkles, tone: 'bg-teal-100 text-teal-700' }
               ].map((tab) => (
                 <button key={tab.id} className="group flex items-center gap-3 rounded-2xl border border-sage-100 bg-white/92 px-4 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-white hover:shadow-lift" onClick={() => navigateToTab(tab.id)} type="button">
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl shadow-sm transition group-hover:scale-105 ${tab.tone}`}>
@@ -2663,17 +2672,17 @@ function App() {
             <div className="rounded-[2.5rem] border border-white/80 bg-white/70 p-6 shadow-soft backdrop-blur-xl">
               <div className="flex items-center gap-4 border-b border-sage-100 pb-5">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-100 text-sage-800 shadow-sm">
-                  <WeatherGlyph mood={weatherOptions.find((item) => item.label === selectedMood) || moods[2]} size="text-xl" />
+                  <HeartHandshake size={20} />
                 </div>
                 <div>
-                  <p className="text-sm font-extrabold text-ink">Today’s focus</p>
+                  <p className="text-sm font-extrabold text-ink">Today’s companion note</p>
                   <p className="text-xs font-semibold text-sage-600">{selectedMood} mood</p>
                 </div>
               </div>
               
               <div className="py-6">
-                <p className="text-lg font-bold leading-relaxed text-ink italic opacity-90">“You do not need to finish the whole story today.”</p>
-                <p className="mt-4 text-sm leading-7 text-sage-800">Keep a detail, a feeling, or one tiny memory. The rest can wait for you another day.</p>
+                <p className="text-lg font-bold leading-relaxed text-ink italic opacity-90">“You can tell me the small version first.”</p>
+                <p className="mt-4 text-sm leading-7 text-sage-800">Write the detail, feeling, or unfinished thought you would trust with someone gentle. The rest can arrive when it is ready.</p>
               </div>
 
               <div className="grid gap-2 border-t border-sage-100 pt-5">
@@ -2730,9 +2739,9 @@ function App() {
         <div className="mb-6 overflow-hidden rounded-[2rem] border border-white/85 bg-gradient-to-r from-white/88 via-sage-50/78 to-sand-50/75 p-3 shadow-soft backdrop-blur xl:p-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-sage-600">Choose a room</p>
-              <h2 className="mt-2 text-2xl font-extrabold text-ink">Move through the journal like a polished little suite.</h2>
-              <p className="mt-2 text-sm font-semibold leading-6 text-sage-700">Writing stays central, while memories and insights stay close without crowding the page on mobile or desktop.</p>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-sage-600">Choose your diary space</p>
+              <h2 className="mt-2 text-2xl font-extrabold text-ink">Writing stays central, with memories and insights waiting nearby.</h2>
+              <p className="mt-2 text-sm font-semibold leading-6 text-sage-700">The journal is easy to enter, easy to return to, and designed to feel calm on both mobile and desktop.</p>
             </div>
             <div className="grid gap-2 rounded-[1.5rem] bg-white/70 p-2 shadow-inner sm:grid-cols-3">
               {[
@@ -2759,9 +2768,9 @@ function App() {
           <div className="mb-5 overflow-hidden rounded-[1.9rem] border border-sage-100 bg-gradient-to-r from-white via-sage-50/60 to-sand-50/70 p-4 shadow-sm sm:p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-3xl">
-                <p className="text-sm font-extrabold uppercase tracking-[0.22em] text-sage-600">Your writing room</p>
-                <h2 className="mt-2 text-3xl font-extrabold text-ink">Write only what feels ready.</h2>
-                <p className="mt-2 text-sm leading-7 text-sage-700">There is no right amount here. Start with a title, one feeling, or a single honest line, then let the rest arrive gently.</p>
+                <p className="text-sm font-extrabold uppercase tracking-[0.22em] text-sage-600">A page for your diary</p>
+                <h2 className="mt-2 text-3xl font-extrabold text-ink">Write today\'s diary page in your own words.</h2>
+                <p className="mt-2 text-sm leading-7 text-sage-700">There is no right amount here. Start with today\'s date, one feeling, or a single sentence. A diary can begin small and still help you understand yourself more clearly.</p>
               </div>
               <div className="inline-flex items-center gap-2 self-start rounded-full border border-sage-100 bg-white px-4 py-2 text-sm font-bold text-sage-700 shadow-sm">
                 <CalendarDays size={16} /> {formatDate(new Date().toISOString())}
@@ -2775,17 +2784,17 @@ function App() {
           </div>
 
           <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-            <label className="block text-sm font-bold text-sage-800" htmlFor="entry-title">A name for this page</label>
+            <label className="block text-sm font-bold text-sage-800" htmlFor="entry-title">What is this diary page about?</label>
             <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.24em] text-sage-500 sm:text-xs">
-              <span className="rounded-full border border-sage-100 bg-white px-3 py-1.5 shadow-sm">A few words is enough</span>
-              <span className="rounded-full border border-sage-100 bg-white px-3 py-1.5 shadow-sm">Keep it gentle</span>
+              <span className="rounded-full border border-sage-100 bg-white px-3 py-1.5 shadow-sm">A short title is enough</span>
+              <span className="rounded-full border border-sage-100 bg-white px-3 py-1.5 shadow-sm">Keep it honest</span>
             </div>
           </div>
           <input
             className="journal-title-input mb-5 w-full rounded-[1.75rem] px-5 py-4 text-lg font-semibold outline-none"
             id="entry-title"
             onChange={(event) => setTitle(event.target.value)}
-            placeholder="A quiet name for this page"
+            placeholder="A small title for today"
             value={title}
           />
 
@@ -2848,7 +2857,7 @@ function App() {
               data-placeholder=""
             />
             <div className="journal-editor-meta journal-editor-bottom mt-4 flex flex-wrap items-center justify-between gap-2 px-3 text-[11px] font-bold uppercase tracking-[0.22em] text-sage-500 sm:text-xs sm:tracking-[0.24em]">
-              <span>One honest line is already a real page.</span>
+              <span>A few honest lines are enough for a real diary page.</span>
               <span>{streak} day{streak === 1 ? '' : 's'} of returning</span>
             </div>
           </div>
@@ -2864,15 +2873,28 @@ function App() {
           <div className="mt-6 rounded-[1.75rem] bg-gradient-to-r from-sage-50 via-white to-sand-50 p-4 shadow-inner ring-1 ring-white/70 sm:p-6">
             <div className="grid gap-6 lg:grid-cols-12">
               <div className="lg:col-span-7">
-                <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-sage-700"><Feather size={16} /> Gentle prompt</div>
+                <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-sage-700"><Feather size={16} /> Writing prompt</div>
                 <p className="max-w-2xl font-display text-2xl font-bold leading-relaxed text-sage-950">{activePrompt}</p>
-                <p className="mt-3 text-sm font-semibold text-sage-700">Take what helps, skip the rest, and answer only the part that feels kind to say.</p>
+                <p className="mt-3 text-sm font-semibold text-sage-700">Take what helps, skip the rest, and use the prompt as a gentle way into your diary when you are not sure how to begin.</p>
                 <button className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-extrabold text-sage-900 shadow-lift transition hover:-translate-y-1 hover:bg-sage-50" onClick={() => setActivePrompt(prompts[(prompts.indexOf(activePrompt) + 1) % prompts.length])} type="button">
                   <Sparkles size={15} /> New prompt
                 </button>
               </div>
 
               <div className="flex flex-col gap-4 lg:col-span-5">
+                <div className="rounded-3xl bg-white/75 p-4 shadow-sm ring-1 ring-sage-100/70">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-100 text-xl shadow-sm">
+                      {companionIsUploadedMedia ? <HeartHandshake size={20} className="text-sage-700" /> : <span>{companion.character || '💛'}</span>}
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Diary start</p>
+                      <h3 className="mt-2 text-lg font-extrabold leading-tight text-sage-950">Write it the way it happened, felt, or stayed with you.</h3>
+                      <p className="mt-2 text-sm leading-7 text-sage-700">Try “Today felt…”, “What I keep coming back to is…”, or “Right now I need…”.</p>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="rounded-3xl bg-white/75 p-4 shadow-sm ring-1 ring-sage-100/70">
                   <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Today's little joys</p>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -2893,7 +2915,7 @@ function App() {
                 <div className="rounded-3xl bg-white/75 p-4 shadow-sm ring-1 ring-sage-100/70">
                   <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Small ways to begin</p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {['What happened today', 'One good thing'].map((starter) => (
+                    {['Today felt like', 'What I keep coming back to', 'Right now I need'].map((starter) => (
                       <button key={starter} className="rounded-full border border-sage-100 bg-white px-3.5 py-2 text-sm font-bold text-sage-700 transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50" onClick={() => addStarterLine(starter)} type="button">
                         {starter}
                       </button>
@@ -2904,8 +2926,8 @@ function App() {
                 <div className="rounded-[1.75rem] bg-gradient-to-br from-sage-900 via-sage-800 to-sage-700 p-5 text-white shadow-soft">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-white/80">Quiet snapshot</p>
-                      <h3 className="mt-2 text-xl font-extrabold leading-tight">Your page is already becoming a little archive.</h3>
+                      <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-white/80">Kept close</p>
+                      <h3 className="mt-2 text-xl font-extrabold leading-tight">These pages are becoming a diary you can return to.</h3>
                     </div>
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-2xl shadow-inner">{rewardLevel.emoji}</div>
                   </div>
@@ -3143,8 +3165,8 @@ function App() {
             <div className="mb-5 flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-sage-600 sm:text-sm sm:tracking-widest">Journal calendar</p>
-                <h2 className="mt-1 text-2xl font-extrabold text-ink sm:text-3xl">Keep what matters close.</h2>
-                <p className="mt-2 text-sm font-semibold leading-7 text-sage-700">Mark meaningful dates, revisit saved pages, and let the memory side feel softer and easier to scan.</p>
+                <h2 className="mt-1 text-2xl font-extrabold text-ink sm:text-3xl">Keep what still feels close.</h2>
+                <p className="mt-2 text-sm font-semibold leading-7 text-sage-700">Mark meaningful dates, revisit saved pages, and return to the parts of the conversation you want to keep near.</p>
               </div>
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-3xl bg-white text-sage-700 shadow-sm">
                 <CalendarDays size={20} />
@@ -3316,8 +3338,8 @@ function App() {
       <section id="about" className="mx-auto max-w-7xl px-6 py-14">
         <SectionHeader
           eyebrow="About Quiet Journal Journey"
-          title="A private online diary and mood journal for gentle daily reflection."
-          text="Quiet Journal Journey is a private online diary built to make journaling feel light, repeatable, and encouraging — one honest entry, mood check-in, or reflection prompt at a time."
+          title="A private online diary that feels close, warm, and easy to return to."
+          text="Quiet Journal Journey is a private online diary built to make journaling feel light, repeatable, and emotionally safe — like leaving honest notes with someone kind who keeps them for you."
         />
         <div className="grid gap-5 md:grid-cols-3">
           <InfoCard icon={Lock} title="Private by design">
@@ -3559,11 +3581,23 @@ function App() {
               <p className="mt-5 leading-8 text-sage-100">Send questions, feedback, collaboration ideas, or privacy requests to the site owner. This helps visitors, advertisers, and review teams understand who runs the site.</p>
             </div>
             <div className="bg-white/10 p-8 lg:p-10">
-              <div className="rounded-3xl bg-white/95 p-6 text-ink shadow-lift">
-                <p className="text-sm font-bold uppercase tracking-widest text-sage-600">Site owner email</p>
-                <a className="mt-3 block break-words text-2xl font-extrabold text-sage-900 underline decoration-sage-300 underline-offset-4" href="mailto:atastymealy@gmail.com">
-                  atastymealy@gmail.com
-                </a>
+              <div className="grid gap-4">
+                <div className="rounded-3xl bg-white/95 p-6 text-ink shadow-lift">
+                  <p className="text-sm font-bold uppercase tracking-widest text-sage-600">Site owner email</p>
+                  <a className="mt-3 block break-words text-2xl font-extrabold text-sage-900 underline decoration-sage-300 underline-offset-4" href="mailto:atastymealy@gmail.com">
+                    atastymealy@gmail.com
+                  </a>
+                </div>
+                <div className="rounded-3xl border border-white/15 bg-white/8 p-6 text-white shadow-inner backdrop-blur">
+                  <p className="text-sm font-bold uppercase tracking-widest text-sage-100">A gentle place to begin</p>
+                  <h3 className="mt-3 text-2xl font-extrabold leading-tight text-white">Made for people who want somewhere calm to start a diary.</h3>
+                  <p className="mt-3 leading-7 text-sage-50/90">Quiet Journal Journey is for people who want a softer first step into diary writing — whether you are starting for the first time, starting again, or simply trying to understand your days more clearly.</p>
+                  <div className="mt-4 grid gap-3 text-sm leading-7 text-sage-50/90">
+                    <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3">Diary writing can support wellbeing by helping you process emotions instead of carrying everything in your head.</div>
+                    <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3">It can improve mental clarity, help you notice patterns in your moods, and create a steadier routine during stressful periods.</div>
+                    <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3">Over time, even short entries can strengthen self-awareness, gratitude, and a calmer relationship with your inner life.</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
