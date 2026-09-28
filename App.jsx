@@ -39,6 +39,13 @@ const CUSTOM_QUOTES_STORAGE_KEY = 'quiet-journal-custom-quotes-v1';
 const QUOTE_STYLE_STORAGE_KEY = 'quiet-journal-quote-style-v1';
 const JOURNAL_STYLE_STORAGE_KEY = 'quiet-journal-style-v1';
 const COMPANION_STORAGE_KEY = 'quiet-journal-companion-v1';
+const MASTER_ADMIN_EMAIL = 'ngtzewei96@gmail.com';
+const SEO_STUDIO_API_KEY_STORAGE_KEY = 'quiet-journal-seo-studio-api-key-v1';
+const SEO_STUDIO_PROMPT_STORAGE_KEY = 'quiet-journal-seo-studio-prompt-v1';
+const SEO_STUDIO_REPORT_STORAGE_KEY = 'quiet-journal-seo-studio-report-v1';
+const SEO_STUDIO_LAST_RUN_STORAGE_KEY = 'quiet-journal-seo-studio-last-run-v1';
+const ADMIN_VIEW_MODE_STORAGE_KEY = 'quiet-journal-admin-view-mode-v1';
+const DEFAULT_SEO_STUDIO_PROMPT = 'Review the website and suggest the next calm, high-impact SEO improvements for diary, journal, mood journal, and beginner writing searches without harming the user experience.';
 
 function getInitialCompanion() {
   const defaults = {
@@ -586,11 +593,13 @@ function clampCompanionPosition(size, x, y, containerWidth, containerHeight, isV
 function StatCard({ icon: Icon, label, value, tone }) {
   return (
     <div className="group rounded-[1.75rem] border border-white/80 bg-gradient-to-br from-white/95 to-white/75 p-5 shadow-lift backdrop-blur transition duration-300 hover:-translate-y-1 hover:shadow-soft">
-      <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-2xl shadow-sm ${tone}`}>
-        <Icon size={21} />
+      <div className="flex items-start justify-between gap-3">
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-sm ${tone}`}>
+          <Icon size={21} />
+        </div>
+        <p className="pt-1 text-right text-xs font-extrabold uppercase tracking-[0.18em] text-sage-800">{label}</p>
       </div>
-      <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">{label}</p>
-      <p className="mt-3 break-words text-2xl font-extrabold leading-tight tracking-tight text-ink">{value}</p>
+      <p className="mt-4 break-words text-2xl font-extrabold leading-tight tracking-tight text-ink">{value}</p>
     </div>
   );
 }
@@ -1195,23 +1204,45 @@ function App() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [cloudStatus, setCloudStatus] = useState('Local mode');
+  const [seoStudioApiKey, setSeoStudioApiKey] = useState(() => localStorage.getItem(SEO_STUDIO_API_KEY_STORAGE_KEY) || '');
+  const [seoStudioPrompt, setSeoStudioPrompt] = useState(() => localStorage.getItem(SEO_STUDIO_PROMPT_STORAGE_KEY) || DEFAULT_SEO_STUDIO_PROMPT);
+  const [seoStudioReport, setSeoStudioReport] = useState(() => localStorage.getItem(SEO_STUDIO_REPORT_STORAGE_KEY) || '');
+  const [seoStudioLastRun, setSeoStudioLastRun] = useState(() => localStorage.getItem(SEO_STUDIO_LAST_RUN_STORAGE_KEY) || '');
+  const [seoStudioLoading, setSeoStudioLoading] = useState(false);
+  const [seoStudioError, setSeoStudioError] = useState('');
+  const [seoStudioCopied, setSeoStudioCopied] = useState(false);
+  const [showSeoStudioKey, setShowSeoStudioKey] = useState(false);
+  const [adminViewMode, setAdminViewMode] = useState(() => localStorage.getItem(ADMIN_VIEW_MODE_STORAGE_KEY) || 'master');
+  const [seoStudioModelUsed, setSeoStudioModelUsed] = useState('');
   const entryBodyRef = useRef(null);
   const companionMediaRef = useRef(null);
 
+  const isMasterAdmin = user?.email?.toLowerCase() === MASTER_ADMIN_EMAIL;
+  const showAdminTools = isMasterAdmin && adminViewMode === 'master';
+
   const quickEmojis = ['✨', '🌸', '🍃', '☕', '🌙', '💛', '🌿', '☀️', '🧸', '🫧', '🍂', '🫶'];
-  const homeSections = [
-    { id: 'overview', label: 'Overview', icon: Waves, detail: 'Progress + shortcuts' },
-    { id: 'about', label: 'About', icon: Compass, detail: 'How the journal works' },
-    { id: 'guides', label: 'Guides', icon: BookOpen, detail: 'Reader guides + helpful pages' },
-    { id: 'resources', label: 'Resources', icon: HeartHandshake, detail: 'Gentle practices' },
-    { id: 'articles', label: 'Articles', icon: Newspaper, detail: 'Short reflections' },
-    { id: 'faq', label: 'FAQ', icon: Sparkles, detail: 'Common questions' },
-    { id: 'tips', label: 'Tips', icon: Leaf, detail: 'Ways to begin' },
-    { id: 'privacy', label: 'Privacy', icon: Shield, detail: 'What stays private' },
-    { id: 'terms', label: 'Terms', icon: Scale, detail: 'Helpful notes' },
-    { id: 'contact', label: 'Contact', icon: Mail, detail: 'Reach the owner' }
-  ];
-  const primaryHomeSections = homeSections.filter((section) => ['overview', 'about', 'guides', 'resources', 'faq', 'contact'].includes(section.id));
+  const homeSections = useMemo(() => {
+    const sections = [
+      { id: 'overview', label: 'Overview', icon: Waves, detail: 'Progress + shortcuts' },
+      { id: 'about', label: 'About', icon: Compass, detail: 'How the journal works' },
+      { id: 'guides', label: 'Guides', icon: BookOpen, detail: 'Reader guides + helpful pages' },
+      { id: 'resources', label: 'Resources', icon: HeartHandshake, detail: 'Gentle practices' },
+      { id: 'articles', label: 'Articles', icon: Newspaper, detail: 'Short reflections' },
+      { id: 'faq', label: 'FAQ', icon: Sparkles, detail: 'Common questions' },
+      { id: 'tips', label: 'Tips', icon: Leaf, detail: 'Ways to begin' },
+      { id: 'privacy', label: 'Privacy', icon: Shield, detail: 'What stays private' },
+      { id: 'terms', label: 'Terms', icon: Scale, detail: 'Helpful notes' },
+      { id: 'contact', label: 'Contact', icon: Mail, detail: 'Reach the owner' }
+    ];
+    if (showAdminTools) {
+      sections.push({ id: 'seo-studio', label: 'SEO Studio', icon: ShieldCheck, detail: 'Admin-only AI tools' });
+    }
+    return sections;
+  }, [showAdminTools]);
+  const primaryHomeSections = useMemo(
+    () => homeSections.filter((section) => ['overview', 'about', 'guides', 'resources', 'faq', 'contact', 'seo-studio'].includes(section.id)),
+    [homeSections]
+  );
   const homeSectionMap = {
     home: 'overview',
     overview: 'overview',
@@ -1224,7 +1255,8 @@ function App() {
     tips: 'tips',
     privacy: 'privacy',
     terms: 'terms',
-    contact: 'contact'
+    contact: 'contact',
+    'seo-studio': 'seo-studio'
   };
 
   const activeTheme = colorThemes.find((theme) => theme.id === selectedTheme) || colorThemes[0];
@@ -1273,6 +1305,41 @@ function App() {
     });
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem(SEO_STUDIO_API_KEY_STORAGE_KEY, seoStudioApiKey);
+  }, [seoStudioApiKey]);
+
+  useEffect(() => {
+    localStorage.setItem(SEO_STUDIO_PROMPT_STORAGE_KEY, seoStudioPrompt);
+  }, [seoStudioPrompt]);
+
+  useEffect(() => {
+    localStorage.setItem(SEO_STUDIO_REPORT_STORAGE_KEY, seoStudioReport);
+  }, [seoStudioReport]);
+
+  useEffect(() => {
+    localStorage.setItem(SEO_STUDIO_LAST_RUN_STORAGE_KEY, seoStudioLastRun);
+  }, [seoStudioLastRun]);
+
+  useEffect(() => {
+    localStorage.setItem(ADMIN_VIEW_MODE_STORAGE_KEY, adminViewMode);
+  }, [adminViewMode]);
+
+  useEffect(() => {
+    if (!showAdminTools && activeHomeSection === 'seo-studio') {
+      setActiveHomeSection('overview');
+    }
+  }, [activeHomeSection, showAdminTools]);
+
+  useEffect(() => {
+    if (!isMasterAdmin) {
+      setShowSeoStudioKey(false);
+      setSeoStudioCopied(false);
+      setSeoStudioModelUsed('');
+      setAdminViewMode('master');
+    }
+  }, [isMasterAdmin]);
 
   useEffect(() => {
     if (!user) return undefined;
@@ -1436,6 +1503,22 @@ function App() {
     return `You checked in ${recentEntries.length} time${recentEntries.length === 1 ? '' : 's'} this week. Your most common mood was ${commonMood}.`;
   }, [entries]);
 
+  const seoStudioContext = useMemo(() => ([
+    'Brand: Quiet Journal Journey',
+    'Canonical: https://quietjournaljourney.vercel.app/',
+    'Core positioning: private online diary, online journal, mood journal, daily reflection, beginner-friendly diary writing.',
+    'Hero title: Your quiet corner for honest pages.',
+    'Hero summary: Quiet Journal Journey helps you keep a private online diary, mood journal, and daily reflection space that feels softer to return to.',
+    'Hero support line: If you are wondering where to write a diary online, this calmer journal space gives you private entries, gentle prompts, and a place to notice what the day actually felt like.',
+    'Current guide paths: /private-online-diary.html, /where-to-write-a-diary-online.html, /online-journal.html, /mood-journal.html, /online-diary-with-lock.html, /journal-prompts.html, /daily-reflection-journal.html.',
+    'Write view framing: A page for your diary. Write today\'s diary page in your own words.',
+    'Privacy cues: optional PIN lock, local-first journaling, Google sign-in for sync, entries saved privately per user.',
+    `Live product signals: ${entries.length} total entries in this session, ${streak} day streak, average mood ${averageMood}, cloud status ${cloudStatus}.`,
+    `Weekly summary: ${weeklySummary}`,
+    'Important constraints: suggestions should stay calm, premium, human, non-spammy, and should never disrupt the normal journaling flow for visitors.',
+    'Desired output: prioritize high-impact improvements, natural keyword coverage, internal linking ideas, FAQ/schema ideas, and safe homepage or guide-page refinements.'
+  ].join('\n')), [averageMood, cloudStatus, entries.length, streak, weeklySummary]);
+
   const entriesByDate = useMemo(() => entries.reduce((acc, entry) => {
     const key = entry.createdAt.slice(0, 10);
     return { ...acc, [key]: [...(acc[key] || []), entry] };
@@ -1559,6 +1642,121 @@ function App() {
   ]), [customWeathers.length, entries, hasImageMemory, streak, weeklyCheckIns]);
   const unlockedAchievementCount = achievementBadges.filter((badge) => badge.unlocked).length;
   const nextAchievement = achievementBadges.find((badge) => !badge.unlocked) || achievementBadges[achievementBadges.length - 1];
+
+  async function runSeoStudioReview() {
+    if (!isMasterAdmin) {
+      setSeoStudioError('Sign in with the master email to open the admin SEO studio.');
+      return;
+    }
+    if (!seoStudioApiKey.trim()) {
+      setSeoStudioError('Add a Gemini API key first. It stays only in this browser.');
+      return;
+    }
+
+    setSeoStudioLoading(true);
+    setSeoStudioError('');
+    setSeoStudioCopied(false);
+    setSeoStudioModelUsed('');
+
+    try {
+      const prompt = [
+        'You are helping improve Quiet Journal Journey, a calm private online diary website.',
+        'Return a concise markdown report with these sections:',
+        '1. Quick verdict',
+        '2. Highest-impact next actions',
+        '3. Homepage copy improvements',
+        '4. Meta/schema/internal-link ideas',
+        '5. New guide page opportunities',
+        '6. What not to change too often',
+        'Keep the advice practical, calm in tone, and non-disruptive to users.',
+        '',
+        `Owner request: ${seoStudioPrompt.trim() || DEFAULT_SEO_STUDIO_PROMPT}`,
+        '',
+        'Website context:',
+        seoStudioContext
+      ].join('\n');
+
+      const modelCandidates = [
+        'gemini-2.5-flash',
+        'gemini-2.0-flash',
+        'gemini-1.5-flash-latest',
+        'gemini-1.5-flash',
+        'gemini-1.5-pro-latest',
+        'gemini-3.8-flash'
+      ];
+
+      let lastErrorMessage = 'The AI review could not be completed.';
+      let reportText = '';
+
+      for (const modelName of modelCandidates) {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(seoStudioApiKey.trim())}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: prompt }]
+              }
+            ],
+            generationConfig: {
+              temperature: 0.6,
+              topP: 0.9,
+              maxOutputTokens: 1400
+            }
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          lastErrorMessage = data?.error?.message || `The AI request failed for ${modelName}.`;
+          continue;
+        }
+
+        reportText = data?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('\n').trim();
+        if (reportText) {
+          setSeoStudioModelUsed(modelName);
+          break;
+        }
+
+        lastErrorMessage = `The AI returned an empty report for ${modelName}.`;
+      }
+
+      if (!reportText) {
+        throw new Error(lastErrorMessage);
+      }
+
+      setSeoStudioReport(reportText);
+      setSeoStudioLastRun(new Date().toLocaleString());
+    } catch (error) {
+      console.error('SEO studio review failed', error);
+      setSeoStudioError(error.message || 'The AI review could not be completed.');
+    } finally {
+      setSeoStudioLoading(false);
+    }
+  }
+
+  async function copySeoStudioReport() {
+    if (!seoStudioReport.trim()) return;
+    try {
+      await navigator.clipboard.writeText(seoStudioReport);
+      setSeoStudioCopied(true);
+      window.setTimeout(() => setSeoStudioCopied(false), 2400);
+    } catch (error) {
+      console.error('Could not copy SEO report', error);
+      setSeoStudioError('Could not copy the SEO report from this browser.');
+    }
+  }
+
+  function clearSeoStudioReport() {
+    setSeoStudioReport('');
+    setSeoStudioLastRun('');
+    setSeoStudioError('');
+    setSeoStudioCopied(false);
+    setSeoStudioModelUsed('');
+  }
 
   async function signInWithGoogle() {
     try {
@@ -2391,7 +2589,7 @@ function App() {
               </div>
               <div>
                 <p className="font-display text-2xl font-bold text-sage-900">Quiet Journal Journey</p>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sage-600">Private diary, close at heart</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sage-700">Private diary, easy to return to</p>
               </div>
             </a>
               <div className="site-nav-links hidden flex-1 items-center justify-center gap-8 lg:flex xl:gap-10">
@@ -2403,7 +2601,7 @@ function App() {
                 ].map((tab) => (
                   <button
                     key={tab.id}
-                    className={`flex items-center gap-2 text-sm font-extrabold uppercase tracking-widest transition ${activeTab === tab.id ? 'text-sage-900' : 'text-sage-600 hover:text-sage-800'}`}
+                    className={`flex items-center gap-2 text-sm font-extrabold uppercase tracking-widest transition ${activeTab === tab.id ? 'text-sage-950' : 'text-sage-700 hover:text-sage-900'}`}
                     onClick={() => navigateToTab(tab.id)}
                   >
                     <tab.icon size={16} /> {tab.label}
@@ -2427,9 +2625,9 @@ function App() {
                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sage-900 text-white shadow-sm">
                       <ShieldCheck size={16} />
                     </div>
-                    <div className="min-w-0 flex-1 text-xs font-extrabold text-sage-950 sm:min-w-[220px]">
+                    <div className="min-w-0 flex-1 text-sm font-bold text-sage-950 sm:min-w-[220px]">
                       <p>{authLoading ? 'Checking login...' : 'Private by default, sync only when you want it.'}</p>
-                      <p className="text-sage-500">Use Google to keep entries across devices later.</p>
+                      <p className="text-sage-700">Use Google to keep entries across devices later.</p>
                     </div>
                     <button className="w-full rounded-full border border-sage-200 bg-white/95 px-5 py-3 text-sm font-bold text-sage-800 shadow-sm transition hover:-translate-y-1 hover:bg-white sm:w-auto" onClick={signInWithGoogle} disabled={authLoading} type="button">
                       Sign in with Google
@@ -2441,6 +2639,29 @@ function App() {
                     Sign out
                   </button>
                 )}
+                {isMasterAdmin && (
+                  <div className="flex w-full overflow-hidden rounded-full border border-sage-200 bg-white/90 p-1 shadow-lift sm:w-auto">
+                    <button
+                      className={`flex-1 rounded-full px-4 py-2.5 text-sm font-extrabold transition ${adminViewMode === 'master' ? 'bg-sage-900 text-white shadow-sm' : 'text-sage-700 hover:bg-sage-50'}`}
+                      onClick={() => setAdminViewMode('master')}
+                      type="button"
+                    >
+                      Master view
+                    </button>
+                    <button
+                      className={`flex-1 rounded-full px-4 py-2.5 text-sm font-extrabold transition ${adminViewMode === 'user' ? 'bg-sage-900 text-white shadow-sm' : 'text-sage-700 hover:bg-sage-50'}`}
+                      onClick={() => setAdminViewMode('user')}
+                      type="button"
+                    >
+                      User view
+                    </button>
+                  </div>
+                )}
+                {showAdminTools && (
+                  <button className="w-full rounded-full border border-sage-800 bg-sage-900 px-5 py-3 text-sm font-bold text-white shadow-lift transition hover:-translate-y-1 hover:bg-sage-800 sm:w-auto" onClick={() => openHomeSection('seo-studio')} type="button">
+                    SEO studio
+                  </button>
+                )}
                 <button className={`w-full rounded-full border px-5 py-3 text-sm font-bold shadow-lift transition hover:-translate-y-1 sm:w-auto ${comfortMode ? 'border-sage-800 bg-sage-900 text-white' : 'border-sage-200 bg-white/90 text-sage-800 hover:bg-white'}`} onClick={() => setComfortMode(!comfortMode)} type="button">
                   Comfort mode
                 </button>
@@ -2449,7 +2670,7 @@ function App() {
                 </button>
               </div>
           </div>
-          <div className="site-nav-links mt-5 hidden flex-wrap gap-2 rounded-[1.6rem] border border-sage-100 bg-sage-50/65 p-2 lg:flex">
+          <div className="site-nav-links mt-5 hidden flex-wrap items-center justify-center gap-2 rounded-[1.6rem] border border-sage-100 bg-sage-50/65 p-2 lg:flex">
             <a className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="#journal" onClick={() => navigateToTab('write')}>Journal</a>
             <button className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" onClick={() => setCustomizerOpen(true)} type="button">Design</button>
             <a className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="#guides" onClick={() => openHomeSection('guides')}>Guides</a>
@@ -2471,15 +2692,15 @@ function App() {
                 <div className="inline-flex items-center gap-2 rounded-full bg-sage-200/90 px-4 py-2 text-sm font-bold text-sage-950 shadow-sm">
                   <Sparkles size={17} /> A calm place to write a diary online
                 </div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-sage-100 bg-white/90 px-4 py-2 text-sm font-bold text-sage-700 shadow-sm">
+                <div className="inline-flex items-center gap-2 rounded-full border border-sage-300 bg-sage-50 px-4 py-2 text-sm font-bold text-sage-950 shadow-sm">
                   <Quote size={15} /> Private online diary · journal · mood check-in
                 </div>
               </div>
               <h1 className="max-w-3xl font-display text-5xl font-bold leading-[0.96] tracking-tight text-sage-950 md:text-6xl">Your quiet corner for honest pages.</h1>
-              <p className="mt-4 max-w-3xl text-xl font-semibold leading-8 text-sage-900">Quiet Journal Journey helps you keep a private online diary, mood journal, and daily reflection space that feels softer to return to.</p>
-              <p className="mt-4 max-w-2xl text-lg leading-8 text-sage-800">If you are wondering where to write a diary online, this calmer journal space gives you private entries, gentle prompts, and a place to notice what the day actually felt like.</p>
+              <p className="mt-5 max-w-3xl text-[1.35rem] font-semibold leading-9 text-sage-900">Quiet Journal Journey helps you keep a private online diary, mood journal, and daily reflection space that feels softer to return to.</p>
+              <p className="mt-4 max-w-[42rem] text-lg leading-8 text-sage-800">If you are wondering where to write a diary online, this calmer journal space gives you private entries, gentle prompts, and a place to notice what the day actually felt like.</p>
 
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="mt-9 flex flex-wrap gap-3">
                 <a className="inline-flex items-center gap-2 rounded-full bg-sage-900 px-5 py-3 text-sm font-extrabold text-white shadow-lift transition hover:-translate-y-1 hover:bg-sage-800" href="#journal" onClick={() => navigateToTab('write')}>
                   <PenLine size={17} /> Write today’s entry
                 </a>
@@ -2493,11 +2714,11 @@ function App() {
                 )}
               </div>
 
-              <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold text-sage-800">
-                <div className="inline-flex items-center gap-2 rounded-full border border-sage-100 bg-white/85 px-4 py-2">
+              <div className="mt-6 flex flex-wrap gap-3 text-sm font-semibold text-sage-900">
+                <div className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-white/92 px-4 py-2.5 shadow-sm">
                   <ShieldCheck size={16} /> {hasPin ? 'Protected with a private PIN' : 'Add a soft lock any time'}
                 </div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-sage-100 bg-white/85 px-4 py-2">
+                <div className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-white/92 px-4 py-2.5 shadow-sm">
                   <Sparkles size={16} /> {user ? `${entries.length} entries saved · ${cloudStatus}` : `${entries.length} entries saved · Local-first journaling`}
                 </div>
               </div>
@@ -2509,24 +2730,29 @@ function App() {
               </div>
 
               <div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
-                <div className="flex min-h-[250px] h-full flex-col justify-between rounded-[1.8rem] border border-white/80 bg-gradient-to-br from-white/90 to-sage-50/70 p-5 shadow-lift backdrop-blur">
+                <div className="flex min-h-[290px] flex-col justify-between rounded-[1.8rem] border border-white/80 bg-gradient-to-br from-white/90 to-sage-50/70 p-5 shadow-lift backdrop-blur">
                   <div>
                     <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">How people use it</p>
                     <h3 className="mt-3 text-2xl font-extrabold leading-tight text-ink">Start with the page that matches what you were actually searching for.</h3>
-                    <p className="mt-3 max-w-2xl text-sm leading-7 text-sage-800">Some people want a private online diary, some want an online journal, and some just need a gentle answer to where they can write. These paths keep the homepage cleaner while helping visitors find the right place faster.</p>
-                  </div>
-                  <div className="mt-5 flex flex-wrap gap-2 text-xs font-bold text-sage-800">
-                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Private online diary</span>
-                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Where to write a diary online</span>
-                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Online journal guidance</span>
+                    <p className="mt-3 max-w-2xl text-sm leading-7 text-sage-800">Some visitors want a private online diary, some want an online journal, and some are simply looking for the easiest place to begin. These guide pages help them land in the right mood without making the homepage feel crowded.</p>
                   </div>
                   <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                    <a className="rounded-[1.2rem] border border-sage-100 bg-white/95 px-4 py-4 text-sm font-bold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50" href="/private-online-diary.html">Private online diary</a>
-                    <a className="rounded-[1.2rem] border border-sage-100 bg-white/95 px-4 py-4 text-sm font-bold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50" href="/where-to-write-a-diary-online.html">Where to write a diary online</a>
-                    <a className="rounded-[1.2rem] border border-sage-100 bg-white/95 px-4 py-4 text-sm font-bold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50" href="/online-journal.html">Online journal</a>
+                    <a className="rounded-[1.25rem] border border-sage-200 bg-white/95 px-4 py-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-sage-50" href="/private-online-diary.html">
+                      <span className="block text-sm font-extrabold text-sage-900">Private online diary</span>
+                      <span className="mt-2 block text-[13px] leading-5 text-sage-700">Private entries, mood tracking, and a diary that stays personal.</span>
+                    </a>
+                    <a className="rounded-[1.25rem] border border-sage-200 bg-white/95 px-4 py-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-sage-50" href="/where-to-write-a-diary-online.html">
+                      <span className="block text-sm font-extrabold text-sage-900">Where to write a diary online</span>
+                      <span className="mt-2 block text-[13px] leading-5 text-sage-700">A beginner-friendly path if you are still deciding where to start.</span>
+                    </a>
+                    <a className="rounded-[1.25rem] border border-sage-200 bg-white/95 px-4 py-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-sage-50" href="/online-journal.html">
+                      <span className="block text-sm font-extrabold text-sage-900">Online journal</span>
+                      <span className="mt-2 block text-[13px] leading-5 text-sage-700">Reflection writing with gentle structure and a softer rhythm.</span>
+                    </a>
                   </div>
+                  <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-sage-700">Useful starting points for diary, journal, and reflection searches.</p>
                 </div>
-                <div className="flex min-h-[250px] h-full flex-col justify-between rounded-[1.8rem] border border-sage-100 bg-white/88 p-5 shadow-sm backdrop-blur">
+                <div className="flex min-h-[290px] flex-col justify-between rounded-[1.8rem] border border-sage-100 bg-white/88 p-5 shadow-sm backdrop-blur">
                   <div>
                     <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Mood check-in</p>
                     <div className="mt-4 flex items-center gap-3">
@@ -2585,21 +2811,21 @@ function App() {
           </div>
 
           <div className="rounded-[1.9rem] border border-white/80 bg-gradient-to-br from-white/80 to-sand-50/80 p-6 shadow-soft backdrop-blur-xl">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Quiet concierge</p>
-            <h3 className="mt-3 text-2xl font-extrabold leading-tight text-ink">A calmer entry point on both phone and desktop.</h3>
-            <p className="mt-3 text-sm leading-7 text-sage-700">The layout now keeps the writing flow separate, the navigation clearer, and the support areas more polished so the app feels lighter to move through.</p>
-            <div className="mt-5 grid gap-3 text-sm font-semibold text-sage-800">
-              <div className="flex items-center gap-3 rounded-2xl border border-sage-100 bg-white/95 px-4 py-3 shadow-sm">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Designed to feel calm</p>
+            <h3 className="mt-3 text-2xl font-extrabold leading-tight text-ink">A cleaner first screen on both phone and desktop.</h3>
+            <p className="mt-3 text-sm leading-7 text-sage-700">This pass keeps the writing flow more obvious, the navigation more balanced, and the support areas clearer so the journal feels calmer to move through.</p>
+            <div className="mt-5 grid gap-3 text-sm font-semibold text-sage-900">
+              <div className="flex items-center gap-3 rounded-2xl border border-sage-200 bg-white/95 px-4 py-3 shadow-sm">
                 <Sparkles size={15} className="text-sage-700" />
-                <span>Cleaner spacing across the first screen</span>
+                <span>Stronger contrast and cleaner spacing above the fold</span>
               </div>
-              <div className="flex items-center gap-3 rounded-2xl border border-sage-100 bg-white/95 px-4 py-3 shadow-sm">
+              <div className="flex items-center gap-3 rounded-2xl border border-sage-200 bg-white/95 px-4 py-3 shadow-sm">
                 <ShieldCheck size={15} className="text-sage-700" />
-                <span>Privacy cues that stay visible without shouting</span>
+                <span>Privacy and saved-entry cues that stay easy to notice</span>
               </div>
-              <div className="flex items-center gap-3 rounded-2xl border border-sage-100 bg-white/95 px-4 py-3 shadow-sm">
-                <Palette size={15} className="text-sage-700" />
-                <span>A softer flow from home into writing and design</span>
+              <div className="flex items-center gap-3 rounded-2xl border border-sage-200 bg-white/95 px-4 py-3 shadow-sm">
+                <BookOpen size={15} className="text-sage-700" />
+                <span>Guide links that read more naturally for both people and search</span>
               </div>
             </div>
           </div>
@@ -2614,7 +2840,7 @@ function App() {
             <div className="mt-8 rounded-[1.6rem] bg-white/12 px-5 py-5 ring-1 ring-white/12">
               <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-white/80">Quiet reminder</p>
               <p className="mt-3 text-sm leading-7 text-white/95">You can leave one small honest note today and return tomorrow. The page will still be here when you are ready.</p>
-              <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-white/75">{streak > 0 ? `${streak} day${streak === 1 ? '' : 's'} of rhythm` : 'Begin with one gentle page'}</p>
+              <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-white/85">{streak > 0 ? `${streak} day${streak === 1 ? '' : 's'} of rhythm` : 'Begin with one gentle page'}</p>
             </div>
           </div>
         </aside>
@@ -2672,17 +2898,17 @@ function App() {
             <div className="rounded-[2.5rem] border border-white/80 bg-white/70 p-6 shadow-soft backdrop-blur-xl">
               <div className="flex items-center gap-4 border-b border-sage-100 pb-5">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-100 text-sage-800 shadow-sm">
-                  <HeartHandshake size={20} />
+                  <BookOpen size={20} />
                 </div>
                 <div>
-                  <p className="text-sm font-extrabold text-ink">Today’s companion note</p>
+                  <p className="text-sm font-extrabold text-ink">Today’s diary reminder</p>
                   <p className="text-xs font-semibold text-sage-600">{selectedMood} mood</p>
                 </div>
               </div>
               
               <div className="py-6">
-                <p className="text-lg font-bold leading-relaxed text-ink italic opacity-90">“You can tell me the small version first.”</p>
-                <p className="mt-4 text-sm leading-7 text-sage-800">Write the detail, feeling, or unfinished thought you would trust with someone gentle. The rest can arrive when it is ready.</p>
+                <p className="text-lg font-bold leading-relaxed text-ink italic opacity-90">“Start with the smallest honest version.”</p>
+                <p className="mt-4 text-sm leading-7 text-sage-800">Write the detail, feeling, or unfinished thought that is easiest to name first. A short diary page is still enough to hold the day.</p>
               </div>
 
               <div className="grid gap-2 border-t border-sage-100 pt-5">
@@ -3165,8 +3391,8 @@ function App() {
             <div className="mb-5 flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-sage-600 sm:text-sm sm:tracking-widest">Journal calendar</p>
-                <h2 className="mt-1 text-2xl font-extrabold text-ink sm:text-3xl">Keep what still feels close.</h2>
-                <p className="mt-2 text-sm font-semibold leading-7 text-sage-700">Mark meaningful dates, revisit saved pages, and return to the parts of the conversation you want to keep near.</p>
+                <h2 className="mt-1 text-2xl font-extrabold text-ink sm:text-3xl">Keep the diary pages you want to revisit.</h2>
+                <p className="mt-2 text-sm font-semibold leading-7 text-sage-700">Mark meaningful dates, revisit saved pages, and return to entries that still matter when you want perspective later.</p>
               </div>
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-3xl bg-white text-sage-700 shadow-sm">
                 <CalendarDays size={20} />
@@ -3338,8 +3564,8 @@ function App() {
       <section id="about" className="mx-auto max-w-7xl px-6 py-14">
         <SectionHeader
           eyebrow="About Quiet Journal Journey"
-          title="A private online diary that feels close, warm, and easy to return to."
-          text="Quiet Journal Journey is a private online diary built to make journaling feel light, repeatable, and emotionally safe — like leaving honest notes with someone kind who keeps them for you."
+          title="A private online diary designed to feel calm, personal, and easy to return to."
+          text="Quiet Journal Journey is a private online diary built to make journaling feel light, repeatable, and emotionally safe — a softer place to notice your thoughts, moods, and everyday life."
         />
         <div className="grid gap-5 md:grid-cols-3">
           <InfoCard icon={Lock} title="Private by design">
@@ -3612,6 +3838,146 @@ function App() {
         </div>
       </section>
       </>
+      )}
+
+      {activeHomeSection === 'seo-studio' && showAdminTools && (
+      <section id="seo-studio" className="mx-auto max-w-7xl px-6 py-14">
+        <SectionHeader
+          eyebrow="Admin-only AI SEO Studio"
+          title="Review and draft SEO improvements without changing the public experience."
+          text="This panel is only visible when the master email is signed in. It lets you run an AI SEO review from inside the website, keep the API key in your own browser, and work on ideas without exposing admin tools to normal visitors."
+        />
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <div className="rounded-[2rem] border border-white/80 bg-white/78 p-6 shadow-soft backdrop-blur-xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-widest text-sage-600">Master access</p>
+                <h3 className="mt-2 text-2xl font-extrabold text-ink">Signed in as {user?.email}</h3>
+                <p className="mt-3 leading-7 text-sage-700">Normal visitors never see this section. The public journaling flow stays exactly the same unless you later choose to apply changes manually.</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sage-900 text-white shadow-sm">
+                <ShieldCheck size={20} />
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-[1.5rem] border border-sage-100 bg-white px-4 py-4 shadow-sm">
+              <p className="text-sm font-extrabold uppercase tracking-[0.22em] text-sage-600">Preview mode</p>
+              <div className="mt-3 flex overflow-hidden rounded-full border border-sage-200 bg-sage-50 p-1">
+                <button
+                  className={`flex-1 rounded-full px-4 py-2.5 text-sm font-extrabold transition ${adminViewMode === 'master' ? 'bg-sage-900 text-white shadow-sm' : 'text-sage-700 hover:bg-white'}`}
+                  onClick={() => setAdminViewMode('master')}
+                  type="button"
+                >
+                  Master view
+                </button>
+                <button
+                  className={`flex-1 rounded-full px-4 py-2.5 text-sm font-extrabold transition ${adminViewMode === 'user' ? 'bg-sage-900 text-white shadow-sm' : 'text-sage-700 hover:bg-white'}`}
+                  onClick={() => setAdminViewMode('user')}
+                  type="button"
+                >
+                  User view
+                </button>
+              </div>
+              <p className="mt-3 text-sm leading-7 text-sage-700">Switch to user view any time to hide admin tools and preview the calmer public experience while staying signed in.</p>
+            </div>
+
+            <div className="mt-6 grid gap-3 text-sm leading-7 text-sage-700">
+              <div className="rounded-2xl border border-sage-100 bg-sage-50/80 px-4 py-4">
+                <p className="font-extrabold text-sage-900">What this first version can do</p>
+                <p className="mt-2">Run an AI SEO review of the current diary site, suggest safer homepage and guide-page improvements, and draft ideas you can later implement without disrupting users.</p>
+              </div>
+              <div className="rounded-2xl border border-sage-100 bg-white px-4 py-4">
+                <p className="font-extrabold text-sage-900">What it does not auto-publish yet</p>
+                <p className="mt-2">This version does not silently rewrite the live site on its own. It gives you admin-only guidance and drafts first, which is safer for SEO and much better for preserving tone.</p>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-[1.75rem] border border-sage-100 bg-gradient-to-br from-sage-900 via-sage-800 to-sage-700 p-5 text-white shadow-soft">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-white/80">Suggested routine</p>
+              <div className="mt-4 grid gap-3 text-sm leading-7 text-white/90">
+                <div>1. Run a fresh AI review when you want new SEO ideas.</div>
+                <div>2. Pick only a few high-impact suggestions at a time.</div>
+                <div>3. Keep the writing experience calm and avoid constant churn.</div>
+              </div>
+              <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-white/80">Master email: {MASTER_ADMIN_EMAIL}</p>
+            </div>
+          </div>
+
+          <div className="rounded-[2rem] border border-white/80 bg-white/82 p-6 shadow-soft backdrop-blur-xl">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-widest text-sage-600">Run AI review</p>
+                <h3 className="mt-2 text-2xl font-extrabold text-ink">SEO drafts that stay inside your admin view</h3>
+              </div>
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                {seoStudioModelUsed && <span className="rounded-full border border-sage-200 bg-white px-4 py-2 text-xs font-extrabold uppercase tracking-[0.2em] text-sage-700">Model · {seoStudioModelUsed}</span>}
+                {seoStudioLastRun && <span className="rounded-full border border-sage-200 bg-sage-50 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.2em] text-sage-800">Last run · {seoStudioLastRun}</span>}
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4">
+              <label className="grid gap-2 text-sm font-bold text-sage-900">
+                Gemini API key
+                <div className="flex gap-2">
+                  <input
+                    className="w-full rounded-2xl border border-sage-200 bg-white px-4 py-3 text-sm font-semibold text-sage-900 outline-none transition focus:border-sage-400"
+                    onChange={(event) => setSeoStudioApiKey(event.target.value)}
+                    placeholder="Paste your Gemini API key"
+                    type={showSeoStudioKey ? 'text' : 'password'}
+                    value={seoStudioApiKey}
+                  />
+                  <button className="rounded-2xl border border-sage-200 bg-white px-4 text-sage-800 shadow-sm transition hover:bg-sage-50" onClick={() => setShowSeoStudioKey(!showSeoStudioKey)} type="button">
+                    {showSeoStudioKey ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                <span className="text-xs font-semibold text-sage-600">Stored only in this browser for the master email view. Use a browser-restricted key if possible.</span>
+              </label>
+
+              <label className="grid gap-2 text-sm font-bold text-sage-900">
+                What should the AI focus on?
+                <textarea
+                  className="min-h-[128px] rounded-2xl border border-sage-200 bg-white px-4 py-3 text-sm leading-7 text-sage-900 outline-none transition focus:border-sage-400"
+                  onChange={(event) => setSeoStudioPrompt(event.target.value)}
+                  placeholder="Ask for homepage suggestions, new guide ideas, schema improvements, or calmer SEO fixes."
+                  value={seoStudioPrompt}
+                />
+              </label>
+
+              <div className="flex flex-wrap gap-3">
+                <button className="inline-flex items-center gap-2 rounded-full bg-sage-900 px-5 py-3 text-sm font-extrabold text-white shadow-lift transition hover:-translate-y-1 hover:bg-sage-800 disabled:cursor-not-allowed disabled:opacity-60" disabled={seoStudioLoading} onClick={runSeoStudioReview} type="button">
+                  <Sparkles size={16} /> {seoStudioLoading ? 'Running review...' : 'Run AI SEO review'}
+                </button>
+                <button className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-white px-5 py-3 text-sm font-extrabold text-sage-900 shadow-sm transition hover:-translate-y-1 hover:border-sage-300 hover:bg-sage-50 disabled:cursor-not-allowed disabled:opacity-50" disabled={!seoStudioReport.trim()} onClick={copySeoStudioReport} type="button">
+                  <FileText size={16} /> {seoStudioCopied ? 'Copied' : 'Copy report'}
+                </button>
+                <button className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-white px-5 py-3 text-sm font-extrabold text-sage-900 shadow-sm transition hover:-translate-y-1 hover:border-sage-300 hover:bg-sage-50" onClick={clearSeoStudioReport} type="button">
+                  Clear
+                </button>
+              </div>
+
+              {seoStudioError && (
+                <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold leading-7 text-rose-700">
+                  {seoStudioError}
+                </div>
+              )}
+
+              <div className="rounded-[1.75rem] border border-sage-100 bg-sand-50/80 p-4 shadow-inner">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-extrabold uppercase tracking-[0.22em] text-sage-600">AI report</p>
+                  <span className="text-xs font-bold uppercase tracking-[0.18em] text-sage-500">Admin draft only</span>
+                </div>
+                <div className="mt-4 max-h-[28rem] overflow-auto rounded-[1.4rem] bg-white p-4 shadow-sm ring-1 ring-sage-100">
+                  {seoStudioReport ? (
+                    <pre className="whitespace-pre-wrap text-sm leading-7 text-sage-800">{seoStudioReport}</pre>
+                  ) : (
+                    <p className="text-sm leading-7 text-sage-600">Run the AI SEO review to generate a fresh draft. It will use the current Quiet Journal Journey positioning, homepage framing, guide-page cluster, and privacy-first diary context.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
       )}
 
       <footer className="mx-auto max-w-7xl px-6 pb-10 pt-6">
