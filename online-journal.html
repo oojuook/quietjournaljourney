@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Online Journal for Gentle Daily Reflection | Quiet Journal Journey</title>
+    <meta name="description" content="A calmer online journal for gentle daily writing, private reflection, mood check-ins, and a softer journaling habit that feels easy to return to." />
+    <meta name="keywords" content="online journal, digital journal, journal online, private journal, gentle journaling, daily reflection journal" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://quietjournaljourney.vercel.app/online-journal.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Online Journal for Gentle Daily Reflection | Quiet Journal Journey" />
+    <meta property="og:description" content="Use Quiet Journal Journey as an online journal for calm writing, private reflection, mood awareness, and soft daily journaling routines." />
+    <meta property="og:url" content="https://quietjournaljourney.vercel.app/online-journal.html" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Online Journal for Gentle Daily Reflection | Quiet Journal Journey" />
+    <meta name="twitter:description" content="A gentle online journal for daily writing, softer reflection, prompts, mood check-ins, and quiet personal notes." />
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap');
+
+:root {
+  --bg: #f7f4ec;
+  --card: rgba(255, 255, 255, 0.82);
+  --ink: #21312b;
+  --muted: #567065;
+  --accent: #45643b;
+  --accent-soft: #e3efdb;
+  --line: rgba(69, 100, 59, 0.14);
+  --shadow: 0 18px 50px rgba(47, 70, 58, 0.09);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(222, 239, 214, 0.85), transparent 34%),
+    radial-gradient(circle at top right, rgba(255, 245, 224, 0.9), transparent 30%),
+    linear-gradient(180deg, #f7f5ef 0%, #f2efe6 100%);
+  line-height: 1.65;
+}
+a { color: inherit; }
+.container { width: min(1160px, calc(100% - 40px)); margin: 0 auto; }
+.topbar { padding: 18px 0 0; }
+.topbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.brand { font-weight: 800; letter-spacing: 0.04em; text-decoration: none; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { border: 1px solid var(--line); background: rgba(255,255,255,0.72); color: var(--muted); border-radius: 999px; padding: 10px 14px; font-size: 14px; text-decoration: none; }
+.hero { padding: 52px 0 28px; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.82fr); gap: 28px; align-items: stretch; }
+.card { border: 1px solid var(--line); background: var(--card); border-radius: 28px; box-shadow: var(--shadow); backdrop-filter: blur(10px); }
+.hero-copy, .hero-side, .section-shell, .quiet-slot-shell { padding: 32px; }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); padding: 8px 14px; font-size: 12px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; }
+.hero h1 { margin: 18px 0 14px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: clamp(2.6rem, 5vw, 4.6rem); line-height: 0.96; }
+.hero p, .section-intro, .muted { color: var(--muted); }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.button { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border-radius: 999px; padding: 14px 20px; font-weight: 700; }
+.button-primary { background: var(--accent); color: white; }
+.button-secondary { background: rgba(255,255,255,0.78); border: 1px solid var(--line); }
+.grid-3, .grid-2, .faq-grid, .link-grid, .metric-grid { display: grid; gap: 16px; }
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid-2, .faq-grid, .metric-grid, .link-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.feature, .faq, .link-card, .mini-card, .step { border: 1px solid var(--line); background: rgba(255,255,255,0.76); border-radius: 22px; padding: 18px; }
+.feature h3, .faq h3, .link-card h3, .mini-card strong, .step h3 { display: block; margin-bottom: 8px; }
+.section { padding: 18px 0 24px; }
+.list { padding-left: 20px; margin: 14px 0 0; }
+.list li + li { margin-top: 10px; }
+.related { padding: 14px 0 40px; }
+.quiet-slot-shell { display: grid; gap: 18px; grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr); align-items: stretch; }
+.quiet-slot-note { border: 1px dashed var(--line); background: rgba(255,255,255,0.6); border-radius: 22px; padding: 20px; }
+.footer { padding: 0 0 56px; }
+.footer p { margin: 0; color: var(--muted); text-align: center; }
+@media (max-width: 980px) {
+  .hero-grid, .grid-3, .grid-2, .faq-grid, .link-grid, .metric-grid, .quiet-slot-shell { grid-template-columns: 1fr; }
+  .hero-copy, .hero-side, .section-shell, .quiet-slot-shell { padding: 24px; }
+}
+@media (max-width: 760px) {
+  .container { width: calc(100% - 24px); }
+  .hero { padding: 28px 0 18px; }
+  .hero h1 { line-height: 1.02; }
+  .hero-copy, .hero-side, .section-shell, .quiet-slot-shell { padding: 20px; }
+}
+    </style>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Online Journal",
+        "url": "https://quietjournaljourney.vercel.app/online-journal.html",
+        "description": "A calmer online journal page for daily writing, private reflection, mood tracking, journal prompts, and softer routines.",
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "Quiet Journal Journey",
+          "url": "https://quietjournaljourney.vercel.app/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="/">Quiet Journal Journey</a>
+        <div class="chip-row">
+          <a class="chip" href="/private-online-diary.html">Private online diary</a>
+          <a class="chip" href="/where-to-write-a-diary-online.html">Where to write a diary online</a>
+          <a class="chip" href="/mood-journal.html">Mood journal</a>
+          <a class="chip" href="/daily-reflection-journal.html">Daily reflection</a>
+        </div>
+      </div>
+    </div>
+
+    <header class="hero">
+      <div class="container hero-grid">
+        <section class="card hero-copy">
+          <div class="eyebrow">Journal guide</div>
+          <h1>Online journal for gentle daily writing, private reflection, and softer routines.</h1>
+          <p>
+            Quiet Journal Journey is built for people who want an online journal that feels calming instead of crowded. It supports quiet personal notes, mood-aware reflection, prompts, and a more graceful journaling habit on mobile or desktop.
+          </p>
+          <div class="actions">
+            <a class="button button-primary" href="/">Open Quiet Journal Journey</a>
+            <a class="button button-secondary" href="/where-to-write-a-diary-online.html">See the diary search guide</a>
+          </div>
+        </section>
+        <aside class="card hero-side">
+          <h2>What makes an online journal easier to keep</h2>
+          <p>
+            A stronger online journal does not need to be noisy. It needs enough structure to help you begin, enough privacy to let you be honest, and enough warmth that the page still feels inviting on an ordinary day.
+          </p>
+          <div class="metric-grid">
+            <div class="mini-card"><strong>Daily writing</strong>Use it for quick notes, longer reflection, or tiny end-of-day summaries.</div>
+            <div class="mini-card"><strong>Personal rhythm</strong>Move between prompts, moods, and free writing without breaking the flow.</div>
+            <div class="mini-card"><strong>Visual comfort</strong>Soft spacing and calmer colors make the page easier to return to.</div>
+            <div class="mini-card"><strong>Private reflection</strong>Optional privacy features help the journal feel more personal and steady.</div>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container card section-shell">
+          <h2>Why people choose an online journal</h2>
+          <p class="section-intro">
+            Some people want a digital place to think more clearly. Others want a personal writing ritual they can keep through changing days. An online journal helps because it is easier to revisit, easier to continue, and easier to shape around your own habits than a more rigid system.
+          </p>
+          <div class="grid-3">
+            <article class="feature">
+              <h3>More flexible than a fixed template</h3>
+              <p>You can write in full paragraphs one day and save a short emotional note the next without feeling like you are using the journal incorrectly.</p>
+            </article>
+            <article class="feature">
+              <h3>Helpful when reflection changes shape</h3>
+              <p>An online journal can hold prompts, photos, mood notes, and free writing together without forcing the same routine every day.</p>
+            </article>
+            <article class="feature">
+              <h3>Easier to return to over time</h3>
+              <p>When journaling feels visually calm and technically simple, it becomes easier to build a real habit instead of leaving after the first few entries.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container card section-shell">
+          <h2>What this online journal includes</h2>
+          <div class="grid-2">
+            <article class="step">
+              <h3>Private pages</h3>
+              <p>Keep personal notes in a gentler writing space that feels more like a journal room than a noisy productivity tool.</p>
+            </article>
+            <article class="step">
+              <h3>Mood-aware journaling</h3>
+              <p>Track emotional states lightly so the journal can help you notice patterns without becoming heavy.</p>
+            </article>
+            <article class="step">
+              <h3>Prompt support</h3>
+              <p>Use prompt-based writing when you want help beginning but still want the entry to feel like your own.</p>
+            </article>
+            <article class="step">
+              <h3>Reflection-friendly design</h3>
+              <p>The layout stays calmer on both mobile and desktop so the writing itself remains the main attraction.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container card section-shell">
+          <h2>Frequently asked questions</h2>
+          <div class="faq-grid">
+            <article class="faq">
+              <h3>Is an online journal different from an online diary?</h3>
+              <p>Often they overlap. A diary can feel more day-to-day, while a journal can include reflection, prompts, and mood notes. Quiet Journal Journey supports both styles.</p>
+            </article>
+            <article class="faq">
+              <h3>Can I use it for daily reflection?</h3>
+              <p>Yes. It works well for evening check-ins, emotional processing, and small notes about what mattered today.</p>
+            </article>
+            <article class="faq">
+              <h3>Do I have to write long entries?</h3>
+              <p>No. A gentle online journal should work for a few words, a private thought, or a longer page depending on your energy.</p>
+            </article>
+            <article class="faq">
+              <h3>What if I want a more private diary feel?</h3>
+              <p>You can start with the <a href="/private-online-diary.html">private online diary</a> guide or the <a href="/online-diary-with-lock.html">diary with lock</a> page.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="related">
+        <div class="container card section-shell">
+          <h2>Related pages</h2>
+          <div class="link-grid">
+            <article class="link-card"><h3>Where to write a diary online</h3><p class="muted">A practical search guide for choosing a calmer diary space.</p><a href="/where-to-write-a-diary-online.html">Open page</a></article>
+            <article class="link-card"><h3>Private online diary</h3><p class="muted">See the privacy-first guide for personal daily writing.</p><a href="/private-online-diary.html">Open page</a></article>
+            <article class="link-card"><h3>Journal prompts</h3><p class="muted">Browse prompts when you want a softer way to start.</p><a href="/journal-prompts.html">Open page</a></article>
+            <article class="link-card"><h3>Daily reflection journal</h3><p class="muted">Build a calmer evening routine for regular check-ins.</p><a href="/daily-reflection-journal.html">Open page</a></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="related">
+        <div class="container card quiet-slot-shell">
+          <div>
+            <p class="eyebrow">Quiet corner</p>
+            <h2>Future recommendations can live here without crowding the journal path.</h2>
+            <p class="muted">This block keeps extra recommendations away from the main reading flow so the journal experience stays calm, stable, and easy to scan on any screen size.</p>
+            <div class="actions">
+              <a class="button button-primary" href="/">Open the journal</a>
+              <a class="button button-secondary" href="/journal-prompts.html">Browse prompts</a>
+            </div>
+          </div>
+          <div class="quiet-slot-note">
+            <strong>Reader-friendly placement</strong>
+            <p>Any future recommendation content can stay in this quieter zone instead of interrupting the hero, guide sections, or writing-oriented calls to action.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>Quiet Journal Journey — a calmer place for private writing, mood reflection, and daily journaling.</p>
+      </div>
+    </footer>
+  </body>
+</html>

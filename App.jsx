@@ -261,15 +261,38 @@ const wellnessArticles = [
 const seoLandingBlocks = [
   {
     title: 'Private online diary',
-    text: 'Use Quiet Journal Journey as a private online diary when you want a calm place to write daily thoughts, check in with yourself, and keep reflections personal.'
+    text: 'Use Quiet Journal Journey as a private online diary when you want a calm place to write daily thoughts, check in with yourself, and keep reflections personal.',
+    href: '/private-online-diary.html'
+  },
+  {
+    title: 'Where to write a diary online',
+    text: 'A practical guide for people comparing where to write a diary online, what to look for, and how to choose a softer digital diary space.',
+    href: '/where-to-write-a-diary-online.html'
+  },
+  {
+    title: 'Online journal',
+    text: 'Explore a calmer online journal flow for daily writing, emotional clarity, and private reflection that feels lighter to return to.',
+    href: '/online-journal.html'
   },
   {
     title: 'Mood journal',
-    text: 'Track feelings over time with a mood journal flow that makes it easier to notice patterns, save gentle notes, and reflect without turning the process into pressure.'
+    text: 'Track feelings over time with a mood journal flow that makes it easier to notice patterns, save gentle notes, and reflect without turning the process into pressure.',
+    href: '/mood-journal.html'
   },
   {
     title: 'Online diary with lock',
-    text: 'If you want an online diary with lock protection, you can add a soft PIN for the browser while still keeping the journaling experience simple and welcoming.'
+    text: 'If you want an online diary with lock protection, you can add a soft PIN for the browser while still keeping the journaling experience simple and welcoming.',
+    href: '/online-diary-with-lock.html'
+  },
+  {
+    title: 'Journal prompts',
+    text: 'Use prompt-based journaling when the blank page feels too open and you want softer ways to begin writing.',
+    href: '/journal-prompts.html'
+  },
+  {
+    title: 'Daily reflection journal',
+    text: 'Build a calmer evening journaling habit with short check-ins, gentle review questions, and quieter end-of-day notes.',
+    href: '/daily-reflection-journal.html'
   }
 ];
 
@@ -293,6 +316,18 @@ const seoFaqs = [
   {
     question: 'Can I add photos to my diary entries?',
     answer: 'Yes. You can upload photos to journal entries and then click them to move or resize them directly in the editor.'
+  },
+  {
+    question: 'Where can I write a diary online?',
+    answer: 'Quiet Journal Journey gives you a calm place to write a diary online, save private entries, track moods, and return to your thoughts gently from any browser.'
+  },
+  {
+    question: 'Where can I write a journal online?',
+    answer: 'If you want a softer online journal, Quiet Journal Journey works as a digital journal for daily writing, private reflection, prompts, and optional lock protection.'
+  },
+  {
+    question: 'Does Quiet Journal Journey also have guides for prompts and daily reflection?',
+    answer: 'Yes. There are dedicated reading pages for journal prompts, daily reflection, mood journaling, private diary use, and privacy-focused journaling.'
   }
 ];
 
@@ -302,6 +337,18 @@ const seoGuidePages = [
     title: 'Private online diary guide',
     text: 'A calm starting page for people who want a private place to journal online.',
     href: '/private-online-diary.html'
+  },
+  {
+    label: 'Search guide',
+    title: 'Where to write a diary online',
+    text: 'A reader-friendly page for people choosing where to write a diary online without adding noise or pressure.',
+    href: '/where-to-write-a-diary-online.html'
+  },
+  {
+    label: 'Search guide',
+    title: 'Online journal guide',
+    text: 'A broader guide for people who want an online journal for gentle writing and reflection.',
+    href: '/online-journal.html'
   },
   {
     label: 'Popular guide',
@@ -542,7 +589,7 @@ function StatCard({ icon: Icon, label, value, tone }) {
       <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-2xl shadow-sm ${tone}`}>
         <Icon size={21} />
       </div>
-      <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-500">{label}</p>
+      <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">{label}</p>
       <p className="mt-3 break-words text-2xl font-extrabold leading-tight tracking-tight text-ink">{value}</p>
     </div>
   );
@@ -1155,7 +1202,7 @@ function App() {
   const homeSections = [
     { id: 'overview', label: 'Overview', icon: Waves, detail: 'Progress + shortcuts' },
     { id: 'about', label: 'About', icon: Compass, detail: 'How the journal works' },
-    { id: 'guides', label: 'Guides', icon: BookOpen, detail: 'Landing and SEO pages' },
+    { id: 'guides', label: 'Guides', icon: BookOpen, detail: 'Reader guides + helpful pages' },
     { id: 'resources', label: 'Resources', icon: HeartHandshake, detail: 'Gentle practices' },
     { id: 'articles', label: 'Articles', icon: Newspaper, detail: 'Short reflections' },
     { id: 'faq', label: 'FAQ', icon: Sparkles, detail: 'Common questions' },
@@ -1164,6 +1211,7 @@ function App() {
     { id: 'terms', label: 'Terms', icon: Scale, detail: 'Helpful notes' },
     { id: 'contact', label: 'Contact', icon: Mail, detail: 'Reach the owner' }
   ];
+  const primaryHomeSections = homeSections.filter((section) => ['overview', 'about', 'guides', 'resources', 'faq', 'contact'].includes(section.id));
   const homeSectionMap = {
     home: 'overview',
     overview: 'overview',
@@ -1406,6 +1454,10 @@ function App() {
   }, [entries.length]);
 
   const draftText = useMemo(() => getPlainTextFromHtml(body), [body]);
+  const draftWordCount = useMemo(() => {
+    const trimmed = draftText.trim();
+    return trimmed ? trimmed.split(/\s+/).length : 0;
+  }, [draftText]);
   const weeklyGoal = 5;
   const weeklyCheckIns = useMemo(() => {
     const sevenDaysAgo = new Date();
@@ -2351,7 +2403,7 @@ function App() {
                 ].map((tab) => (
                   <button
                     key={tab.id}
-                    className={`flex items-center gap-2 text-sm font-extrabold uppercase tracking-widest transition ${activeTab === tab.id ? 'text-sage-900' : 'text-sage-400 hover:text-sage-600'}`}
+                    className={`flex items-center gap-2 text-sm font-extrabold uppercase tracking-widest transition ${activeTab === tab.id ? 'text-sage-900' : 'text-sage-600 hover:text-sage-800'}`}
                     onClick={() => navigateToTab(tab.id)}
                   >
                     <tab.icon size={16} /> {tab.label}
@@ -2360,108 +2412,158 @@ function App() {
               </div>
 
               <div className="site-nav-actions flex flex-1 flex-wrap items-center justify-end gap-3">
-              {user ? (
-                <div className="rounded-3xl border border-sage-200 bg-white px-4 py-2 text-right text-xs font-extrabold text-sage-950 shadow-lift">
-                  <p>{user.displayName || user.email}</p>
-                  <p className="text-sage-500">{cloudStatus}</p>
-                </div>
-              ) : (
-                <div className="rounded-3xl border border-sage-200 bg-white px-4 py-2 text-xs font-extrabold text-sage-950 shadow-lift">
-                  {authLoading ? 'Checking login...' : 'Sign in to sync your private entries'}
-                </div>
-              )}
-              {user ? (
-                <button className="rounded-full border border-sage-200 bg-white/80 px-5 py-3 text-sm font-bold text-sage-800 shadow-lift transition hover:-translate-y-1 hover:bg-white" onClick={handleSignOut} type="button">
-                  Sign out
+                {user ? (
+                  <div className="flex items-center gap-3 rounded-[1.7rem] border border-sage-200 bg-white px-4 py-3 text-right shadow-lift">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sage-100 text-sage-800 shadow-sm">
+                      <ShieldCheck size={16} />
+                    </div>
+                    <div className="text-xs font-extrabold text-sage-950">
+                      <p>{user.displayName || user.email}</p>
+                      <p className="text-sage-500">{cloudStatus}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-3 rounded-[1.7rem] border border-sage-200 bg-white px-4 py-3 shadow-lift">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sage-900 text-white shadow-sm">
+                      <ShieldCheck size={16} />
+                    </div>
+                    <div className="min-w-[220px] flex-1 text-xs font-extrabold text-sage-950">
+                      <p>{authLoading ? 'Checking login...' : 'Private by default, sync only when you want it.'}</p>
+                      <p className="text-sage-500">Use Google to keep entries across devices later.</p>
+                    </div>
+                    <button className="rounded-full border border-sage-200 bg-white/95 px-5 py-3 text-sm font-bold text-sage-800 shadow-sm transition hover:-translate-y-1 hover:bg-white" onClick={signInWithGoogle} disabled={authLoading} type="button">
+                      Sign in with Google
+                    </button>
+                  </div>
+                )}
+                {user && (
+                  <button className="rounded-full border border-sage-200 bg-white/90 px-5 py-3 text-sm font-bold text-sage-800 shadow-lift transition hover:-translate-y-1 hover:bg-white" onClick={handleSignOut} type="button">
+                    Sign out
+                  </button>
+                )}
+                <button className={`rounded-full border px-5 py-3 text-sm font-bold shadow-lift transition hover:-translate-y-1 ${comfortMode ? 'border-sage-800 bg-sage-900 text-white' : 'border-sage-200 bg-white/90 text-sage-800 hover:bg-white'}`} onClick={() => setComfortMode(!comfortMode)} type="button">
+                  Comfort mode
                 </button>
-              ) : (
-                <button className="rounded-full border border-sage-200 bg-white/80 px-5 py-3 text-sm font-bold text-sage-800 shadow-lift transition hover:-translate-y-1 hover:bg-white" onClick={signInWithGoogle} disabled={authLoading} type="button">
-                  Sign in with Google
+                <button className="rounded-full border border-sage-200 bg-white/90 px-5 py-3 text-sm font-bold text-sage-800 shadow-lift transition hover:-translate-y-1 hover:bg-white" onClick={() => (hasPin ? setPinSettingsOpen(true) : setLocked(true))} type="button">
+                  {hasPin ? 'Privacy settings' : 'Set lock'}
                 </button>
-              )}
-              <button className={`rounded-full border px-5 py-3 text-sm font-bold shadow-lift transition hover:-translate-y-1 ${comfortMode ? 'border-sage-800 bg-sage-900 text-white' : 'border-sage-200 bg-white/80 text-sage-800 hover:bg-white'}`} onClick={() => setComfortMode(!comfortMode)} type="button">
-                Comfort mode
-              </button>
-              {hasPin && (
-                <button className="rounded-full border border-sage-200 bg-white/80 px-5 py-3 text-sm font-bold text-sage-800 shadow-lift transition hover:-translate-y-1 hover:bg-white" onClick={() => setPinSettingsOpen(true)} type="button">
-                  Manage lock
-                </button>
-              )}
-              <button className="rounded-full border border-sage-200 bg-white/80 px-5 py-3 text-sm font-bold text-sage-800 shadow-lift transition hover:-translate-y-1 hover:bg-white" onClick={() => setLocked(true)} type="button">
-                {hasPin ? 'Lock space' : 'Set lock'}
-              </button>
-            </div>
+              </div>
           </div>
-          <div className="site-nav-links mt-4 hidden flex-wrap gap-2 border-t border-sage-100/80 pt-4 lg:flex">
+          <div className="site-nav-links mt-5 hidden flex-wrap gap-2 border-t border-sage-100/80 pt-5 lg:flex">
             <a className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="#journal" onClick={() => navigateToTab('write')}>Journal</a>
             <button className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" onClick={() => setCustomizerOpen(true)} type="button">Design</button>
-            <a className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="#about" onClick={() => openHomeSection('about')}>About</a>
+            <a className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="#guides" onClick={() => openHomeSection('guides')}>Guides</a>
             <a className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="#resources" onClick={() => openHomeSection('resources')}>Resources</a>
-            <a className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="#articles" onClick={() => openHomeSection('articles')}>Articles</a>
-            <a className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="#tips" onClick={() => openHomeSection('tips')}>Tips</a>
-            <a className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="#privacy" onClick={() => openHomeSection('privacy')}>Privacy</a>
-            <a className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="#terms" onClick={() => openHomeSection('terms')}>Terms</a>
+            <a className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="#faq" onClick={() => openHomeSection('faq')}>FAQ</a>
             <a className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="#contact" onClick={() => openHomeSection('contact')}>Contact</a>
           </div>
         </div>
       </nav>
 
       {activeTab === 'home' && activeHomeSection === 'overview' && (
-      <section id="home" className="mx-auto grid max-w-7xl gap-8 px-6 pb-10 pt-6 lg:grid-cols-12">
+      <section id="home" className="mx-auto grid max-w-7xl gap-8 px-6 pb-10 pt-8 lg:grid-cols-12 lg:pt-10 xl:gap-10">
         <div className="lg:col-span-8">
-          <div className="rounded-[2rem] border border-white/80 bg-white/78 p-8 shadow-soft backdrop-blur-xl lg:p-10">
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full bg-sage-100 px-4 py-2 text-sm font-bold text-sage-800 shadow-sm">
-              <Sparkles size={17} /> Today can be held softly
-            </div>
-            <h1 className="max-w-3xl font-display text-5xl font-bold leading-[0.96] tracking-tight text-sage-950 md:text-6xl">Private online diary and mood journal for brighter, gentler thoughts.</h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-sage-800">Write in a calm digital diary, track your mood, and keep each entry private with an optional lock PIN.</p>
+          <div className="relative overflow-hidden rounded-[2.2rem] border border-white/85 bg-white/80 p-8 shadow-soft backdrop-blur-xl lg:p-10 xl:p-11">
+            <div className="pointer-events-none absolute -left-12 top-10 h-36 w-36 rounded-full bg-sage-100/70 blur-3xl"></div>
+            <div className="pointer-events-none absolute right-0 top-0 h-48 w-48 rounded-full bg-sand-100/70 blur-3xl"></div>
+            <div className="relative">
+              <div className="mb-8 flex flex-wrap items-center gap-3">
+                <div className="inline-flex items-center gap-2 rounded-full bg-sage-200/90 px-4 py-2 text-sm font-bold text-sage-950 shadow-sm">
+                  <Sparkles size={17} /> A calm place to write a diary online
+                </div>
+              </div>
+              <h1 className="max-w-3xl font-display text-5xl font-bold leading-[0.96] tracking-tight text-sage-950 md:text-6xl">Private online diary and journal for gentle daily writing.</h1>
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-sage-800">If you are wondering where to write a diary online, this softer journal space lets you keep private entries, track your mood, and return to quiet daily reflection.</p>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <a className="inline-flex items-center gap-2 rounded-full bg-sage-900 px-5 py-3 text-sm font-extrabold text-white shadow-lift transition hover:-translate-y-1 hover:bg-sage-800" href="#journal" onClick={() => navigateToTab('write')}>
-                <PenLine size={17} /> Write today’s entry
-              </a>
-              <button className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-white px-5 py-3 text-sm font-extrabold text-sage-900 shadow-sm transition hover:-translate-y-1 hover:border-sage-300 hover:bg-sage-50" onClick={() => setCustomizerOpen(true)} type="button">
-                <Palette size={17} /> Open design studio
-              </button>
-              {hasPin && (
-                <button className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-white px-5 py-3 text-sm font-extrabold text-sage-900 shadow-sm transition hover:-translate-y-1 hover:border-sage-300 hover:bg-sage-50" onClick={() => setPinSettingsOpen(true)} type="button">
-                  <Shield size={17} /> Privacy settings
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a className="inline-flex items-center gap-2 rounded-full bg-sage-900 px-5 py-3 text-sm font-extrabold text-white shadow-lift transition hover:-translate-y-1 hover:bg-sage-800" href="#journal" onClick={() => navigateToTab('write')}>
+                  <PenLine size={17} /> Write today’s entry
+                </a>
+                <button className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-white px-5 py-3 text-sm font-extrabold text-sage-900 shadow-sm transition hover:-translate-y-1 hover:border-sage-300 hover:bg-sage-50" onClick={() => setCustomizerOpen(true)} type="button">
+                  <Palette size={17} /> Open design studio
                 </button>
-              )}
-            </div>
+                {hasPin && (
+                  <button className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-white px-5 py-3 text-sm font-extrabold text-sage-900 shadow-sm transition hover:-translate-y-1 hover:border-sage-300 hover:bg-sage-50" onClick={() => setPinSettingsOpen(true)} type="button">
+                    <Shield size={17} /> Privacy settings
+                  </button>
+                )}
+              </div>
 
-            <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold text-sage-800">
-              <div className="inline-flex items-center gap-2 rounded-full border border-sage-100 bg-white/85 px-4 py-2">
-                <ShieldCheck size={16} /> {hasPin ? 'Protected with a private PIN' : 'Add a soft lock any time'}
+              <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold text-sage-800">
+                <div className="inline-flex items-center gap-2 rounded-full border border-sage-100 bg-white/85 px-4 py-2">
+                  <ShieldCheck size={16} /> {hasPin ? 'Protected with a private PIN' : 'Add a soft lock any time'}
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-sage-100 bg-white/85 px-4 py-2">
+                  <Sparkles size={16} /> {user ? `${entries.length} entries saved · ${cloudStatus}` : `${entries.length} entries saved · Local-first journaling`}
+                </div>
               </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-sage-100 bg-white/85 px-4 py-2">
-                <BookOpen size={16} /> {entries.length} reflection{entries.length === 1 ? '' : 's'} saved
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-sage-100 bg-white/85 px-4 py-2">
-                <Sparkles size={16} /> {user ? cloudStatus : 'Local-first journaling mode'}
-              </div>
-            </div>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <StatCard icon={BookOpen} label="Entries" value={entries.length} tone="bg-sage-100 text-sage-800" />
-              <StatCard icon={Sunrise} label="Current streak" value={`${streak} day${streak === 1 ? '' : 's'}`} tone="bg-sand-100 text-sand-500" />
-              <StatCard icon={HeartHandshake} label="Average mood" value={averageMood} tone="bg-teal-100 text-teal-700" />
-              <StatCard icon={Sparkles} label="Reward level" value={`${rewardLevel.emoji} ${rewardLevel.title}`} tone="bg-rose-50 text-rose-700" />
+              <div className="mt-8 grid gap-4 sm:grid-cols-3 xl:grid-cols-3">
+                <StatCard icon={BookOpen} label="Entries" value={entries.length} tone="bg-sage-100 text-sage-800" />
+                <StatCard icon={Sunrise} label="Current streak" value={`${streak} day${streak === 1 ? '' : 's'}`} tone="bg-sand-100 text-sand-500" />
+                <StatCard icon={HeartHandshake} label="Average mood" value={averageMood} tone="bg-teal-100 text-teal-700" />
+              </div>
+
+              <div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
+                <div className="flex min-h-[250px] h-full flex-col justify-between rounded-[1.8rem] border border-white/80 bg-gradient-to-br from-white/90 to-sage-50/70 p-5 shadow-lift backdrop-blur">
+                  <div>
+                    <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">A softer starting point</p>
+                    <h3 className="mt-3 text-2xl font-extrabold leading-tight text-ink">Keep the journal calm, polished, and ready for small honest pages.</h3>
+                    <p className="mt-3 max-w-2xl text-sm leading-7 text-sage-800">Your home area now leads into writing, memories, and insights more clearly, while still leaving the writing space itself as the main attraction.</p>
+                  </div>
+                  <div className="mt-5 flex flex-wrap gap-2 text-xs font-bold text-sage-800">
+                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Private by default</span>
+                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Gentle daily reflection</span>
+                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Cleaner navigation</span>
+                  </div>
+                </div>
+                <div className="flex min-h-[250px] h-full flex-col justify-between rounded-[1.8rem] border border-sage-100 bg-white/88 p-5 shadow-sm backdrop-blur">
+                  <div>
+                    <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Today’s atmosphere</p>
+                    <div className="mt-4 flex items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-50 text-sage-800 shadow-sm">
+                        <WeatherGlyph mood={weatherOptions.find((item) => item.label === selectedMood) || moods[2]} size="text-xl" />
+                      </div>
+                      <div>
+                        <p className="text-lg font-extrabold text-ink">{selectedMood}</p>
+                        <p className="text-sm font-semibold text-sage-600">Matched to your current page.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-5 flex flex-wrap gap-2 text-xs font-bold text-sage-700">
+                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Private</span>
+                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Reflective</span>
+                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Uncluttered</span>
+                  </div>
+                  <div className="mt-5 grid gap-3 rounded-2xl bg-sage-50/85 px-4 py-4 text-sm text-sage-700 ring-1 ring-sage-100/80">
+                    <div>
+                      <p className="font-extrabold text-sage-900">Carried into today’s page</p>
+                      <p className="mt-1 leading-6">The same softer mood follows into your writing room, so the homepage and editor feel like one quiet space.</p>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-sage-700">
+                      <Sparkles size={14} /> Calm visual rhythm
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <aside className="flex flex-col gap-4 lg:col-span-4">
-          <div className="rounded-[1.75rem] border border-white/80 bg-white/72 p-4 shadow-soft backdrop-blur-xl">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-500">Move around gently</p>
-            <div className="mt-3 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+        <aside className="flex flex-col gap-5 lg:col-span-4">
+          <div className="rounded-[1.9rem] border border-white/80 bg-white/72 p-5 shadow-soft backdrop-blur-xl">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Move around gently</p>
+              <span className="rounded-full border border-sage-100 bg-sage-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-sage-800">Main spaces</span>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
               {[
                 { id: 'write', label: 'Write', detail: 'Start with one line', icon: PenLine, tone: 'bg-sage-100 text-sage-800' },
                 { id: 'memories', label: 'Memories', detail: 'Open past pages', icon: BookOpen, tone: 'bg-sand-100 text-sand-600' },
                 { id: 'insights', label: 'Insights', detail: 'See your patterns', icon: Sparkles, tone: 'bg-teal-100 text-teal-700' }
               ].map((tab) => (
-                <button key={tab.id} className="flex items-center gap-3 rounded-2xl border border-sage-100 bg-white/90 px-4 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-white" onClick={() => navigateToTab(tab.id)} type="button">
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl shadow-sm ${tab.tone}`}>
+                <button key={tab.id} className="group flex items-center gap-3 rounded-2xl border border-sage-100 bg-white/92 px-4 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-white hover:shadow-lift" onClick={() => navigateToTab(tab.id)} type="button">
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl shadow-sm transition group-hover:scale-105 ${tab.tone}`}>
                     <tab.icon size={18} />
                   </div>
                   <div>
@@ -2473,6 +2575,26 @@ function App() {
             </div>
           </div>
 
+          <div className="rounded-[1.9rem] border border-white/80 bg-gradient-to-br from-white/80 to-sand-50/80 p-6 shadow-soft backdrop-blur-xl">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Quiet concierge</p>
+            <h3 className="mt-3 text-2xl font-extrabold leading-tight text-ink">A calmer entry point on both phone and desktop.</h3>
+            <p className="mt-3 text-sm leading-7 text-sage-700">The layout now keeps the writing flow separate, the navigation clearer, and the support areas more polished so the app feels lighter to move through.</p>
+            <div className="mt-5 grid gap-3 text-sm font-semibold text-sage-800">
+              <div className="flex items-center gap-3 rounded-2xl border border-sage-100 bg-white/95 px-4 py-3 shadow-sm">
+                <Sparkles size={15} className="text-sage-700" />
+                <span>Cleaner spacing across the first screen</span>
+              </div>
+              <div className="flex items-center gap-3 rounded-2xl border border-sage-100 bg-white/95 px-4 py-3 shadow-sm">
+                <ShieldCheck size={15} className="text-sage-700" />
+                <span>Privacy cues that stay visible without shouting</span>
+              </div>
+              <div className="flex items-center gap-3 rounded-2xl border border-sage-100 bg-white/95 px-4 py-3 shadow-sm">
+                <Palette size={15} className="text-sage-700" />
+                <span>A softer flow from home into writing and design</span>
+              </div>
+            </div>
+          </div>
+
           <div className="quote-card quote-card-premium quote-card-compact flex flex-col rounded-3xl border border-white/70 p-6 shadow-soft lg:p-7">
             <Quote className="mb-6 opacity-80" size={30} />
             <p className="quote-main-text font-bold leading-tight" style={{ fontFamily: activeQuoteFont, fontSize: Math.max(activeQuoteSize - 4, 28), color: quoteStyle.textColor, lineHeight: 1.4 }}>“{quoteLibrary[quoteIndex % quoteLibrary.length]}”</p>
@@ -2480,72 +2602,10 @@ function App() {
               Another calming quote
             </button>
 
-            <div className="totoro-container totoro-container-compact group">
-              {companion.rainEnabled && (
-                <>
-                  <div className="rain-drop" style={{ left: '10%', animationDelay: '0s' }}></div>
-                  <div className="rain-drop" style={{ left: '25%', animationDelay: '0.4s' }}></div>
-                  <div className="rain-drop" style={{ left: '40%', animationDelay: '0.2s' }}></div>
-                  <div className="rain-drop" style={{ left: '60%', animationDelay: '0.8s' }}></div>
-                  <div className="rain-drop" style={{ left: '75%', animationDelay: '0.6s' }}></div>
-                  <div className="rain-drop" style={{ left: '90%', animationDelay: '1s' }}></div>
-                </>
-              )}
-              
-              {companion.sootSpritesEnabled && (
-                <>
-                  <div className="soot-sprite" style={{ left: '15%', animationDelay: '0s' }}>●</div>
-                  <div className="soot-sprite" style={{ right: '20%', animationDelay: '0.7s' }}>●</div>
-                </>
-              )}
-              
-              <div className="totoro-companion-wrap relative" style={{ fontSize: `${companion.size}px`, lineHeight: 1 }}>
-                {companion.leaf && !companionIsUploadedMedia && <div className="totoro-leaf pointer-events-none" style={{ fontSize: `${companion.size * 0.5}px` }}>{companion.leaf}</div>}
-                <div
-                  ref={companionMediaRef}
-                  className={`companion-media-frame cursor-pointer ${companionSelected ? 'is-selected' : ''}`}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setCompanionSelected(true);
-                  }}
-                  style={{
-                    width: `${companionFrameWidth}px`,
-                    height: `${companionFrameHeight}px`,
-                    transform: `translate3d(${companion.x || 0}px, ${companion.y || 0}px, 0)`
-                  }}
-                >
-                  <div className={`companion-visual companion-${companion.animation}`}>
-                    {companionIsVideo ? (
-                      <video
-                        autoPlay
-                        className="companion-video"
-                        loop
-                        muted
-                        playsInline
-                        src={companion.character}
-                        style={{ width: '100%', height: '100%' }}
-                      />
-                    ) : companion.character?.startsWith('data:') || companion.character?.startsWith('http') ? (
-                      <img src={companion.character} alt="Companion" className="companion-img" style={{ width: '100%', height: '100%' }} draggable="false" />
-                    ) : (
-                      <div className={`totoro companion-${companion.animation}`}>{companion.character}</div>
-                    )}
-                  </div>
-                  {companionSelected && (
-                    <>
-                      <span className="companion-selection-border" />
-                      <span className="companion-handle companion-handle-tl" data-resize-handle="tl" />
-                      <span className="companion-handle companion-handle-tm" data-resize-handle="tm" />
-                      <span className="companion-handle companion-handle-tr" data-resize-handle="tr" />
-                      <span className="companion-handle companion-handle-ml" data-resize-handle="ml" />
-                      <span className="companion-handle companion-handle-mr" data-resize-handle="mr" />
-                      <span className="companion-handle companion-handle-bl" data-resize-handle="bl" />
-                      <span className="companion-handle companion-handle-bm" data-resize-handle="bm" />
-                      <span className="companion-handle companion-handle-br" data-resize-handle="br" />
-                    </>
-                  )}
-                </div>
-              </div>
+            <div className="mt-8 rounded-[1.6rem] bg-white/12 px-5 py-5 ring-1 ring-white/12">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-white/70">Quiet reminder</p>
+              <p className="mt-3 text-sm leading-7 text-white/90">You can leave one small honest note today and return tomorrow. The page will still be here when you are ready.</p>
+              <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-white/65">{streak > 0 ? `${streak} day${streak === 1 ? '' : 's'} of rhythm` : 'Begin with one gentle page'}</p>
             </div>
           </div>
         </aside>
@@ -2567,11 +2627,11 @@ function App() {
                 </a>
               </div>
 
-              <div className="mt-10 grid gap-3 rounded-[2rem] bg-sage-50/70 p-3 sm:grid-cols-2 lg:grid-cols-5">
-                {homeSections.map((section) => (
+              <div className="mt-10 grid gap-3 rounded-[2rem] bg-sage-50/70 p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                {primaryHomeSections.map((section) => (
                   <button
                     key={section.id}
-                    className={`rounded-[1.5rem] px-5 py-4 text-left transition ${activeHomeSection === section.id ? 'bg-white text-sage-950 shadow-md' : 'text-sage-500 hover:bg-white/60 hover:text-sage-800'}`}
+                    className={`rounded-[1.5rem] px-5 py-4 text-left transition ${activeHomeSection === section.id ? 'bg-white text-sage-950 shadow-md' : 'text-sage-700 hover:bg-white/70 hover:text-sage-950'}`}
                     onClick={() => openHomeSection(section.id)}
                     type="button"
                   >
@@ -2667,22 +2727,22 @@ function App() {
       />
 
       <section id="journal" className="relative z-10 mx-auto -mt-2 max-w-7xl px-6 py-8 lg:-mt-6">
-        <div className="mb-6 rounded-[2rem] border border-white/85 bg-white/82 p-3 shadow-soft backdrop-blur xl:p-4">
+        <div className="mb-6 overflow-hidden rounded-[2rem] border border-white/85 bg-gradient-to-r from-white/88 via-sage-50/78 to-sand-50/75 p-3 shadow-soft backdrop-blur xl:p-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-sage-600">Choose a space</p>
-              <h2 className="mt-2 text-2xl font-extrabold text-ink">Keep writing, memories, and insights separate.</h2>
-              <p className="mt-2 text-sm font-semibold leading-6 text-sage-700">Only one main page stays open at a time, so the screen feels calmer on mobile.</p>
+            <div className="max-w-2xl">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-sage-600">Choose a room</p>
+              <h2 className="mt-2 text-2xl font-extrabold text-ink">Move through the journal like a polished little suite.</h2>
+              <p className="mt-2 text-sm font-semibold leading-6 text-sage-700">Writing stays central, while memories and insights stay close without crowding the page on mobile or desktop.</p>
             </div>
-            <div className="grid gap-2 rounded-[1.5rem] bg-sage-50/90 p-2 sm:grid-cols-3">
+            <div className="grid gap-2 rounded-[1.5rem] bg-white/70 p-2 shadow-inner sm:grid-cols-3">
               {[
-                { id: 'write', label: 'Write', detail: 'Start here', icon: PenLine },
+                { id: 'write', label: 'Write', detail: draftWordCount ? `${draftWordCount} words in progress` : 'Start here', icon: PenLine },
                 { id: 'memories', label: 'Memories', detail: `${entries.length} saved`, icon: BookOpen },
-                { id: 'insights', label: 'Insights', detail: 'Patterns', icon: Sparkles }
+                { id: 'insights', label: 'Insights', detail: `${weeklyCheckIns}/${weeklyGoal} this week`, icon: Sparkles }
               ].map((tab) => (
                 <button
                   key={tab.id}
-                  className={`rounded-[1.2rem] px-4 py-3 text-left transition ${activeTab === tab.id ? 'bg-white text-sage-950 shadow-sm' : 'text-sage-500 hover:bg-white/75 hover:text-sage-800'}`}
+                  className={`rounded-[1.2rem] px-4 py-3 text-left transition ${activeTab === tab.id ? 'bg-white text-sage-950 shadow-sm ring-1 ring-white' : 'text-sage-500 hover:bg-white/75 hover:text-sage-800'}`}
                   onClick={() => navigateToTab(tab.id)}
                   type="button"
                 >
@@ -2696,28 +2756,36 @@ function App() {
 
         {activeTab === 'write' && (
         <form className="rounded-[2rem] border border-white/85 bg-white/90 p-6 shadow-soft backdrop-blur xl:p-8" onSubmit={saveEntry}>
-          <div className="mb-5 rounded-[1.75rem] border border-sage-100 bg-gradient-to-r from-white via-sage-50/60 to-sand-50/70 p-5 shadow-sm">
+          <div className="mb-5 overflow-hidden rounded-[1.9rem] border border-sage-100 bg-gradient-to-r from-white via-sage-50/60 to-sand-50/70 p-5 shadow-sm">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-3xl">
-                <p className="text-sm font-extrabold uppercase tracking-[0.22em] text-sage-600">Your safe page</p>
+                <p className="text-sm font-extrabold uppercase tracking-[0.22em] text-sage-600">Your writing room</p>
                 <h2 className="mt-2 text-3xl font-extrabold text-ink">Write only what feels ready.</h2>
-                <p className="mt-2 text-sm leading-7 text-sage-700">There is no right amount here. Start with a title, one feeling, or a single honest line.</p>
+                <p className="mt-2 text-sm leading-7 text-sage-700">There is no right amount here. Start with a title, one feeling, or a single honest line, then let the rest arrive gently.</p>
               </div>
               <div className="inline-flex items-center gap-2 self-start rounded-full border border-sage-100 bg-white px-4 py-2 text-sm font-bold text-sage-700 shadow-sm">
                 <CalendarDays size={16} /> {formatDate(new Date().toISOString())}
               </div>
             </div>
+            <div className="mt-4 flex flex-wrap gap-2 text-xs font-extrabold uppercase tracking-[0.2em] text-sage-600">
+              <span className="rounded-full bg-white/90 px-3 py-2 shadow-sm">{selectedMood} mood</span>
+              <span className="rounded-full bg-white/90 px-3 py-2 shadow-sm">{draftWordCount} words</span>
+              <span className="rounded-full bg-white/90 px-3 py-2 shadow-sm">{completedQuestCount}/{journalQuest.length} ritual steps</span>
+            </div>
           </div>
 
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <label className="block text-sm font-bold text-sage-800" htmlFor="entry-title">A name for this page</label>
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-sage-500">Optional — even a few words is enough</p>
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.24em] text-sage-500">
+              <span className="rounded-full border border-sage-100 bg-white px-3 py-1.5 shadow-sm">A few words is enough</span>
+              <span className="rounded-full border border-sage-100 bg-white px-3 py-1.5 shadow-sm">Keep it gentle</span>
+            </div>
           </div>
           <input
             className="journal-title-input mb-5 w-full rounded-[1.75rem] px-5 py-4 text-lg font-semibold outline-none"
             id="entry-title"
             onChange={(event) => setTitle(event.target.value)}
-            placeholder="A quiet name for this moment"
+            placeholder="A quiet name for this page"
             value={title}
           />
 
@@ -2766,8 +2834,9 @@ function App() {
 
           <div className="journal-editor-shell mt-2 rounded-[2rem] p-3 md:p-4">
             <div className="journal-editor-ribbon">quiet diary</div>
-            <div className="journal-editor-meta mb-3 flex flex-wrap items-center justify-end gap-2 px-3 text-xs font-bold uppercase tracking-[0.24em] text-sage-500">
+            <div className="journal-editor-meta journal-editor-top mb-3 flex flex-wrap items-center justify-between gap-2 px-3 text-xs font-bold uppercase tracking-[0.24em] text-sage-500">
               <span>{selectedMood} mood · {formatDate(new Date().toISOString())}</span>
+              <span>{draftWordCount} words · soft, unfinished, enough</span>
             </div>
             <div
               ref={entryBodyRef}
@@ -2778,10 +2847,14 @@ function App() {
               onInput={(e) => setBody(e.currentTarget.innerHTML)}
               data-placeholder=""
             />
+            <div className="journal-editor-meta journal-editor-bottom mt-4 flex flex-wrap items-center justify-between gap-2 px-3 text-xs font-bold uppercase tracking-[0.24em] text-sage-500">
+              <span>One honest line is already a real page.</span>
+              <span>{streak} day{streak === 1 ? '' : 's'} of returning</span>
+            </div>
           </div>
           <div className="mt-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="rounded-full border border-sage-100 bg-white px-4 py-2 text-sm font-semibold text-sage-700 shadow-sm">
-              Start anywhere — the page is ready when you are.
+            <div className="rounded-[1.2rem] border border-sage-100 bg-white/85 px-4 py-3 text-sm font-semibold leading-6 text-sage-700 shadow-sm">
+              {journalNudge}
             </div>
             <button className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-7 py-4 font-bold text-white shadow-lift transition hover:-translate-y-1 hover:bg-sage-800" type="submit">
               <Plus size={19} /> Keep this page
@@ -2979,83 +3052,107 @@ function App() {
         )}
 
         {activeTab === 'insights' && (
-        <div className="mt-6 grid gap-6 xl:grid-cols-3">
-          <div className="rounded-3xl border border-white/70 bg-white/82 p-5 shadow-soft backdrop-blur sm:p-6 lg:col-span-3 lg:p-8">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+          <div className="overflow-hidden rounded-[2rem] border border-white/80 bg-gradient-to-br from-white/88 via-sage-50/68 to-sand-50/72 p-6 shadow-soft backdrop-blur xl:p-8">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-sage-600 sm:text-sm sm:tracking-widest">Reflection pattern</p>
-                <h2 className="mt-2 text-2xl font-extrabold leading-tight text-ink sm:text-3xl">Your recent journal check-ins</h2>
-                <p className="mt-2 text-sm font-semibold leading-6 text-sage-700">This page now keeps the title in its own block first, so the chart starts lower and feels easier to read on mobile.</p>
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-sage-600 sm:text-sm sm:tracking-widest">Reflection pattern</p>
+                <h2 className="mt-2 text-3xl font-extrabold leading-tight text-ink sm:text-4xl">Your recent journal check-ins</h2>
+                <p className="mt-3 text-sm font-semibold leading-7 text-sage-700">See the week in a calmer way: mood shifts, small streaks, and the gentle rhythm you are building by returning.</p>
               </div>
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-sage-100 text-sage-700">
-                <Moon size={18} />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-3xl bg-white text-sage-700 shadow-sm">
+                <Moon size={20} />
+              </div>
+            </div>
+            <div className="mt-5 flex flex-wrap gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-sage-700">
+              <span className="rounded-full border border-white/90 bg-white/88 px-3 py-2 shadow-sm">{weeklyCheckIns}/{weeklyGoal} check-ins this week</span>
+              <span className="rounded-full border border-white/90 bg-white/88 px-3 py-2 shadow-sm">{entries.length} pages in your archive</span>
+              <span className="rounded-full border border-white/90 bg-white/88 px-3 py-2 shadow-sm">{unlockedAchievementCount}/{achievementBadges.length} keepsakes lit</span>
+            </div>
+          </div>
+
+          <div className="rounded-[2rem] border border-white/80 bg-white/80 p-6 shadow-soft backdrop-blur xl:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-sand-500 sm:text-sm sm:tracking-widest">This week so far</p>
+            <p className="mt-3 text-4xl font-extrabold text-sage-950">{weeklyCheckIns}/{weeklyGoal}</p>
+            <p className="mt-3 text-sm font-semibold leading-7 text-sage-700">{weeklyCheckIns >= weeklyGoal ? 'You already gave yourself enough room this week.' : `${weeklyGoal - weeklyCheckIns} more soft check-ins if you want to fill this week.`}</p>
+            <div className="mt-5 h-2.5 w-full overflow-hidden rounded-full bg-sage-100">
+              <div className="h-full rounded-full bg-gradient-to-r from-sage-500 to-teal-500 transition-all duration-700" style={{ width: `${Math.min((weeklyCheckIns / weeklyGoal) * 100, 100)}%` }}></div>
+            </div>
+            <div className="mt-6 rounded-[1.75rem] bg-gradient-to-br from-rose-50 to-white p-5 shadow-inner">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-rose-500 sm:text-sm sm:tracking-widest">Keepsake path</p>
+              <div className="mt-3 flex items-center gap-4">
+                <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-white text-3xl shadow-sm">{rewardLevel.emoji}</div>
+                <div>
+                  <p className="text-lg font-extrabold text-sage-950">{rewardLevel.title}</p>
+                  <p className="text-sm font-semibold leading-6 text-sage-700">{entriesToNextReward === 0 ? 'Your next bloom is here.' : `${entriesToNextReward} pages until the next bloom.`}</p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-3xl border border-white/70 bg-white/80 p-5 shadow-soft backdrop-blur sm:p-6 lg:col-span-2 lg:p-8">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-sage-600 sm:text-sm sm:tracking-widest">Mood garden</p>
+          <div className="overflow-hidden rounded-[2rem] border border-white/80 bg-white/82 p-6 shadow-soft backdrop-blur xl:p-8">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-sage-600 sm:text-sm sm:tracking-widest">Mood garden</p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-sage-700">A softer chart view so the patterns stay readable on both mobile and desktop.</p>
+              </div>
+              <div className="rounded-full bg-sage-100 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-sage-800">Weekly summary</div>
+            </div>
             <div className="mt-5">
               <MoodChart entries={entries} weatherOptions={weatherOptions} />
             </div>
-            <div className="mt-4 rounded-3xl bg-white p-4 text-sm font-bold leading-6 text-sage-900 shadow-inner sm:mt-5 sm:p-5">
+            <div className="mt-5 rounded-[1.75rem] bg-white p-5 text-sm font-bold leading-7 text-sage-900 shadow-inner">
               {weeklySummary}
             </div>
           </div>
 
-          <div className="rounded-3xl border border-white/70 bg-white/80 p-5 shadow-soft backdrop-blur sm:p-6 lg:p-8">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-sand-500 sm:text-sm sm:tracking-widest">This week so far</p>
-            <p className="mt-2 text-3xl font-extrabold text-sage-950">{weeklyCheckIns}/{weeklyGoal}</p>
-            <p className="mt-2 text-sm font-semibold leading-6 text-sage-700">{weeklyCheckIns >= weeklyGoal ? 'You already gave yourself enough room this week.' : `${weeklyGoal - weeklyCheckIns} more soft check-ins if you want to fill this week.`}</p>
-            <div className="mt-6 rounded-3xl bg-white p-4 shadow-inner">
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-rose-500 sm:text-sm sm:tracking-widest">Keepsake path</p>
-              <div className="mt-3 flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-rose-50 text-3xl shadow-sm">{rewardLevel.emoji}</div>
-                <div>
-                  <p className="text-lg font-extrabold text-sage-950">{rewardLevel.title}</p>
-                  <p className="text-sm font-semibold text-sage-700">{entriesToNextReward === 0 ? 'Your next bloom is here.' : `${entriesToNextReward} pages until the next bloom.`}</p>
-                </div>
-              </div>
+          <div className="grid gap-6">
+            <div className="rounded-[2rem] border border-white/80 bg-white/82 p-6 shadow-soft backdrop-blur xl:p-8">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-teal-600 sm:text-sm sm:tracking-widest">{returnRitual.eyebrow}</p>
+              <p className="mt-2 text-2xl font-extrabold leading-tight text-sage-950">{returnRitual.title}</p>
+              <p className="mt-3 text-sm font-semibold leading-7 text-sage-700">{returnRitual.text}</p>
+              <button className="mt-5 inline-flex items-center gap-2 rounded-full bg-sage-900 px-4 py-2.5 text-sm font-extrabold text-white shadow-lift transition hover:-translate-y-0.5 hover:bg-sage-800" onClick={() => navigateToTab('write')} type="button">
+                <PenLine size={16} /> Return to writing
+              </button>
             </div>
-          </div>
 
-          <div className="rounded-3xl border border-white/70 bg-white/80 p-5 shadow-soft backdrop-blur sm:p-6 lg:col-span-3 lg:p-8">
-            <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-teal-600 sm:text-sm sm:tracking-widest">{returnRitual.eyebrow}</p>
-                <p className="mt-2 text-xl font-extrabold leading-tight text-sage-950">{returnRitual.title}</p>
-                <p className="mt-3 text-sm font-semibold leading-relaxed text-sage-700">{returnRitual.text}</p>
+            <div className="rounded-[2rem] border border-white/80 bg-white/82 p-6 shadow-soft backdrop-blur xl:p-8">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-sage-600">Keepsake shelf</p>
+                <div className="rounded-full bg-sage-100 px-3 py-1 text-[10px] font-extrabold text-sage-800">{unlockedAchievementCount}/{achievementBadges.length}</div>
               </div>
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-sage-600">Keepsake shelf</p>
-                  <div className="rounded-full bg-sage-100 px-3 py-1 text-[10px] font-extrabold text-sage-800">{unlockedAchievementCount}/{achievementBadges.length}</div>
-                </div>
-                <div className="grid grid-cols-6 gap-2">
-                  {achievementBadges.map((badge) => (
-                    <div key={badge.id} className={`flex aspect-square items-center justify-center rounded-2xl text-xl shadow-sm transition-all ${badge.unlocked ? 'bg-white grayscale-0' : 'bg-sage-50/50 opacity-40 grayscale'}`} title={`${badge.title}: ${badge.hint}`}>
-                      {badge.emoji}
-                    </div>
-                  ))}
-                </div>
+              <div className="mt-4 grid grid-cols-6 gap-2">
+                {achievementBadges.map((badge) => (
+                  <div key={badge.id} className={`flex aspect-square items-center justify-center rounded-2xl text-xl shadow-sm transition-all ${badge.unlocked ? 'bg-white grayscale-0' : 'bg-sage-50/50 opacity-40 grayscale'}`} title={`${badge.title}: ${badge.hint}`}>
+                    {badge.emoji}
+                  </div>
+                ))}
               </div>
+              <p className="mt-4 text-sm font-semibold leading-7 text-sage-700">Every return adds another little sign that this space is becoming yours.</p>
             </div>
           </div>
         </div>
         )}
 
         {activeTab === 'memories' && (
-        <div className="mt-8 grid gap-6 xl:grid-cols-2">
+        <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
 
-          <div className="rounded-3xl border border-white/70 bg-white/80 p-5 shadow-soft backdrop-blur sm:p-6 lg:p-8">
-            <div className="mb-5 flex items-center justify-between gap-3">
+          <div className="overflow-hidden rounded-[2rem] border border-white/80 bg-gradient-to-br from-white/88 via-sage-50/68 to-sand-50/72 p-5 shadow-soft backdrop-blur sm:p-6 lg:p-8">
+            <div className="mb-5 flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-sage-600 sm:text-sm sm:tracking-widest">Journal calendar</p>
-                <h2 className="mt-1 text-xl font-extrabold text-ink sm:text-2xl">Track your writing days</h2>
+                <h2 className="mt-1 text-2xl font-extrabold text-ink sm:text-3xl">Keep what matters close.</h2>
+                <p className="mt-2 text-sm font-semibold leading-7 text-sage-700">Mark meaningful dates, revisit saved pages, and let the memory side feel softer and easier to scan.</p>
               </div>
-              <CalendarDays className="text-sage-700" size={18} />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-3xl bg-white text-sage-700 shadow-sm">
+                <CalendarDays size={20} />
+              </div>
             </div>
-            <div className="mb-4 flex items-center justify-between rounded-3xl bg-sage-50 p-3">
+            <div className="mb-5 flex flex-wrap gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-sage-700">
+              <span className="rounded-full border border-white/90 bg-white/88 px-3 py-2 shadow-sm">{importantDateCount} marked dates</span>
+              <span className="rounded-full border border-white/90 bg-white/88 px-3 py-2 shadow-sm">{selectedDateEntries.length} page{selectedDateEntries.length === 1 ? '' : 's'} on this day</span>
+            </div>
+            <div className="mb-4 flex items-center justify-between rounded-[1.75rem] bg-white/82 p-3 shadow-inner">
               <button className="rounded-full bg-white px-3 py-2 text-sm font-extrabold text-sage-800 shadow-sm" onClick={() => setCalendarMonth(shiftMonthKey(calendarMonth, -1))} type="button">‹</button>
               <p className="font-extrabold text-sage-950">{formatMonthLabel(calendarMonth)}</p>
               <button className="rounded-full bg-white px-3 py-2 text-sm font-extrabold text-sage-800 shadow-sm" onClick={() => setCalendarMonth(shiftMonthKey(calendarMonth, 1))} type="button">›</button>
@@ -3086,7 +3183,7 @@ function App() {
                 ) : <div key={`blank-${index}`} />;
               })}
             </div>
-            <div className="mt-5 rounded-3xl bg-white p-4 shadow-inner">
+            <div className="mt-5 rounded-[1.75rem] bg-white/92 p-4 shadow-inner">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-extrabold uppercase tracking-widest text-sage-600">{selectedCalendarDate}</p>
@@ -3123,7 +3220,7 @@ function App() {
               {selectedDateEntries.length ? (
                 <div className="mt-4 space-y-3">
                   {selectedDateEntries.map((entry) => (
-                    <button className="w-full rounded-2xl border border-sage-100 bg-sage-50 p-3 text-left transition hover:bg-white" key={entry.id} onClick={() => setSelectedEntry(entry)} type="button">
+                    <button className="w-full rounded-2xl border border-sage-100 bg-sage-50/78 p-3 text-left transition hover:-translate-y-0.5 hover:bg-white hover:shadow-sm" key={entry.id} onClick={() => setSelectedEntry(entry)} type="button">
                       <p className="font-extrabold text-sage-950">{entry.title}</p>
                       <p className="mt-1 line-clamp-2 text-sm font-semibold leading-6 text-sage-700">{getPlainTextFromHtml(entry.body || entry.prompt || '') || 'Photo entry'}</p>
                     </button>
@@ -3133,13 +3230,13 @@ function App() {
             </div>
           </div>
 
-          <div className="flex h-full flex-col rounded-3xl border border-white/70 bg-white/80 p-5 shadow-soft backdrop-blur sm:p-6 lg:p-8">
+          <div className="flex h-full flex-col overflow-hidden rounded-[2rem] border border-white/80 bg-gradient-to-br from-white/90 via-white/84 to-sand-50/72 p-5 shadow-soft backdrop-blur sm:p-6 lg:p-8">
             <div className="mb-5 flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
                 <CalendarDays className="text-sage-700" size={18} />
                 <div>
-                  <h2 className="text-xl font-extrabold text-ink sm:text-2xl">Your positivity archive</h2>
-                  <p className="mt-1 text-sm font-semibold text-sage-700">Open any page to read the full memory without wasting the rest of this box.</p>
+                  <h2 className="text-2xl font-extrabold text-ink sm:text-3xl">Your positivity archive</h2>
+                  <p className="mt-1 text-sm font-semibold leading-7 text-sage-700">Open any page to read the full memory, with a calmer layout that uses the whole panel more gracefully.</p>
                 </div>
               </div>
               <div className="rounded-full bg-sage-100 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.18em] text-sage-700">
@@ -3238,14 +3335,15 @@ function App() {
         <SectionHeader
           eyebrow="Gentle journaling guides"
           title="Find the kind of journaling support that fits what you need today."
-          text="Some people want a private diary, some want mood tracking, prompts, or a softer daily reflection rhythm. These guides help people choose where to begin."
+          text="Some people want a private diary, some want an online journal, and some are simply asking where to write a diary online. These pages help readers find the calmest place to begin."
         />
-        <div className="grid gap-5 lg:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {seoLandingBlocks.map((item) => (
             <article className="customizable-card rounded-3xl border border-white/70 bg-white/80 p-6 shadow-lift backdrop-blur transition hover:-translate-y-1 hover:bg-white/95" key={item.title}>
               <div className="rounded-full bg-sage-100 px-3 py-1 text-xs font-extrabold uppercase tracking-widest text-sage-800">Reader guide</div>
               <h3 className="mt-4 text-2xl font-extrabold leading-tight text-ink">{item.title}</h3>
               <p className="mt-4 leading-8 text-sage-800">{item.text}</p>
+              <a className="mt-5 inline-flex text-sm font-bold text-sage-900 underline decoration-sage-300 underline-offset-4" href={item.href}>Open guide</a>
             </article>
           ))}
         </div>
@@ -3260,7 +3358,7 @@ function App() {
               Browse guides
             </a>
           </div>
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {seoGuidePages.map((page) => (
               <article className="rounded-3xl border border-sage-100/80 bg-sand-50/70 p-5" key={page.href}>
                 <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-sage-700">{page.label}</p>
@@ -3271,6 +3369,25 @@ function App() {
                 </a>
               </article>
             ))}
+          </div>
+          <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
+            <div className="rounded-3xl border border-white/80 bg-gradient-to-br from-white/95 to-sand-50/85 p-6 shadow-lift backdrop-blur">
+              <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-sage-700">Quiet reader space</p>
+              <h4 className="mt-3 text-2xl font-extrabold leading-tight text-ink">A stable place for future recommendations, without interrupting the journal.</h4>
+              <p className="mt-3 max-w-2xl leading-8 text-sage-800">This area sits outside the main writing flow, so future recommendations can live here without covering prompts, shifting the editor, or making the journaling experience feel crowded on mobile or desktop.</p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <a className="inline-flex items-center justify-center rounded-full bg-sage-900 px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-sage-800" href="/private-online-diary.html">Open private diary guide</a>
+                <a className="inline-flex items-center justify-center rounded-full border border-sage-200 bg-white px-5 py-3 text-sm font-bold text-sage-900 transition hover:-translate-y-0.5 hover:border-sage-300" href="/journal-prompts.html">Browse prompts</a>
+              </div>
+            </div>
+            <div className="rounded-3xl border border-sage-100/80 bg-white/85 p-6 shadow-lift backdrop-blur">
+              <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-sage-700">Layout note</p>
+              <ul className="mt-4 space-y-3 text-sm leading-7 text-sage-800">
+                <li>• Keeps the reading pages flexible for future monetization.</li>
+                <li>• Protects the writing and memory areas from unexpected movement.</li>
+                <li>• Gives mobile visitors a clear, separate block instead of intrusive overlays.</li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -3470,17 +3587,21 @@ function App() {
       </>
       )}
 
-      <div className="fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 gap-2 rounded-3xl border border-sage-100 bg-white/95 p-2 text-xs font-extrabold shadow-soft backdrop-blur lg:hidden">
+      <div className="fixed inset-x-4 bottom-4 z-30 mx-auto max-w-xl rounded-[1.8rem] border border-white/85 bg-white/78 p-2 shadow-soft backdrop-blur-xl lg:hidden">
+        <div className="grid grid-cols-5 gap-2">
         {[
           { id: 'home', label: 'Home', icon: Waves },
           { id: 'write', label: 'Write', icon: PenLine },
           { id: 'memories', label: 'Memory', icon: BookOpen },
           { id: 'insights', label: 'Insight', icon: Sparkles },
           { id: 'design', label: 'Design', icon: Palette }
-        ].map((tab) => (
+        ].map((tab) => {
+          const isActive = activeTab === tab.id;
+          const isWrite = tab.id === 'write';
+          return (
           <button
             key={tab.id}
-            className={`flex min-w-0 flex-col items-center gap-1 rounded-2xl px-1 py-2 transition ${activeTab === tab.id ? 'bg-sage-900 text-white' : 'text-sage-500 hover:bg-sage-50 hover:text-sage-800'}`}
+            className={`flex min-w-0 flex-col items-center gap-1 rounded-2xl px-1 py-2.5 transition ${isActive ? 'bg-white text-sage-950 shadow-lift ring-1 ring-white' : isWrite ? 'text-sage-900' : 'text-sage-500 hover:bg-white/70 hover:text-sage-800'}`}
             onClick={() => {
               if (tab.id === 'design') {
                 setCustomizerOpen(true);
@@ -3492,10 +3613,15 @@ function App() {
             }}
             type="button"
           >
-            <tab.icon size={18} />
+            <div className={`flex h-9 w-9 items-center justify-center rounded-2xl transition ${isActive ? 'bg-sage-900 text-white shadow-sm' : isWrite ? 'bg-sage-900 text-white shadow-sm' : 'bg-sage-50 text-sage-700'}`}>
+              <tab.icon size={17} />
+            </div>
             <span className="text-[10px] uppercase tracking-[0.18em]">{tab.label}</span>
+            <span className={`h-1.5 w-1.5 rounded-full transition ${isActive ? 'bg-sage-700 opacity-100' : 'opacity-0'}`}></span>
           </button>
-        ))}
+          );
+        })}
+        </div>
       </div>
 
       {selectedEntry && (
