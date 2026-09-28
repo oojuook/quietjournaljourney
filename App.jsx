@@ -2394,7 +2394,7 @@ function App() {
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sage-600">Private online diary</p>
               </div>
             </a>
-              <div className="site-nav-links hidden flex-1 items-center justify-center gap-6 lg:flex">
+              <div className="site-nav-links hidden flex-1 items-center justify-center gap-8 lg:flex xl:gap-10">
                 {[
                   { id: 'home', label: 'Home', icon: Waves },
                   { id: 'write', label: 'Write', icon: PenLine },
@@ -2411,9 +2411,9 @@ function App() {
                 ))}
               </div>
 
-              <div className="site-nav-actions flex flex-1 flex-wrap items-center justify-end gap-3">
+              <div className="site-nav-actions flex w-full flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end xl:w-auto xl:flex-1">
                 {user ? (
-                  <div className="flex items-center gap-3 rounded-[1.7rem] border border-sage-200 bg-white px-4 py-3 text-right shadow-lift">
+                  <div className="flex w-full items-center gap-3 rounded-[1.7rem] border border-sage-200 bg-white px-4 py-3 text-left shadow-lift sm:w-auto sm:text-right">
                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sage-100 text-sage-800 shadow-sm">
                       <ShieldCheck size={16} />
                     </div>
@@ -2423,33 +2423,33 @@ function App() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-wrap items-center gap-3 rounded-[1.7rem] border border-sage-200 bg-white px-4 py-3 shadow-lift">
+                  <div className="flex w-full flex-wrap items-center gap-3 rounded-[1.7rem] border border-sage-200 bg-white px-4 py-3 shadow-lift">
                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sage-900 text-white shadow-sm">
                       <ShieldCheck size={16} />
                     </div>
-                    <div className="min-w-[220px] flex-1 text-xs font-extrabold text-sage-950">
+                    <div className="min-w-0 flex-1 text-xs font-extrabold text-sage-950 sm:min-w-[220px]">
                       <p>{authLoading ? 'Checking login...' : 'Private by default, sync only when you want it.'}</p>
                       <p className="text-sage-500">Use Google to keep entries across devices later.</p>
                     </div>
-                    <button className="rounded-full border border-sage-200 bg-white/95 px-5 py-3 text-sm font-bold text-sage-800 shadow-sm transition hover:-translate-y-1 hover:bg-white" onClick={signInWithGoogle} disabled={authLoading} type="button">
+                    <button className="w-full rounded-full border border-sage-200 bg-white/95 px-5 py-3 text-sm font-bold text-sage-800 shadow-sm transition hover:-translate-y-1 hover:bg-white sm:w-auto" onClick={signInWithGoogle} disabled={authLoading} type="button">
                       Sign in with Google
                     </button>
                   </div>
                 )}
                 {user && (
-                  <button className="rounded-full border border-sage-200 bg-white/90 px-5 py-3 text-sm font-bold text-sage-800 shadow-lift transition hover:-translate-y-1 hover:bg-white" onClick={handleSignOut} type="button">
+                  <button className="w-full rounded-full border border-sage-200 bg-white/90 px-5 py-3 text-sm font-bold text-sage-800 shadow-lift transition hover:-translate-y-1 hover:bg-white sm:w-auto" onClick={handleSignOut} type="button">
                     Sign out
                   </button>
                 )}
-                <button className={`rounded-full border px-5 py-3 text-sm font-bold shadow-lift transition hover:-translate-y-1 ${comfortMode ? 'border-sage-800 bg-sage-900 text-white' : 'border-sage-200 bg-white/90 text-sage-800 hover:bg-white'}`} onClick={() => setComfortMode(!comfortMode)} type="button">
+                <button className={`w-full rounded-full border px-5 py-3 text-sm font-bold shadow-lift transition hover:-translate-y-1 sm:w-auto ${comfortMode ? 'border-sage-800 bg-sage-900 text-white' : 'border-sage-200 bg-white/90 text-sage-800 hover:bg-white'}`} onClick={() => setComfortMode(!comfortMode)} type="button">
                   Comfort mode
                 </button>
-                <button className="rounded-full border border-sage-200 bg-white/90 px-5 py-3 text-sm font-bold text-sage-800 shadow-lift transition hover:-translate-y-1 hover:bg-white" onClick={() => (hasPin ? setPinSettingsOpen(true) : setLocked(true))} type="button">
+                <button className="w-full rounded-full border border-sage-200 bg-white/90 px-5 py-3 text-sm font-bold text-sage-800 shadow-lift transition hover:-translate-y-1 hover:bg-white sm:w-auto" onClick={() => (hasPin ? setPinSettingsOpen(true) : setLocked(true))} type="button">
                   {hasPin ? 'Privacy settings' : 'Set lock'}
                 </button>
               </div>
           </div>
-          <div className="site-nav-links mt-5 hidden flex-wrap gap-2 border-t border-sage-100/80 pt-5 lg:flex">
+          <div className="site-nav-links mt-5 hidden flex-wrap gap-2 rounded-[1.6rem] border border-sage-100 bg-sage-50/65 p-2 lg:flex">
             <a className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="#journal" onClick={() => navigateToTab('write')}>Journal</a>
             <button className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" onClick={() => setCustomizerOpen(true)} type="button">Design</button>
             <a className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="#guides" onClick={() => openHomeSection('guides')}>Guides</a>
@@ -2603,9 +2603,9 @@ function App() {
             </button>
 
             <div className="mt-8 rounded-[1.6rem] bg-white/12 px-5 py-5 ring-1 ring-white/12">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-white/70">Quiet reminder</p>
-              <p className="mt-3 text-sm leading-7 text-white/90">You can leave one small honest note today and return tomorrow. The page will still be here when you are ready.</p>
-              <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-white/65">{streak > 0 ? `${streak} day${streak === 1 ? '' : 's'} of rhythm` : 'Begin with one gentle page'}</p>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-white/80">Quiet reminder</p>
+              <p className="mt-3 text-sm leading-7 text-white/95">You can leave one small honest note today and return tomorrow. The page will still be here when you are ready.</p>
+              <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-white/75">{streak > 0 ? `${streak} day${streak === 1 ? '' : 's'} of rhythm` : 'Begin with one gentle page'}</p>
             </div>
           </div>
         </aside>
@@ -2755,8 +2755,8 @@ function App() {
         </div>
 
         {activeTab === 'write' && (
-        <form className="rounded-[2rem] border border-white/85 bg-white/90 p-6 shadow-soft backdrop-blur xl:p-8" onSubmit={saveEntry}>
-          <div className="mb-5 overflow-hidden rounded-[1.9rem] border border-sage-100 bg-gradient-to-r from-white via-sage-50/60 to-sand-50/70 p-5 shadow-sm">
+        <form className="rounded-[2rem] border border-white/85 bg-white/90 p-4 shadow-soft backdrop-blur sm:p-6 xl:p-8" onSubmit={saveEntry}>
+          <div className="mb-5 overflow-hidden rounded-[1.9rem] border border-sage-100 bg-gradient-to-r from-white via-sage-50/60 to-sand-50/70 p-4 shadow-sm sm:p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-3xl">
                 <p className="text-sm font-extrabold uppercase tracking-[0.22em] text-sage-600">Your writing room</p>
@@ -2767,16 +2767,16 @@ function App() {
                 <CalendarDays size={16} /> {formatDate(new Date().toISOString())}
               </div>
             </div>
-            <div className="mt-4 flex flex-wrap gap-2 text-xs font-extrabold uppercase tracking-[0.2em] text-sage-600">
+            <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-sage-600 sm:text-xs">
               <span className="rounded-full bg-white/90 px-3 py-2 shadow-sm">{selectedMood} mood</span>
               <span className="rounded-full bg-white/90 px-3 py-2 shadow-sm">{draftWordCount} words</span>
               <span className="rounded-full bg-white/90 px-3 py-2 shadow-sm">{completedQuestCount}/{journalQuest.length} ritual steps</span>
             </div>
           </div>
 
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             <label className="block text-sm font-bold text-sage-800" htmlFor="entry-title">A name for this page</label>
-            <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.24em] text-sage-500">
+            <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.24em] text-sage-500 sm:text-xs">
               <span className="rounded-full border border-sage-100 bg-white px-3 py-1.5 shadow-sm">A few words is enough</span>
               <span className="rounded-full border border-sage-100 bg-white px-3 py-1.5 shadow-sm">Keep it gentle</span>
             </div>
@@ -2789,9 +2789,9 @@ function App() {
             value={title}
           />
 
-          <div className="mb-4 rounded-[1.6rem] border border-amber-100/80 bg-white/70 p-3 shadow-sm backdrop-blur-sm">
+          <div className="mb-4 rounded-[1.6rem] border border-amber-100/80 bg-white/70 p-3 shadow-sm backdrop-blur-sm sm:p-4">
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-              <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[31rem]">
+              <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[31rem] xl:grid-cols-3">
                 <label className="block text-xs font-extrabold uppercase tracking-[0.22em] text-sage-600">
                   Mood
                   <select className="mt-2 w-full rounded-2xl border border-amber-100 bg-white/90 px-3 py-2.5 text-sm font-semibold text-ink outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100/70" onChange={(event) => setSelectedMood(event.target.value)} value={selectedMood}>
@@ -2819,12 +2819,12 @@ function App() {
               </div>
               <div className="flex flex-wrap items-center gap-2 xl:justify-end">
                 <button className="rounded-full bg-white px-3.5 py-2 text-sm font-bold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-sage-50" onClick={() => toggleBulletList(entryBodyRef, setBody)} title="Bullet points" type="button">List</button>
-                {quickEmojis.slice(0, 6).map((emoji) => (
-                  <button key={emoji} className="rounded-full bg-white px-3 py-1.5 text-base shadow-sm transition hover:-translate-y-0.5 hover:bg-sage-50" onClick={() => insertQuickEmoji(emoji)} type="button">
+                {quickEmojis.slice(0, 6).map((emoji, index) => (
+                  <button key={emoji} className={`rounded-full bg-white px-3 py-1.5 text-base shadow-sm transition hover:-translate-y-0.5 hover:bg-sage-50 ${index > 3 ? 'hidden sm:inline-flex' : ''}`} onClick={() => insertQuickEmoji(emoji)} type="button">
                     {emoji}
                   </button>
                 ))}
-                <label className="flex cursor-pointer items-center gap-2 rounded-full bg-sage-800 px-3.5 py-2 text-sm font-extrabold text-white shadow-lift transition hover:-translate-y-0.5 hover:bg-sage-700">
+                <label className="flex cursor-pointer items-center gap-2 rounded-full bg-sage-800 px-3 py-2 text-sm font-extrabold text-white shadow-lift transition hover:-translate-y-0.5 hover:bg-sage-700 sm:px-3.5">
                   <ImagePlus size={14} /> Photo
                   <input accept="image/*" className="hidden" onChange={handleEntryImageUpload} type="file" />
                 </label>
@@ -2834,20 +2834,20 @@ function App() {
 
           <div className="journal-editor-shell mt-2 rounded-[2rem] p-3 md:p-4">
             <div className="journal-editor-ribbon">quiet diary</div>
-            <div className="journal-editor-meta journal-editor-top mb-3 flex flex-wrap items-center justify-between gap-2 px-3 text-xs font-bold uppercase tracking-[0.24em] text-sage-500">
+            <div className="journal-editor-meta journal-editor-top mb-3 flex flex-wrap items-center justify-between gap-2 px-3 text-[11px] font-bold uppercase tracking-[0.22em] text-sage-500 sm:text-xs sm:tracking-[0.24em]">
               <span>{selectedMood} mood · {formatDate(new Date().toISOString())}</span>
               <span>{draftWordCount} words · soft, unfinished, enough</span>
             </div>
             <div
               ref={entryBodyRef}
-              className="journal-editor journal-editor-soft min-h-[30rem] w-full overflow-auto rounded-[1.75rem] px-6 py-6 outline-none"
+              className="journal-editor journal-editor-soft min-h-[24rem] w-full overflow-auto rounded-[1.75rem] px-6 py-6 outline-none sm:min-h-[30rem]"
               contentEditable
               suppressContentEditableWarning
               style={{ fontFamily: activeJournalFont, fontSize: activeJournalSize, lineHeight: 1.95, color: '#24312e', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
               onInput={(e) => setBody(e.currentTarget.innerHTML)}
               data-placeholder=""
             />
-            <div className="journal-editor-meta journal-editor-bottom mt-4 flex flex-wrap items-center justify-between gap-2 px-3 text-xs font-bold uppercase tracking-[0.24em] text-sage-500">
+            <div className="journal-editor-meta journal-editor-bottom mt-4 flex flex-wrap items-center justify-between gap-2 px-3 text-[11px] font-bold uppercase tracking-[0.22em] text-sage-500 sm:text-xs sm:tracking-[0.24em]">
               <span>One honest line is already a real page.</span>
               <span>{streak} day{streak === 1 ? '' : 's'} of returning</span>
             </div>
@@ -2856,12 +2856,12 @@ function App() {
             <div className="rounded-[1.2rem] border border-sage-100 bg-white/85 px-4 py-3 text-sm font-semibold leading-6 text-sage-700 shadow-sm">
               {journalNudge}
             </div>
-            <button className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-7 py-4 font-bold text-white shadow-lift transition hover:-translate-y-1 hover:bg-sage-800" type="submit">
+            <button className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-7 py-4 font-bold text-white shadow-lift transition hover:-translate-y-1 hover:bg-sage-800 sm:w-auto" type="submit">
               <Plus size={19} /> Keep this page
             </button>
           </div>
 
-          <div className="mt-6 rounded-[1.75rem] bg-gradient-to-r from-sage-50 via-white to-sand-50 p-6 shadow-inner ring-1 ring-white/70">
+          <div className="mt-6 rounded-[1.75rem] bg-gradient-to-r from-sage-50 via-white to-sand-50 p-4 shadow-inner ring-1 ring-white/70 sm:p-6">
             <div className="grid gap-6 lg:grid-cols-12">
               <div className="lg:col-span-7">
                 <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-sage-700"><Feather size={16} /> Gentle prompt</div>
@@ -2874,7 +2874,7 @@ function App() {
 
               <div className="flex flex-col gap-4 lg:col-span-5">
                 <div className="rounded-3xl bg-white/75 p-4 shadow-sm ring-1 ring-sage-100/70">
-                  <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-500">Today's little joys</p>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Today's little joys</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {quickEmojis.slice(0, 8).map((emoji) => (
                       <button
@@ -2891,7 +2891,7 @@ function App() {
                 </div>
 
                 <div className="rounded-3xl bg-white/75 p-4 shadow-sm ring-1 ring-sage-100/70">
-                  <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-500">Small ways to begin</p>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Small ways to begin</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {['What happened today', 'One good thing'].map((starter) => (
                       <button key={starter} className="rounded-full border border-sage-100 bg-white px-3.5 py-2 text-sm font-bold text-sage-700 transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50" onClick={() => addStarterLine(starter)} type="button">
@@ -2904,22 +2904,24 @@ function App() {
                 <div className="rounded-[1.75rem] bg-gradient-to-br from-sage-900 via-sage-800 to-sage-700 p-5 text-white shadow-soft">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-white/70">Quiet snapshot</p>
+                      <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-white/80">Quiet snapshot</p>
                       <h3 className="mt-2 text-xl font-extrabold leading-tight">Your page is already becoming a little archive.</h3>
                     </div>
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-2xl shadow-inner">{rewardLevel.emoji}</div>
                   </div>
                   <div className="mt-5 grid grid-cols-2 gap-3">
                     <div className="rounded-2xl bg-white/10 p-3 backdrop-blur">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/60">Pages kept</p>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/75">Pages kept</p>
                       <p className="mt-2 text-2xl font-extrabold">{entries.length}</p>
                     </div>
                     <div className="rounded-2xl bg-white/10 p-3 backdrop-blur">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/60">Soft streak</p>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/75">Soft streak</p>
                       <p className="mt-2 text-2xl font-extrabold">{streak}</p>
                     </div>
                   </div>
-                  <p className="mt-4 text-sm leading-7 text-white/80">{weeklyCheckIns >= weeklyGoal ? 'This week already has enough gentle attention in it.' : `${weeklyGoal - weeklyCheckIns} more check-in${weeklyGoal - weeklyCheckIns === 1 ? '' : 's'} if you want to fill this week softly.`}</p>
+                  <div className="mt-4 rounded-2xl bg-white/10 px-4 py-3 text-sm leading-7 text-white/92 ring-1 ring-white/10">
+                    {weeklyCheckIns >= weeklyGoal ? 'This week already has enough gentle attention in it.' : `${weeklyGoal - weeklyCheckIns} more check-in${weeklyGoal - weeklyCheckIns === 1 ? '' : 's'} if you want to fill this week softly.`}
+                  </div>
                   <button className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-extrabold text-sage-900 shadow-lift transition hover:-translate-y-0.5 hover:bg-sage-50" onClick={() => navigateToTab('memories')} type="button">
                     <BookOpen size={15} /> Visit your memories
                   </button>
@@ -3135,9 +3137,9 @@ function App() {
         )}
 
         {activeTab === 'memories' && (
-        <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <div className="mt-6 grid gap-6 pb-24 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:pb-0">
 
-          <div className="overflow-hidden rounded-[2rem] border border-white/80 bg-gradient-to-br from-white/88 via-sage-50/68 to-sand-50/72 p-5 shadow-soft backdrop-blur sm:p-6 lg:p-8">
+          <div className="overflow-hidden rounded-[2rem] border border-white/80 bg-gradient-to-br from-white/88 via-sage-50/68 to-sand-50/72 p-4 shadow-soft backdrop-blur sm:p-6 lg:p-8">
             <div className="mb-5 flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-sage-600 sm:text-sm sm:tracking-widest">Journal calendar</p>
@@ -3148,19 +3150,24 @@ function App() {
                 <CalendarDays size={20} />
               </div>
             </div>
-            <div className="mb-5 flex flex-wrap gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-sage-700">
+            <div className="mb-5 flex flex-wrap gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-sage-700 sm:text-xs sm:tracking-[0.18em]">
               <span className="rounded-full border border-white/90 bg-white/88 px-3 py-2 shadow-sm">{importantDateCount} marked dates</span>
               <span className="rounded-full border border-white/90 bg-white/88 px-3 py-2 shadow-sm">{selectedDateEntries.length} page{selectedDateEntries.length === 1 ? '' : 's'} on this day</span>
             </div>
-            <div className="mb-4 flex items-center justify-between rounded-[1.75rem] bg-white/82 p-3 shadow-inner">
-              <button className="rounded-full bg-white px-3 py-2 text-sm font-extrabold text-sage-800 shadow-sm" onClick={() => setCalendarMonth(shiftMonthKey(calendarMonth, -1))} type="button">‹</button>
-              <p className="font-extrabold text-sage-950">{formatMonthLabel(calendarMonth)}</p>
-              <button className="rounded-full bg-white px-3 py-2 text-sm font-extrabold text-sage-800 shadow-sm" onClick={() => setCalendarMonth(shiftMonthKey(calendarMonth, 1))} type="button">›</button>
+            <div className="mb-4 rounded-[1.5rem] bg-white/82 p-2.5 shadow-inner sm:rounded-[1.75rem] sm:p-3">
+              <div className="flex items-center justify-between gap-2">
+                <button className="rounded-full bg-white px-3 py-2 text-sm font-extrabold text-sage-800 shadow-sm" onClick={() => setCalendarMonth(shiftMonthKey(calendarMonth, -1))} type="button">‹</button>
+                <p className="text-center text-sm font-extrabold text-sage-950 sm:text-base">{formatMonthLabel(calendarMonth)}</p>
+                <button className="rounded-full bg-white px-3 py-2 text-sm font-extrabold text-sage-800 shadow-sm" onClick={() => setCalendarMonth(shiftMonthKey(calendarMonth, 1))} type="button">›</button>
+              </div>
+              <button className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-sage-100 bg-white px-3 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-sage-700 shadow-sm transition hover:bg-sage-50 sm:w-auto" onClick={() => { setCalendarMonth(todayISO().slice(0, 7)); setSelectedCalendarDate(todayISO()); }} type="button">
+                Jump to today
+              </button>
             </div>
-            <div className="grid grid-cols-7 gap-1 text-center text-xs font-extrabold uppercase tracking-wider text-sage-500">
+            <div className="grid grid-cols-7 gap-0.5 text-center text-[10px] font-extrabold uppercase tracking-[0.12em] text-sage-500 sm:gap-1 sm:text-xs sm:tracking-wider">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => <div key={day}>{day}</div>)}
             </div>
-            <div className="mt-2 grid grid-cols-7 gap-1">
+            <div className="mt-2 grid grid-cols-7 gap-0.5 sm:gap-1">
               {calendarDays.map((day, index) => {
                 const dayEntries = day ? entriesByDate[day.dateKey] || [] : [];
                 const hasImportantDate = day ? Boolean(importantDates[day.dateKey]) : false;
@@ -3168,7 +3175,7 @@ function App() {
                 const isToday = day?.dateKey === todayISO();
                 return day ? (
                   <button
-                    className={`relative aspect-square rounded-2xl border text-sm font-extrabold transition hover:-translate-y-0.5 ${isSelected ? 'border-sage-800 bg-sage-900 text-white shadow-lift' : isToday ? 'border-sage-300 bg-sage-100 text-sage-900' : 'border-sage-100 bg-white text-sage-800 hover:bg-sage-50'}`}
+                    className={`relative aspect-square rounded-xl border text-xs font-extrabold transition hover:-translate-y-0.5 sm:rounded-2xl sm:text-sm ${isSelected ? 'border-sage-800 bg-sage-900 text-white shadow-lift' : isToday ? 'border-sage-300 bg-sage-100 text-sage-900' : 'border-sage-100 bg-white text-sage-800 hover:bg-sage-50'}`}
                     key={day.dateKey}
                     onClick={() => {
                       setSelectedCalendarDate(day.dateKey);
@@ -3177,19 +3184,19 @@ function App() {
                     type="button"
                   >
                     {day.day}
-                    {hasImportantDate && <span className={`absolute right-1.5 top-1.5 text-[10px] ${isSelected ? 'text-sand-100' : 'text-rose-500'}`}>✦</span>}
-                    {dayEntries.length > 0 && <span className={`absolute bottom-1 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full ${isSelected ? 'bg-white' : 'bg-sage-700'}`} />}
+                    {hasImportantDate && <span className={`absolute right-1 top-1 text-[9px] sm:right-1.5 sm:top-1.5 sm:text-[10px] ${isSelected ? 'text-sand-100' : 'text-rose-500'}`}>✦</span>}
+                    {dayEntries.length > 0 && <span className={`absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full sm:h-1.5 sm:w-1.5 ${isSelected ? 'bg-white' : 'bg-sage-700'}`} />}
                   </button>
                 ) : <div key={`blank-${index}`} />;
               })}
             </div>
-            <div className="mt-5 rounded-[1.75rem] bg-white/92 p-4 shadow-inner">
-              <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="mt-5 rounded-[1.75rem] bg-white/92 p-4 shadow-inner sm:p-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
                 <div>
                   <p className="text-xs font-extrabold uppercase tracking-widest text-sage-600">{selectedCalendarDate}</p>
                   <p className="mt-1 text-sm font-semibold text-sage-700">Mark meaningful days and keep one small note with them.</p>
                 </div>
-                <button className={`rounded-full px-4 py-2 text-sm font-extrabold transition ${selectedImportantDate ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' : 'bg-sage-900 text-white hover:bg-sage-800'}`} onClick={() => toggleImportantDate(selectedCalendarDate)} type="button">
+                <button className={`w-full rounded-full px-4 py-2 text-sm font-extrabold transition sm:w-auto ${selectedImportantDate ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' : 'bg-sage-900 text-white hover:bg-sage-800'}`} onClick={() => toggleImportantDate(selectedCalendarDate)} type="button">
                   {selectedImportantDate ? 'Remove important date' : 'Mark as important'}
                 </button>
               </div>
@@ -3230,7 +3237,7 @@ function App() {
             </div>
           </div>
 
-          <div className="flex h-full flex-col overflow-hidden rounded-[2rem] border border-white/80 bg-gradient-to-br from-white/90 via-white/84 to-sand-50/72 p-5 shadow-soft backdrop-blur sm:p-6 lg:p-8">
+          <div className="flex h-full flex-col overflow-hidden rounded-[2rem] border border-white/80 bg-gradient-to-br from-white/90 via-white/84 to-sand-50/72 p-4 shadow-soft backdrop-blur sm:p-6 lg:p-8">
             <div className="mb-5 flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
                 <CalendarDays className="text-sage-700" size={18} />
@@ -3239,23 +3246,26 @@ function App() {
                   <p className="mt-1 text-sm font-semibold leading-7 text-sage-700">Open any page to read the full memory, with a calmer layout that uses the whole panel more gracefully.</p>
                 </div>
               </div>
-              <div className="rounded-full bg-sage-100 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.18em] text-sage-700">
+              <div className="rounded-full bg-sage-100 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.18em] text-sage-700 sm:text-[11px]">
                 {entries.length} saved
               </div>
             </div>
-            <div className="flex-1 space-y-4 overflow-y-auto pr-2 min-h-[32rem] xl:min-h-0">
+            <div className="flex-1 space-y-4 overflow-y-auto pr-0 min-h-[24rem] sm:min-h-[32rem] sm:pr-2 xl:min-h-0">
               {!entries.length && <p className="rounded-3xl bg-white p-5 font-semibold leading-7 text-sage-900 shadow-inner">No entries yet. Start with one sentence if that is all you have today.</p>}
               {entries.map((entry) => {
                 const effectiveMoodLabel = { 'Grounded': 'Happy', 'Soft': 'Calm', 'Okay': 'Neutral', 'Heavy': 'Sad', 'Stormy': 'Anxious' }[entry.mood] || entry.mood;
                 const mood = weatherOptions.find((item) => item.label === effectiveMoodLabel) || weatherOptions.find(m => m.label === entry.mood) || moods[2];
                 return (
                   <article
-                    className="group w-full cursor-pointer rounded-3xl border border-sage-100 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lift"
+                    className="group w-full cursor-pointer rounded-3xl border border-sage-100 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lift sm:p-5"
                     key={entry.id}
                     onClick={() => setSelectedEntry(entry)}
                   >
                     <div className="flex flex-col gap-1">
-                      <div className="mb-1 flex flex-wrap items-center gap-2 text-sm font-bold text-sage-700"><WeatherGlyph mood={mood} size="text-base" />{entry.mood} · {formatDate(entry.createdAt)}</div>
+                      <div className="mb-2 flex flex-wrap items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-sage-600">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-sage-50 px-3 py-1.5 text-sage-700"><WeatherGlyph mood={mood} size="text-base" /> {entry.mood}</span>
+                        <span className="rounded-full bg-white px-3 py-1.5 ring-1 ring-sage-100">{formatDate(entry.createdAt)}</span>
+                      </div>
                       <h3 className="text-xl font-extrabold leading-tight text-ink">{entry.title}</h3>
                       <p className="mt-3 whitespace-pre-line break-words leading-7 text-sage-800">
                         {(() => {
@@ -3264,12 +3274,14 @@ function App() {
                           const images = tempDiv.querySelectorAll('img');
                           let preview = tempDiv.textContent || tempDiv.innerText || '';
                           if (images.length > 0) preview = '📷 ' + preview;
-                          return preview.trim();
+                          preview = preview.trim();
+                          return preview.length > 180 ? `${preview.slice(0, 180).trim()}…` : preview;
                         })()}
                       </p>
                       <div className="mt-5 flex items-center justify-between gap-4 border-t border-sage-50 pt-4">
                         <div className="flex flex-wrap items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-sage-500">
                           <span className="rounded-full bg-sage-50 px-3 py-1">Open full page</span>
+                          {entry.prompt && <span className="rounded-full bg-rose-50 px-3 py-1 text-rose-700">Prompt kept</span>}
                           {entry.image && <span className="rounded-full bg-sand-50 px-3 py-1 text-sand-700">Photo saved</span>}
                         </div>
                         <button className="shrink-0 rounded-full p-2 text-sage-300 opacity-60 transition hover:bg-rose-50 hover:text-rose-500 group-hover:opacity-100" onClick={(event) => { event.stopPropagation(); deleteEntry(entry.id); }} type="button" aria-label="Delete entry">
@@ -3587,8 +3599,8 @@ function App() {
       </>
       )}
 
-      <div className="fixed inset-x-4 bottom-4 z-30 mx-auto max-w-xl rounded-[1.8rem] border border-white/85 bg-white/78 p-2 shadow-soft backdrop-blur-xl lg:hidden">
-        <div className="grid grid-cols-5 gap-2">
+      <div className="fixed inset-x-4 bottom-4 z-30 mx-auto max-w-xl rounded-[1.8rem] border border-white/85 bg-white/82 p-2 shadow-soft backdrop-blur-xl lg:hidden">
+        <div className="grid grid-cols-5 gap-1.5">
         {[
           { id: 'home', label: 'Home', icon: Waves },
           { id: 'write', label: 'Write', icon: PenLine },
@@ -3601,7 +3613,7 @@ function App() {
           return (
           <button
             key={tab.id}
-            className={`flex min-w-0 flex-col items-center gap-1 rounded-2xl px-1 py-2.5 transition ${isActive ? 'bg-white text-sage-950 shadow-lift ring-1 ring-white' : isWrite ? 'text-sage-900' : 'text-sage-500 hover:bg-white/70 hover:text-sage-800'}`}
+            className={`flex min-w-0 flex-col items-center gap-1 rounded-2xl px-1 py-2.5 transition ${isActive ? 'bg-white text-sage-950 shadow-lift ring-1 ring-white' : isWrite ? 'text-sage-900' : 'text-sage-600 hover:bg-white/70 hover:text-sage-800'}`}
             onClick={() => {
               if (tab.id === 'design') {
                 setCustomizerOpen(true);
@@ -3616,7 +3628,7 @@ function App() {
             <div className={`flex h-9 w-9 items-center justify-center rounded-2xl transition ${isActive ? 'bg-sage-900 text-white shadow-sm' : isWrite ? 'bg-sage-900 text-white shadow-sm' : 'bg-sage-50 text-sage-700'}`}>
               <tab.icon size={17} />
             </div>
-            <span className="text-[10px] uppercase tracking-[0.18em]">{tab.label}</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.14em]">{tab.label}</span>
             <span className={`h-1.5 w-1.5 rounded-full transition ${isActive ? 'bg-sage-700 opacity-100' : 'opacity-0'}`}></span>
           </button>
           );
