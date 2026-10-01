@@ -3,18 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Daily Reflection Journal | Quiet Journal Journey</title>
-    <meta name="description" content="Explore a daily reflection journal routine with Quiet Journal Journey for calmer evening check-ins, short reviews, and personal writing habits." />
-    <meta name="keywords" content="daily reflection journal, daily journaling habit, evening journal, reflection journal, daily reflection prompts" />
+    <title>Daily Reflection Journal for Calm Evening Check-Ins | Quiet Journal Journey</title>
+    <meta name="description" content="Build a daily reflection journal habit with Quiet Journal Journey for calm evening check-ins, clearer thoughts, and short personal reviews." />
+    <meta name="keywords" content="daily reflection journal, evening journal, daily journaling habit, reflection journal, daily reflection prompts, end of day journal" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <link rel="canonical" href="https://quietjournaljourney.vercel.app/daily-reflection-journal.html" />
     <meta property="og:type" content="article" />
-    <meta property="og:title" content="Daily Reflection Journal | Quiet Journal Journey" />
-    <meta property="og:description" content="A calmer daily reflection journal guide for evening check-ins, small habits, and personal clarity." />
+    <meta property="og:title" content="Daily Reflection Journal for Calm Evening Check-Ins | Quiet Journal Journey" />
+    <meta property="og:description" content="A daily reflection journal guide for calm evening check-ins, short reviews, and clearer thoughts." />
     <meta property="og:url" content="https://quietjournaljourney.vercel.app/daily-reflection-journal.html" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Daily Reflection Journal | Quiet Journal Journey" />
-    <meta name="twitter:description" content="Use this daily reflection journal guide to build a softer writing habit and calmer end-of-day check-ins." />
+    <meta name="twitter:title" content="Daily Reflection Journal for Calm Evening Check-Ins | Quiet Journal Journey" />
+    <meta name="twitter:description" content="Use this daily reflection journal guide to build a calmer evening writing habit and end-of-day review." />
     <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap');
 
@@ -45,7 +45,7 @@ body {
 
 a { color: inherit; }
 .container {
-  width: min(1120px, calc(100% - 32px));
+  width: min(1160px, calc(100% - 40px));
   margin: 0 auto;
 }
 .topbar {
@@ -78,12 +78,13 @@ a { color: inherit; }
   text-decoration: none;
 }
 .hero {
-  padding: 48px 0 24px;
+  padding: 52px 0 28px;
 }
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.35fr 0.9fr;
-  gap: 24px;
+  grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.82fr);
+  gap: 28px;
+  align-items: stretch;
 }
 .card {
   border: 1px solid var(--line);
@@ -167,7 +168,7 @@ a { color: inherit; }
 .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 18px; }
 .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.link-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.link-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .faq-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .mini-card,
 .feature,
@@ -219,6 +220,33 @@ a { color: inherit; }
   color: var(--muted);
   text-align: center;
 }
+.quiet-slot-shell {
+  padding: 28px;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
+  align-items: stretch;
+}
+.quiet-slot-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+}
+.quiet-slot-note {
+  border: 1px dashed var(--line);
+  background: rgba(255,255,255,0.6);
+  border-radius: 22px;
+  padding: 20px;
+}
+.quiet-slot-note strong {
+  display: block;
+  margin-bottom: 8px;
+}
+@media (max-width: 1180px) {
+  .link-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quiet-slot-shell { grid-template-columns: 1fr; }
+}
 @media (max-width: 980px) {
   .hero-grid,
   .grid-3,
@@ -230,9 +258,22 @@ a { color: inherit; }
   }
   .hero-copy,
   .hero-side,
-  .section-shell {
+  .section-shell,
+  .quiet-slot-shell {
     padding: 24px;
   }
+}
+@media (max-width: 760px) {
+  .container { width: calc(100% - 24px); }
+  .topbar { padding-top: 14px; }
+  .chip-row { gap: 8px; }
+  .chip { padding: 9px 12px; font-size: 13px; }
+  .hero { padding: 28px 0 18px; }
+  .hero h1 { line-height: 1.02; }
+  .hero-copy,
+  .hero-side,
+  .section-shell,
+  .quiet-slot-shell { padding: 20px; }
 }
     </style>
     <script type="application/ld+json">
@@ -240,7 +281,7 @@ a { color: inherit; }
         "@context": "https://schema.org",
         "@type": "Article",
         "headline": "Daily reflection journal",
-        "description": "A support page for building a daily reflection journal routine with calm prompts and simple writing steps.",
+        "description": "A support page for building a daily reflection journal and end of day journal routine with calm prompts and simple writing steps.",
         "author": {
           "@type": "Organization",
           "name": "Quiet Journal Journey"
@@ -252,6 +293,67 @@ a { color: inherit; }
         "mainEntityOfPage": "https://quietjournaljourney.vercel.app/daily-reflection-journal.html"
       }
     </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Quiet Journal Journey",
+            "item": "https://quietjournaljourney.vercel.app/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Daily Reflection Journal",
+            "item": "https://quietjournaljourney.vercel.app/daily-reflection-journal.html"
+          }
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is a daily reflection journal?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A daily reflection journal is a simple writing habit where you review the day, name what mattered, and notice what you want to carry forward or let go."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How long should an end of day journal entry be?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "It can be very short. One to five lines is enough when you want a sustainable end-of-day journaling routine."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I use prompts for daily reflection?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Reflection usually feels easier when you keep a few daily writing prompts nearby for harder evenings."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Should daily reflection include mood tracking?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "It can. Pairing reflection with the mood journal flow helps you notice emotional patterns across the week."
+            }
+          }
+        ]
+      }
+    </script>
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6094559377350805" crossorigin="anonymous"></script>
   </head>
   <body>
     <div class="topbar">
@@ -269,10 +371,10 @@ a { color: inherit; }
     <header class="hero">
       <div class="container hero-grid">
         <section class="card hero-copy">
-          <div class="eyebrow">Support SEO page</div>
-          <h1>Daily reflection journal for calmer evenings and clearer thoughts.</h1>
+          <div class="eyebrow">Evening reflection guide</div>
+          <h1>Daily reflection journal for calm evening check-ins and clearer thoughts.</h1>
           <p>
-            A daily reflection journal does not need to be long or intense. Quiet Journal Journey supports small evening check-ins, end-of-day clarity, and journaling habits that can survive busy weeks.
+            A daily reflection journal does not need to be long or intense. Quiet Journal Journey supports short evening reviews, calmer end-of-day check-ins, and a writing habit that can survive busy weeks.
           </p>
           <div class="actions">
             <a class="button button-primary" href="/">Open Quiet Journal Journey</a>
@@ -298,6 +400,9 @@ a { color: inherit; }
       <section class="section">
         <div class="container card section-shell">
           <h2>A simple daily reflection journal routine</h2>
+          <p class="section-intro">
+            A daily reflection journal works best when it feels light enough to repeat. This end of day journal routine gives you a calm structure for noticing the day, naming a feeling, and ending with a small intention.
+          </p>
           <div class="grid-2">
             <article class="step">
               <h3>1. Start with one sentence</h3>
@@ -321,7 +426,7 @@ a { color: inherit; }
 
       <section class="section">
         <div class="container card section-shell">
-          <h2>Daily reflection prompts</h2>
+          <h2>Daily reflection prompts for end-of-day journaling</h2>
           <div class="grid-3">
             <article class="prompt">
               <h3>For hard days</h3>
@@ -339,6 +444,30 @@ a { color: inherit; }
         </div>
       </section>
 
+      <section class="section">
+        <div class="container card section-shell">
+          <h2>Frequently asked questions about daily reflection journaling</h2>
+          <div class="faq-grid">
+            <article class="faq">
+              <h3>What is a daily reflection journal?</h3>
+              <p>A daily reflection journal is a simple writing habit where you review the day, name what mattered, and notice what you want to carry forward or let go.</p>
+            </article>
+            <article class="faq">
+              <h3>How long should an end of day journal entry be?</h3>
+              <p>It can be very short. One to five lines is enough when you want a sustainable end-of-day journaling routine.</p>
+            </article>
+            <article class="faq">
+              <h3>Can I use prompts for daily reflection?</h3>
+              <p>Yes. Reflection usually feels easier when you keep a few <a href="/journal-prompts.html">daily writing prompts</a> nearby for harder evenings.</p>
+            </article>
+            <article class="faq">
+              <h3>Should daily reflection include mood tracking?</h3>
+              <p>It can. Pairing reflection with the <a href="/mood-journal.html">mood journal</a> flow helps you notice emotional patterns across the week.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section class="related">
         <div class="container card section-shell">
           <h2>Related journal pages</h2>
@@ -348,6 +477,25 @@ a { color: inherit; }
             <article class="link-card"><h3>Diary with lock</h3><p class="muted">Explore the privacy-focused landing page.</p><a href="/online-diary-with-lock.html">Open page</a></article>
             <article class="link-card"><h3>Journal prompts</h3><p class="muted">Get more prompt ideas for writing days.</p><a href="/journal-prompts.html">Open page</a></article>
             <article class="link-card"><h3>Main app</h3><p class="muted">Return to the full journaling experience.</p><a href="/">Open app</a></article>
+          </div>
+        </div>
+      </section>
+      <section class="related">
+        <div class="container card quiet-slot-shell">
+          <div class="quiet-slot-copy">
+            <div>
+              <p class="eyebrow">Quiet corner</p>
+              <h2>There is room here for future recommendations without disturbing the journal.</h2>
+              <p class="muted">This block stays outside the main writing and reading flow, so future recommendations can appear here without covering content, interrupting the page, or causing awkward layout shifts on mobile or desktop.</p>
+            </div>
+            <div class="actions">
+              <a class="button button-primary" href="/">Open the journal</a>
+              <a class="button button-secondary" href="/mood-journal.html">Keep reading</a>
+            </div>
+          </div>
+          <div class="quiet-slot-note">
+            <strong>Reader-friendly placement</strong>
+            <p>For now, this area holds a calm pause before the footer. Later it can support additional recommendations while keeping the core journal experience stable and easy to use.</p>
           </div>
         </div>
       </section>
