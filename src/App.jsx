@@ -636,6 +636,55 @@ const seoFaqs = [
 
 const seoGuidePages = [
   {
+    label: 'Popular guide',
+    title: 'Web based diary',
+    text: 'Access your personal writing from anywhere, requiring no downloads.',
+    href: '/web-based-diary.html'
+  },
+  {
+    label: 'Helpful read',
+    title: 'Browser based journal',
+    text: 'A fast, beautiful journal for writing thoughts instantly without installing apps.',
+    href: '/browser-based-journal.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Cozy journal app',
+    text: 'A warm, comforting space designed to feel like a safe haven for your thoughts.',
+    href: '/cozy-journal-app.html'
+  },
+  {
+    label: 'Helpful read',
+    title: 'Calm diary app',
+    text: 'A quiet, distraction-free environment to reflect and find peace.',
+    href: '/calm-diary-app.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Self discovery journal',
+    text: 'Explore your inner thoughts with online prompts and reflection guides.',
+    href: '/self-discovery-journal.html'
+  },
+  {
+    label: 'Helpful read',
+    title: 'Morning pages app',
+    text: 'Start your day with clarity through stream-of-consciousness writing.',
+    href: '/morning-pages-app.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'CBT journal app',
+    text: 'Track moods and reframe thoughts to support your mental health journey.',
+    href: '/cbt-journal-app.html'
+  },
+  {
+    label: 'Helpful read',
+    title: 'Therapy journal online',
+    text: 'Keep track of breakthroughs, session notes, and emotional patterns securely.',
+    href: '/therapy-journal-online.html'
+  },
+
+  {
     label: 'Helpful read',
     title: 'Aesthetic journal app',
     text: 'For writers who appreciate a beautiful, calming space with elegant typography and minimalistic design.',
@@ -1002,26 +1051,35 @@ const seoGuideGroups = [
   {
     title: 'Start a private diary',
     description: 'Best for visitors comparing private diary, online diary, and secure journal options.',
-    links: seoGuidePages.filter((page) => ['Private online diary guide', 'Online diary guide', 'Best online diary', 'Online diary app', 'Diary website', 'Write diary online', 'My online diary', 'Online diary for students', 'Online diary with lock guide', 'Online diary with password', 'Free online journal with lock', 'Online journal with lock', 'Private journal app guide', 'Private diary app for adults', 'Private diary online free', 'Personal diary app', 'Secure diary app', 'Diary with password', 'Secure online journal guide', 'Personal diary online guide', 'Online diary for adults guide', 'Diary app for teens', 'Secure online journal'].includes(page.title))
+    links: seoGuidePages.filter((page) => ['Private online diary guide', 'Online diary guide', 'Best online diary', 'Online diary app', 'Diary website', 'Write diary online', 'My online diary', 'Online diary for students', 'Online diary with lock guide', 'Online diary with password', 'Free online journal with lock', 'Online journal with lock', 'Private journal app guide', 'Private diary app for adults', 'Private diary online free', 'Personal diary app', 'Secure diary app', 'Diary with password', 'Secure online journal guide', 'Personal diary online guide', 'Online diary for adults guide', 'Diary app for teens', 'Secure online journal', 'Cozy journal app', 'Therapy journal online'].includes(page.title))
   },
   {
     title: 'Build a writing habit',
     description: 'Best for people who want a repeatable routine, daily check-ins, and a softer habit tracker.',
-    links: seoGuidePages.filter((page) => ['Daily journal app guide', 'Daily check in journal guide', 'Daily journaling app', 'Journaling routine', 'Daily writing habit', 'Habit tracker journal', 'Daily mental health journal', 'Online diary for mental health', 'Digital bullet journal'].includes(page.title))
+    links: seoGuidePages.filter((page) => ['Daily journal app guide', 'Daily check in journal guide', 'Daily journaling app', 'Journaling routine', 'Daily writing habit', 'Habit tracker journal', 'Daily mental health journal', 'Online diary for mental health', 'Digital bullet journal', 'Morning pages app', 'CBT journal app'].includes(page.title))
   },
   {
     title: 'Find prompts and reflection ideas',
     description: 'Best for visitors who need help starting, reflecting, or writing without pressure.',
-    links: seoGuidePages.filter((page) => ['How to write a diary', 'Journal prompts', 'Digital journal with prompts', 'Daily reflection journal', 'Self reflection journal', 'Morning journal prompts', 'Evening journal prompts', 'Reflection prompts for adults', 'Gratitude journal guide', 'Self care journal guide', 'Daily self care journal', 'Journal app for anxiety', 'Private journal for stress', 'Daily reflection app', 'Gratitude journal online', 'Private diary for overthinkers'].includes(page.title))
+    links: seoGuidePages.filter((page) => ['How to write a diary', 'Journal prompts', 'Digital journal with prompts', 'Daily reflection journal', 'Self reflection journal', 'Morning journal prompts', 'Evening journal prompts', 'Reflection prompts for adults', 'Gratitude journal guide', 'Self care journal guide', 'Daily self care journal', 'Journal app for anxiety', 'Private journal for stress', 'Daily reflection app', 'Gratitude journal online', 'Private diary for overthinkers', 'Calm diary app', 'Self discovery journal'].includes(page.title))
   },
   {
     title: 'Compare diary and journal tools',
     description: 'Best for searchers evaluating apps, online journals, digital diaries, mood journals, and calmer writing support.',
-    links: seoGuidePages.filter((page) => ['Diary app guide', 'Best diary app guide', 'Best online diary', 'Online diary app', 'Diary website', 'Write diary online', 'Diary with password', 'Online diary for students', 'Private diary online free', 'My online diary', 'Online diary with password', 'Diary app for teens', 'Free online journal with lock', 'Where to write a diary online', 'Online journal guide', 'Journal app guide', 'Journal app for anxiety', 'Private journal for stress', 'Daily reflection app', 'Journal for overthinking', 'Digital diary guide', 'Mood journal guide', 'Free online diary guide', 'Aesthetic journal app', 'Mood tracker diary', 'Minimalist diary app'].includes(page.title))
+    links: seoGuidePages.filter((page) => ['Diary app guide', 'Best diary app guide', 'Best online diary', 'Online diary app', 'Diary website', 'Write diary online', 'Diary with password', 'Online diary for students', 'Private diary online free', 'My online diary', 'Online diary with password', 'Diary app for teens', 'Free online journal with lock', 'Where to write a diary online', 'Online journal guide', 'Journal app guide', 'Journal app for anxiety', 'Private journal for stress', 'Daily reflection app', 'Journal for overthinking', 'Digital diary guide', 'Mood journal guide', 'Free online diary guide', 'Aesthetic journal app', 'Mood tracker diary', 'Minimalist diary app', 'Web based diary', 'Browser based journal'].includes(page.title))
   }
 ];
 
 const seoPopularSearches = [
+  { label: 'Web based diary', href: '/web-based-diary.html' },
+  { label: 'Browser based journal', href: '/browser-based-journal.html' },
+  { label: 'Cozy journal app', href: '/cozy-journal-app.html' },
+  { label: 'Calm diary app', href: '/calm-diary-app.html' },
+  { label: 'Self discovery journal', href: '/self-discovery-journal.html' },
+  { label: 'Morning pages app', href: '/morning-pages-app.html' },
+  { label: 'CBT journal app', href: '/cbt-journal-app.html' },
+  { label: 'Therapy journal online', href: '/therapy-journal-online.html' },
+
   { label: 'Aesthetic journal app', href: '/aesthetic-journal-app.html' },
   { label: 'Mood tracker diary', href: '/mood-tracker-diary.html' },
   { label: 'Gratitude journal online', href: '/gratitude-journal-online.html' },
@@ -2119,6 +2177,7 @@ function App() {
   const [showSeoStudioKey, setShowSeoStudioKey] = useState(false);
   const [adminViewMode, setAdminViewMode] = useState(() => localStorage.getItem(ADMIN_VIEW_MODE_STORAGE_KEY) || 'master');
   const [seoStudioModelUsed, setSeoStudioModelUsed] = useState('');
+  const [showAllSearches, setShowAllSearches] = useState(false);
   const entryBodyRef = useRef(null);
   const companionMediaRef = useRef(null);
   const plannerBoardRef = useRef(plannerBoard);
@@ -4084,8 +4143,8 @@ function App() {
         <div className="site-nav-shell mx-auto max-w-7xl rounded-[2rem] border border-white/80 bg-white/78 p-3 shadow-soft backdrop-blur-xl lg:p-4">
           <div className="flex flex-col gap-2.5 lg:gap-3 xl:flex-row xl:items-center xl:justify-between">
             <a className="flex items-center gap-3" href="#home" onClick={() => openHomeSection('home')}>
-              <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-sage-700 text-white shadow-lift">
-                <Waves size={23} />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-3xl bg-white shadow-lift ring-1 ring-sage-100 overflow-hidden">
+                <img src="/logo-transparent.png" alt="Quiet Journal Logo" className="h-10 w-10 object-contain" />
               </div>
               <div>
                 <p className="font-display text-2xl font-bold text-sage-900">Quiet Journal Journey</p>
@@ -4454,9 +4513,18 @@ function App() {
                     <button className="text-sm font-extrabold text-sage-800 underline decoration-sage-300 underline-offset-4" onClick={() => openHomeSection('guides')} type="button">View all guide collections</button>
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2.5">
-                    {seoPopularSearches.map((item) => (
+                    {(showAllSearches ? seoPopularSearches : seoPopularSearches.slice(0, 8)).map((item) => (
                       <a className="rounded-full border border-sage-200 bg-sage-50/70 px-4 py-2 text-sm font-bold text-sage-800 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href={item.href} key={item.href}>{item.label}</a>
                     ))}
+                    {!showAllSearches && seoPopularSearches.length > 8 && (
+                      <button 
+                        onClick={() => setShowAllSearches(true)}
+                        className="rounded-full border border-sage-200 border-dashed bg-white/50 px-4 py-2 text-sm font-bold text-sage-600 transition hover:bg-white hover:text-sage-900"
+                        type="button"
+                      >
+                        + {seoPopularSearches.length - 8} more
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
