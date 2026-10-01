@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 import { collection, deleteDoc, doc, onSnapshot, orderBy, query, setDoc } from 'firebase/firestore';
+import { getToken, onMessage } from 'firebase/messaging';
 import {
   ArrowUp,
   BookOpen,
@@ -30,7 +31,7 @@ import {
   Trash2,
   Waves
 } from 'lucide-react';
-import { auth, db, googleProvider } from './firebase';
+import { auth, db, getMessagingIfSupported, googleProvider } from './firebase';
 
 const STORAGE_KEY = 'quiet-harbor-journal-v1';
 const PIN_KEY = 'quiet-harbor-pin-v1';
@@ -39,6 +40,13 @@ const CUSTOM_QUOTES_STORAGE_KEY = 'quiet-journal-custom-quotes-v1';
 const QUOTE_STYLE_STORAGE_KEY = 'quiet-journal-quote-style-v1';
 const JOURNAL_STYLE_STORAGE_KEY = 'quiet-journal-style-v1';
 const COMPANION_STORAGE_KEY = 'quiet-journal-companion-v1';
+const PLANNER_STORAGE_KEY = 'quiet-journal-planner-v1';
+const IMPORTANT_DATES_STORAGE_KEY = 'quiet-journal-important-dates';
+const IMPORTANT_DATES_REMINDER_LOG_KEY = 'quiet-journal-important-date-reminder-log-v1';
+const CLOUD_PLANNER_DOC_ID = 'plannerBoard';
+const CLOUD_IMPORTANT_DATES_DOC_ID = 'importantDates';
+const CLOUD_PUSH_NOTIFICATIONS_DOC_ID = 'pushNotifications';
+const WEB_PUSH_STATUS_STORAGE_KEY = 'quiet-journal-web-push-status-v1';
 const MASTER_ADMIN_EMAIL = 'ngtzewei96@gmail.com';
 const SEO_STUDIO_API_KEY_STORAGE_KEY = 'quiet-journal-seo-studio-api-key-v1';
 const SEO_STUDIO_PROMPT_STORAGE_KEY = 'quiet-journal-seo-studio-prompt-v1';
@@ -94,11 +102,12 @@ const quoteSizeOptions = [
 ];
 
 const moods = [
-  { label: 'Happy', emoji: '☀️', value: 5, color: 'bg-amber-300' },
-  { label: 'Calm', emoji: '🏖️', value: 4, color: 'bg-sage-300' },
-  { label: 'Neutral', emoji: '⛅', value: 3, color: 'bg-slate-200' },
-  { label: 'Sad', emoji: '🌧️', value: 2, color: 'bg-blue-200' },
-  { label: 'Anxious', emoji: '🌪️', value: 1, color: 'bg-rose-200' }
+  { label: 'Happy', emoji: '☀️', value: 6, color: 'bg-amber-300' },
+  { label: 'Calm', emoji: '🏖️', value: 5, color: 'bg-sage-300' },
+  { label: 'Neutral', emoji: '⛅', value: 4, color: 'bg-slate-200' },
+  { label: 'Sad', emoji: '🌧️', value: 3, color: 'bg-blue-200' },
+  { label: 'Anxious', emoji: '🌪️', value: 2, color: 'bg-rose-200' },
+  { label: 'Angry', emoji: '🔥', value: 1, color: 'bg-orange-300' }
 ];
 
 const prompts = [
@@ -108,7 +117,29 @@ const prompts = [
   'What do you need to hear from yourself today?',
   'What is one thing you can let go of?',
   'What small win did you have today?',
-  'How would you describe your mood to a friend?'
+  'How would you describe your mood to a friend?',
+  'If anger is here, what is it trying to protect?'
+];
+
+const writingInvitations = [
+  {
+    title: 'What stayed with me today',
+    mood: 'Calm',
+    opener: 'Today stayed with me because',
+    detail: 'Begin with the moment you keep replaying, even if it seems small.'
+  },
+  {
+    title: 'The honest version',
+    mood: 'Neutral',
+    opener: 'The honest version is',
+    detail: 'No polished story needed — just what happened, what it meant, or what it changed.'
+  },
+  {
+    title: 'Something I want to remember',
+    mood: 'Happy',
+    opener: 'I want to remember',
+    detail: 'Save a tiny scene, a sentence someone said, or one ordinary detail future you may love.'
+  }
 ];
 
 const rewardMessages = [
@@ -214,6 +245,30 @@ const tips = [
 
 const wellnessArticles = [
   {
+    title: 'How to start a journaling habit for anxiety',
+    read: 'Article • 4 min read',
+    body: 'Writing down your thoughts can be a powerful tool for managing anxiety. However, starting a journaling habit often feels overwhelming. This comprehensive guide will help you build a journaling routine that feels gentle, sustainable, and truly helpful for your mental health.',
+    href: '/article-how-to-start-journaling-habit.html'
+  },
+  {
+    title: 'The unexpected benefits of a private online diary',
+    read: 'Article • 4 min read',
+    body: 'For centuries, people have kept written records of their lives. Today, transitioning that practice to a private online diary offers profound psychological benefits. From enhanced emotional regulation to unparalleled convenience, digital journaling is a modern tool for mindfulness.',
+    href: '/article-benefits-of-private-online-diary.html'
+  },
+  {
+    title: 'Why daily reflection is essential for mental health',
+    read: 'Article • 5 min read',
+    body: 'We live in a culture that prioritizes forward momentum. In this relentless pace, taking time for daily reflection is not just a luxury; it is a fundamental requirement for maintaining long-term mental health and building deep self-awareness.',
+    href: '/article-daily-reflection-mental-health.html'
+  },
+  {
+    title: 'Journaling prompts for deep self-discovery',
+    read: 'Article • 4 min read',
+    body: 'Staring at a blank page can be intimidating. When you want to journal but don\'t know where to start, these carefully curated journaling prompts act as a gentle guide, leading you toward profound self-discovery and emotional clarity without the pressure.',
+    href: '/article-journaling-prompts-self-discovery.html'
+  },
+  {
     title: 'How to start journaling when you do not know what to write',
     read: 'Quick note',
     body: 'Start by describing the present moment instead of trying to summarize your whole life. Write what the room feels like, what your body is asking for, and one sentence that begins with “Right now…”. This removes the pressure to be deep and turns journaling into a simple check-in.'
@@ -272,6 +327,21 @@ const seoLandingBlocks = [
     href: '/private-online-diary.html'
   },
   {
+    title: 'Online diary',
+    text: 'Explore an online diary that feels gentle, private, and easy to return to when you want a softer daily writing habit.',
+    href: '/online-diary.html'
+  },
+  {
+    title: 'Diary app',
+    text: 'See how a diary app can stay calm, beginner-friendly, and private enough for quick check-ins or longer reflection.',
+    href: '/diary-app.html'
+  },
+  {
+    title: 'Best diary app',
+    text: 'Compare what makes the best diary app feel quieter, easier to keep, and more supportive of honest daily reflection.',
+    href: '/best-diary-app.html'
+  },
+  {
     title: 'Where to write a diary online',
     text: 'A practical guide for people comparing where to write a diary online, what to look for, and how to choose a softer digital diary space.',
     href: '/where-to-write-a-diary-online.html'
@@ -280,6 +350,16 @@ const seoLandingBlocks = [
     title: 'Online journal',
     text: 'Explore a calmer online journal flow for daily writing, emotional clarity, and private reflection that feels lighter to return to.',
     href: '/online-journal.html'
+  },
+  {
+    title: 'Journal app',
+    text: 'Find a journal app that feels calmer to use, easier to revisit, and more supportive of real daily reflection.',
+    href: '/journal-app.html'
+  },
+  {
+    title: 'Digital diary',
+    text: 'See how a digital diary can feel lighter to keep, easier to revisit, and more natural to use for honest everyday reflection.',
+    href: '/digital-diary.html'
   },
   {
     title: 'Mood journal',
@@ -292,6 +372,11 @@ const seoLandingBlocks = [
     href: '/online-diary-with-lock.html'
   },
   {
+    title: 'How to write a diary',
+    text: 'Read a calmer beginner guide for how to write a diary when you want simple steps, softer prompts, and an easier way to start.',
+    href: '/how-to-write-a-diary.html'
+  },
+  {
     title: 'Journal prompts',
     text: 'Use prompt-based journaling when the blank page feels too open and you want softer ways to begin writing.',
     href: '/journal-prompts.html'
@@ -300,13 +385,208 @@ const seoLandingBlocks = [
     title: 'Daily reflection journal',
     text: 'Build a calmer evening journaling habit with short check-ins, gentle review questions, and quieter end-of-day notes.',
     href: '/daily-reflection-journal.html'
+  },
+  {
+    title: 'Free online diary',
+    text: 'Explore a free online diary option that still feels calm, personal, and supportive enough for everyday writing.',
+    href: '/free-online-diary.html'
+  },
+  {
+    title: 'Daily journal app',
+    text: 'Find a daily journal app that helps you come back to one honest check-in, short note, or reflection at a time.',
+    href: '/daily-journal-app.html'
+  },
+  {
+    title: 'Gratitude journal',
+    text: 'Use gratitude journaling in a softer way, with room for small wins, ordinary moments, and grounded daily appreciation.',
+    href: '/gratitude-journal.html'
+  },
+  {
+    title: 'Private journal app',
+    text: 'Find a private journal app that feels personal, uncluttered, and easier to trust with honest everyday writing.',
+    href: '/private-journal-app.html'
+  },
+  {
+    title: 'Secure online journal',
+    text: 'Explore a secure online journal approach that keeps privacy cues clear while still feeling calm and welcoming to use.',
+    href: '/secure-online-journal.html'
+  },
+  {
+    title: 'Self care journal',
+    text: 'Use a self care journal for gentler check-ins, steadier reflection, and small daily ways to notice what helps.',
+    href: '/self-care-journal.html'
+  },
+  {
+    title: 'Personal diary online',
+    text: 'Keep a personal diary online when you want a softer place for private thoughts, everyday life notes, and honest reflection.',
+    href: '/personal-diary-online.html'
+  },
+  {
+    title: 'Online diary for adults',
+    text: 'Find an online diary for adults that feels calm, personal, and realistic enough for busy everyday life.',
+    href: '/online-diary-for-adults.html'
+  },
+  {
+    title: 'Daily check in journal',
+    text: 'Use a daily check in journal for short emotional check-ins, small reminders, and steadier self-awareness over time.',
+    href: '/daily-check-in-journal.html'
+  },
+  {
+    title: 'Morning journal prompts',
+    text: 'Start the day with morning journal prompts that feel soft, useful, and realistic before life gets noisy.',
+    href: '/morning-journal-prompts.html'
+  },
+  {
+    title: 'Evening journal prompts',
+    text: 'Use evening journal prompts to slow the day down, clear your head, and keep a calmer end-of-day habit.',
+    href: '/evening-journal-prompts.html'
+  },
+  {
+    title: 'Reflection prompts for adults',
+    text: 'Explore reflection prompts for adults that feel grounded, private, and helpful for real everyday life.',
+    href: '/reflection-prompts-for-adults.html'
+  },
+  {
+    title: 'Journaling routine',
+    text: 'Build a journaling routine that feels realistic, calm, and easy to repeat even during busy weeks.',
+    href: '/journaling-routine.html'
+  },
+  {
+    title: 'Daily writing habit',
+    text: 'Create a daily writing habit with small check-ins, flexible prompts, and a private place to return to.',
+    href: '/daily-writing-habit.html'
+  },
+  {
+    title: 'Habit tracker journal',
+    text: 'Use a habit tracker journal to connect practical routines with gentle reflection and personal notes.',
+    href: '/habit-tracker-journal.html'
+  },
+  {
+    title: 'Online journal with lock',
+    text: 'Choose an online journal with lock when you want private writing, calmer reflection, and clearer browser-based protection.',
+    href: '/online-journal-with-lock.html'
+  },
+  {
+    title: 'Daily journaling app',
+    text: 'Find a daily journaling app that makes quick check-ins, prompts, and repeatable writing habits easier to keep.',
+    href: '/daily-journaling-app.html'
+  },
+  {
+    title: 'Journal for overthinking',
+    text: 'Use a journal for overthinking to slow spirals down, name what feels loud, and return to calmer thoughts.',
+    href: '/journal-for-overthinking.html'
+  },
+  {
+    title: 'Self reflection journal',
+    text: 'Keep a self reflection journal for private questions, calmer self-awareness, and grounded end-of-day insight.',
+    href: '/self-reflection-journal.html'
+  },
+  {
+    title: 'Best online diary',
+    text: 'Compare what makes the best online diary feel private, easy to keep, and gentle enough for honest daily writing.',
+    href: '/best-online-diary.html'
+  },
+  {
+    title: 'Private diary app for adults',
+    text: 'Choose a private diary app for adults when you want calmer writing, privacy, and a more grown-up journaling rhythm.',
+    href: '/private-diary-app-for-adults.html'
+  },
+  {
+    title: 'Digital journal with prompts',
+    text: 'Use a digital journal with prompts when you want help starting, reflecting, and keeping a steadier writing habit.',
+    href: '/digital-journal-with-prompts.html'
+  },
+  {
+    title: 'Daily mental health journal',
+    text: 'Keep a daily mental health journal for mood check-ins, reflection, and softer emotional awareness through everyday writing.',
+    href: '/daily-mental-health-journal.html'
+  },
+  {
+    title: 'Online diary app',
+    text: 'Find an online diary app that makes private writing, quick check-ins, and calmer daily journaling easier to keep.',
+    href: '/online-diary-app.html'
+  },
+  {
+    title: 'Diary website',
+    text: 'Choose a diary website when you want a simple online place for personal writing, prompts, and gentle reflection.',
+    href: '/diary-website.html'
+  },
+  {
+    title: 'Personal diary app',
+    text: 'Use a personal diary app for private thoughts, mood tracking, and small honest daily writing moments.',
+    href: '/personal-diary-app.html'
+  },
+  {
+    title: 'Secure diary app',
+    text: 'Pick a secure diary app when you want calmer private journaling with clearer protection and personal boundaries.',
+    href: '/secure-diary-app.html'
+  },
+  {
+    title: 'Write diary online',
+    text: 'Write diary online when you want a simple private place to keep daily thoughts, small memories, and honest reflection in one browser-based space.',
+    href: '/write-diary-online.html'
+  },
+  {
+    title: 'Diary with password',
+    text: 'Choose a diary with password protection when you want private writing, a calmer sense of safety, and easier day-to-day journaling.',
+    href: '/diary-with-password.html'
+  },
+  {
+    title: 'My online diary',
+    text: 'Use my online diary style writing when you want a personal digital space that feels like your own corner of the day.',
+    href: '/my-online-diary.html'
+  },
+  {
+    title: 'Journal app for anxiety',
+    text: 'Find a journal app for anxiety that helps slow racing thoughts, name feelings gently, and keep private check-ins simple.',
+    href: '/journal-app-for-anxiety.html'
+  },
+  {
+    title: 'Online diary for students',
+    text: 'Explore an online diary for students that makes private writing, stress check-ins, and daily reflection feel simple and manageable.',
+    href: '/online-diary-for-students.html'
+  },
+  {
+    title: 'Private diary online free',
+    text: 'Choose a private diary online free option when you want personal writing space, calm design, and easy daily access without extra friction.',
+    href: '/private-diary-online-free.html'
+  },
+  {
+    title: 'Daily self care journal',
+    text: 'Use a daily self care journal to notice what you need, reflect gently, and keep supportive habits in a calmer writing space.',
+    href: '/daily-self-care-journal.html'
+  },
+  {
+    title: 'Online diary with password',
+    text: 'Pick an online diary with password protection when you want a private digital diary that feels both safe and easy to return to.',
+    href: '/online-diary-with-password.html'
+  },
+  {
+    title: 'Diary app for teens',
+    text: 'Explore a diary app for teens that offers a private place for feelings, school stress, identity, and daily reflection without extra pressure.',
+    href: '/diary-app-for-teens.html'
+  },
+  {
+    title: 'Free online journal with lock',
+    text: 'Choose a free online journal with lock support when you want privacy, simple writing, and a calmer digital journal you can return to easily.',
+    href: '/free-online-journal-with-lock.html'
+  },
+  {
+    title: 'Private journal for stress',
+    text: 'Use a private journal for stress to unload pressure, name what feels heavy, and keep personal reflection in a quiet writing space.',
+    href: '/private-journal-for-stress.html'
+  },
+  {
+    title: 'Daily reflection app',
+    text: 'Find a daily reflection app that helps you slow down, notice patterns, and keep honest check-ins simple enough to sustain.',
+    href: '/daily-reflection-app.html'
   }
 ];
 
 const seoFaqs = [
   {
     question: 'What is Quiet Journal Journey?',
-    answer: 'Quiet Journal Journey is a private online diary and mood journal for daily reflection, guided prompts, customizable journaling, and optional lock protection.'
+    answer: 'Quiet Journal Journey is an online diary, private online diary, diary app, and journal app for daily reflection, guided prompts, customizable journaling, and optional lock protection.'
   },
   {
     question: 'Can I use Quiet Journal Journey as a private online diary?',
@@ -329,21 +609,104 @@ const seoFaqs = [
     answer: 'Quiet Journal Journey gives you a calm place to write a diary online, save private entries, track moods, and return to your thoughts gently from any browser.'
   },
   {
+    question: 'How do I start writing a diary?',
+    answer: 'Start small. Pick one honest detail from the day, one feeling, or one thing you want to remember. Quiet Journal Journey also includes prompts and beginner-friendly diary pages to help you start.'
+  },
+  {
     question: 'Where can I write a journal online?',
     answer: 'If you want a softer online journal, Quiet Journal Journey works as a digital journal for daily writing, private reflection, prompts, and optional lock protection.'
   },
   {
+    question: 'Can Quiet Journal Journey work like a diary app or journal app?',
+    answer: 'Yes. You can use it like a diary app or journal app for quick entries, mood check-ins, photos, and private reflection that stays easy to revisit over time.'
+  },
+  {
     question: 'Does Quiet Journal Journey also have guides for prompts and daily reflection?',
-    answer: 'Yes. There are dedicated reading pages for journal prompts, daily reflection, mood journaling, private diary use, and privacy-focused journaling.'
+    answer: 'Yes. There are dedicated reading pages for digital diary use, journal prompts, daily reflection, free online diary use, gratitude journaling, secure online journaling, self care journaling, personal diary online use, online diary for adults, daily check-in journaling, morning prompts, evening prompts, habit journaling, privacy-focused journaling, journaling through overthinking, self reflection, prompt-based journaling, adult diary use, and mental health check-ins.'
+  },
+  {
+    question: 'Can I use Quiet Journal Journey for notes, reminders, and recurring tasks too?',
+    answer: 'Yes. Alongside the diary, Quiet Journal Journey includes a notes space with to-dos, due dates, reminders, and recurring tasks so practical planning can stay separate from reflective writing.'
+  },
+  {
+    question: 'Is Quiet Journal Journey good for building a journaling habit?',
+    answer: 'Yes. The app is built for small repeatable check-ins, starter prompts, mood tracking, and habit-friendly notes so journaling feels easier to keep returning to.'
   }
 ];
 
 const seoGuidePages = [
   {
+    label: 'Helpful read',
+    title: 'Aesthetic journal app',
+    text: 'For writers who appreciate a beautiful, calming space with elegant typography and minimalistic design.',
+    href: '/aesthetic-journal-app.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Mood tracker diary',
+    text: 'Combine your daily feelings and thoughts in a private online space to track emotions.',
+    href: '/mood-tracker-diary.html'
+  },
+  {
+    label: 'Helpful read',
+    title: 'Gratitude journal online',
+    text: 'A positive journaling practice for quiet reflection, appreciation, and stress relief.',
+    href: '/gratitude-journal-online.html'
+  },
+  {
+    label: 'Helpful read',
+    title: 'Minimalist diary app',
+    text: 'A clutter-free, minimalist diary app for those who want a focused, distraction-free environment.',
+    href: '/minimalist-diary-app.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Private diary for overthinkers',
+    text: 'Clear your mind safely in a secure diary that helps process anxiety and organize racing thoughts.',
+    href: '/private-diary-for-overthinkers.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Online diary for mental health',
+    text: 'A gentle, private, and secure space for daily therapeutic journaling.',
+    href: '/online-diary-for-mental-health.html'
+  },
+  {
+    label: 'Helpful read',
+    title: 'Digital bullet journal',
+    text: 'A flexible way to organize thoughts, tasks, and daily reflections in a clean format.',
+    href: '/digital-bullet-journal.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Secure online journal',
+    text: 'Keep your personal writing completely private with encrypted login and a safe environment.',
+    href: '/secure-online-journal.html'
+  },
+
+  {
     label: 'Popular guide',
     title: 'Private online diary guide',
     text: 'A calm starting page for people who want a private place to journal online.',
     href: '/private-online-diary.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Online diary guide',
+    text: 'A direct page for people searching for an online diary that feels soft, personal, and easy to keep.',
+    href: '/online-diary.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Diary app guide',
+    text: 'A softer guide for people comparing diary apps and looking for a calmer writing experience.',
+    href: '/diary-app.html'
+  },
+  {
+    label: 'Helpful read',
+    title: 'Best diary app guide',
+    text: 'A practical comparison page for people trying to decide what makes the best diary app worth returning to.',
+    href: '/best-diary-app.html'
   },
   {
     label: 'Search guide',
@@ -356,6 +719,18 @@ const seoGuidePages = [
     title: 'Online journal guide',
     text: 'A broader guide for people who want an online journal for gentle writing and reflection.',
     href: '/online-journal.html'
+  },
+  {
+    label: 'Search guide',
+    title: 'Journal app guide',
+    text: 'A clearer guide for people searching for a journal app that supports reflection without pressure.',
+    href: '/journal-app.html'
+  },
+  {
+    label: 'Search guide',
+    title: 'Digital diary guide',
+    text: 'A gentle overview of what makes a digital diary easier to keep, revisit, and trust day after day.',
+    href: '/digital-diary.html'
   },
   {
     label: 'Popular guide',
@@ -371,6 +746,12 @@ const seoGuidePages = [
   },
   {
     label: 'Helpful read',
+    title: 'How to write a diary',
+    text: 'A beginner-friendly guide for starting a diary with softer prompts, simple structure, and less pressure.',
+    href: '/how-to-write-a-diary.html'
+  },
+  {
+    label: 'Helpful read',
     title: 'Journal prompts',
     text: 'A prompt collection for days when starting feels harder than writing.',
     href: '/journal-prompts.html'
@@ -380,7 +761,307 @@ const seoGuidePages = [
     title: 'Daily reflection journal',
     text: 'A softer evening reading page for daily reflection and end-of-day journaling.',
     href: '/daily-reflection-journal.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Free online diary guide',
+    text: 'A calm guide for people who want a free online diary without losing privacy, softness, or daily writing ease.',
+    href: '/free-online-diary.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Daily journal app guide',
+    text: 'A steady guide for people searching for a daily journal app that supports short returns and consistent reflection.',
+    href: '/daily-journal-app.html'
+  },
+  {
+    label: 'Helpful read',
+    title: 'Gratitude journal guide',
+    text: 'A gentle gratitude journaling page for noticing small wins, grounded moments, and everyday appreciation.',
+    href: '/gratitude-journal.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Private journal app guide',
+    text: 'A privacy-first page for people searching for a journal app that feels personal, calm, and easier to trust.',
+    href: '/private-journal-app.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Secure online journal guide',
+    text: 'A calmer guide for people comparing secure online journal options and wanting privacy without a cold experience.',
+    href: '/secure-online-journal.html'
+  },
+  {
+    label: 'Helpful read',
+    title: 'Self care journal guide',
+    text: 'A softer self care journaling page for steady check-ins, gentle reflection, and realistic daily support.',
+    href: '/self-care-journal.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Personal diary online guide',
+    text: 'A calm page for people who want a personal diary online that feels private, gentle, and easy to return to.',
+    href: '/personal-diary-online.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Online diary for adults guide',
+    text: 'A more grown-up online diary page for adults who want a calmer writing space for real everyday life.',
+    href: '/online-diary-for-adults.html'
+  },
+  {
+    label: 'Helpful read',
+    title: 'Daily check in journal guide',
+    text: 'A gentle daily check-in page for short reflections, emotional clarity, and steadier self-awareness.',
+    href: '/daily-check-in-journal.html'
+  },
+  {
+    label: 'Helpful read',
+    title: 'Morning journal prompts',
+    text: 'A softer prompt page for starting the day with a little clarity, intention, and self-kindness.',
+    href: '/morning-journal-prompts.html'
+  },
+  {
+    label: 'Helpful read',
+    title: 'Evening journal prompts',
+    text: 'A calmer end-of-day prompt page for reflection, release, and small notes before rest.',
+    href: '/evening-journal-prompts.html'
+  },
+  {
+    label: 'Helpful read',
+    title: 'Reflection prompts for adults',
+    text: 'A grounded prompt page for adults who want private reflection that fits real life.',
+    href: '/reflection-prompts-for-adults.html'
+  },
+  {
+    label: 'Habit guide',
+    title: 'Journaling routine',
+    text: 'A calm routine-building page for people who want journaling to feel repeatable instead of demanding.',
+    href: '/journaling-routine.html'
+  },
+  {
+    label: 'Habit guide',
+    title: 'Daily writing habit',
+    text: 'A small-step guide for building a daily writing habit with lower pressure and more consistency.',
+    href: '/daily-writing-habit.html'
+  },
+  {
+    label: 'Habit guide',
+    title: 'Habit tracker journal',
+    text: 'A practical guide to combining habit tracking, private notes, and reflective journaling in one calm place.',
+    href: '/habit-tracker-journal.html'
+  },
+  {
+    label: 'Privacy guide',
+    title: 'Online journal with lock',
+    text: 'A reassuring guide for people who want an online journal with lock-style privacy and calmer digital writing.',
+    href: '/online-journal-with-lock.html'
+  },
+  {
+    label: 'Habit guide',
+    title: 'Daily journaling app',
+    text: 'A softer guide for people comparing daily journaling apps and looking for an easier repeatable writing rhythm.',
+    href: '/daily-journaling-app.html'
+  },
+  {
+    label: 'Mindset guide',
+    title: 'Journal for overthinking',
+    text: 'A supportive guide for people who want to journal through spirals, racing thoughts, and mental clutter.',
+    href: '/journal-for-overthinking.html'
+  },
+  {
+    label: 'Reflection guide',
+    title: 'Self reflection journal',
+    text: 'A grounded guide for keeping a self reflection journal with prompts, calmer check-ins, and end-of-day perspective.',
+    href: '/self-reflection-journal.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Best online diary',
+    text: 'A calmer comparison page for people looking for the best online diary for privacy, ease, and repeatable daily use.',
+    href: '/best-online-diary.html'
+  },
+  {
+    label: 'Adults guide',
+    title: 'Private diary app for adults',
+    text: 'A grown-up diary guide for adults who want privacy, calmer design, and a softer place to keep personal writing.',
+    href: '/private-diary-app-for-adults.html'
+  },
+  {
+    label: 'Prompt guide',
+    title: 'Digital journal with prompts',
+    text: 'A helpful guide for people who want a digital journal with prompts that make blank pages feel less intimidating.',
+    href: '/digital-journal-with-prompts.html'
+  },
+  {
+    label: 'Wellbeing guide',
+    title: 'Daily mental health journal',
+    text: 'A gentle daily journaling guide for mood awareness, emotional check-ins, and steadier mental wellbeing support.',
+    href: '/daily-mental-health-journal.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Online diary app',
+    text: 'A direct guide for people searching for an online diary app that feels private, calm, and easy to keep using.',
+    href: '/online-diary-app.html'
+  },
+  {
+    label: 'Popular guide',
+    title: 'Diary website',
+    text: 'A straightforward guide for choosing a diary website with personal writing space, prompts, and a gentler layout.',
+    href: '/diary-website.html'
+  },
+  {
+    label: 'Personal guide',
+    title: 'Personal diary app',
+    text: 'A softer guide for people who want a personal diary app for private notes, moods, and reflective daily writing.',
+    href: '/personal-diary-app.html'
+  },
+  {
+    label: 'Privacy guide',
+    title: 'Secure diary app',
+    text: 'A practical privacy guide for people comparing secure diary apps and calmer ways to protect personal writing.',
+    href: '/secure-diary-app.html'
+  },
+  {
+    label: 'Search guide',
+    title: 'Write diary online',
+    text: 'A direct guide for people searching where and how to write diary online without losing privacy or calm.',
+    href: '/write-diary-online.html'
+  },
+  {
+    label: 'Privacy guide',
+    title: 'Diary with password',
+    text: 'A reassuring guide for people who want a diary with password protection and a softer private writing flow.',
+    href: '/diary-with-password.html'
+  },
+  {
+    label: 'Personal guide',
+    title: 'My online diary',
+    text: 'A personal writing guide for people looking for an online diary that feels like their own quiet everyday space.',
+    href: '/my-online-diary.html'
+  },
+  {
+    label: 'Wellbeing guide',
+    title: 'Journal app for anxiety',
+    text: 'A supportive guide for people comparing journal apps for anxiety, calmer reflection, and steady private check-ins.',
+    href: '/journal-app-for-anxiety.html'
+  },
+  {
+    label: 'Student guide',
+    title: 'Online diary for students',
+    text: 'A practical guide for students who want a quiet online diary for stress, study life, and private daily reflection.',
+    href: '/online-diary-for-students.html'
+  },
+  {
+    label: 'Free guide',
+    title: 'Private diary online free',
+    text: 'A simple guide for people looking for a private diary online free option that still feels calm and personal.',
+    href: '/private-diary-online-free.html'
+  },
+  {
+    label: 'Wellbeing guide',
+    title: 'Daily self care journal',
+    text: 'A gentle guide for building a daily self care journal around feelings, needs, small rituals, and easier reflection.',
+    href: '/daily-self-care-journal.html'
+  },
+  {
+    label: 'Privacy guide',
+    title: 'Online diary with password',
+    text: 'A privacy guide for people comparing online diary options with password protection and calmer personal writing space.',
+    href: '/online-diary-with-password.html'
+  },
+  {
+    label: 'Teen guide',
+    title: 'Diary app for teens',
+    text: 'A supportive guide for teens who want a private diary app for stress, feelings, and everyday life without making writing feel formal.',
+    href: '/diary-app-for-teens.html'
+  },
+  {
+    label: 'Free guide',
+    title: 'Free online journal with lock',
+    text: 'A practical guide for people looking for a free online journal with lock support and a calmer private writing flow.',
+    href: '/free-online-journal-with-lock.html'
+  },
+  {
+    label: 'Stress guide',
+    title: 'Private journal for stress',
+    text: 'A gentle guide for using a private journal to process stress, reduce mental clutter, and reflect without being watched.',
+    href: '/private-journal-for-stress.html'
+  },
+  {
+    label: 'Reflection guide',
+    title: 'Daily reflection app',
+    text: 'A clear guide for people comparing daily reflection apps that help turn small check-ins into a meaningful habit.',
+    href: '/daily-reflection-app.html'
   }
+];
+
+const seoGuideGroups = [
+  {
+    title: 'Start a private diary',
+    description: 'Best for visitors comparing private diary, online diary, and secure journal options.',
+    links: seoGuidePages.filter((page) => ['Private online diary guide', 'Online diary guide', 'Best online diary', 'Online diary app', 'Diary website', 'Write diary online', 'My online diary', 'Online diary for students', 'Online diary with lock guide', 'Online diary with password', 'Free online journal with lock', 'Online journal with lock', 'Private journal app guide', 'Private diary app for adults', 'Private diary online free', 'Personal diary app', 'Secure diary app', 'Diary with password', 'Secure online journal guide', 'Personal diary online guide', 'Online diary for adults guide', 'Diary app for teens', 'Secure online journal'].includes(page.title))
+  },
+  {
+    title: 'Build a writing habit',
+    description: 'Best for people who want a repeatable routine, daily check-ins, and a softer habit tracker.',
+    links: seoGuidePages.filter((page) => ['Daily journal app guide', 'Daily check in journal guide', 'Daily journaling app', 'Journaling routine', 'Daily writing habit', 'Habit tracker journal', 'Daily mental health journal', 'Online diary for mental health', 'Digital bullet journal'].includes(page.title))
+  },
+  {
+    title: 'Find prompts and reflection ideas',
+    description: 'Best for visitors who need help starting, reflecting, or writing without pressure.',
+    links: seoGuidePages.filter((page) => ['How to write a diary', 'Journal prompts', 'Digital journal with prompts', 'Daily reflection journal', 'Self reflection journal', 'Morning journal prompts', 'Evening journal prompts', 'Reflection prompts for adults', 'Gratitude journal guide', 'Self care journal guide', 'Daily self care journal', 'Journal app for anxiety', 'Private journal for stress', 'Daily reflection app', 'Gratitude journal online', 'Private diary for overthinkers'].includes(page.title))
+  },
+  {
+    title: 'Compare diary and journal tools',
+    description: 'Best for searchers evaluating apps, online journals, digital diaries, mood journals, and calmer writing support.',
+    links: seoGuidePages.filter((page) => ['Diary app guide', 'Best diary app guide', 'Best online diary', 'Online diary app', 'Diary website', 'Write diary online', 'Diary with password', 'Online diary for students', 'Private diary online free', 'My online diary', 'Online diary with password', 'Diary app for teens', 'Free online journal with lock', 'Where to write a diary online', 'Online journal guide', 'Journal app guide', 'Journal app for anxiety', 'Private journal for stress', 'Daily reflection app', 'Journal for overthinking', 'Digital diary guide', 'Mood journal guide', 'Free online diary guide', 'Aesthetic journal app', 'Mood tracker diary', 'Minimalist diary app'].includes(page.title))
+  }
+];
+
+const seoPopularSearches = [
+  { label: 'Aesthetic journal app', href: '/aesthetic-journal-app.html' },
+  { label: 'Mood tracker diary', href: '/mood-tracker-diary.html' },
+  { label: 'Gratitude journal online', href: '/gratitude-journal-online.html' },
+  { label: 'Minimalist diary app', href: '/minimalist-diary-app.html' },
+  { label: 'Private diary for overthinkers', href: '/private-diary-for-overthinkers.html' },
+  { label: 'Online diary for mental health', href: '/online-diary-for-mental-health.html' },
+  { label: 'Digital bullet journal', href: '/digital-bullet-journal.html' },
+  { label: 'Secure online journal', href: '/secure-online-journal.html' },
+
+  { label: 'Private online diary', href: '/private-online-diary.html' },
+  { label: 'Best online diary', href: '/best-online-diary.html' },
+  { label: 'Online diary app', href: '/online-diary-app.html' },
+  { label: 'Diary website', href: '/diary-website.html' },
+  { label: 'Private diary app for adults', href: '/private-diary-app-for-adults.html' },
+  { label: 'Personal diary app', href: '/personal-diary-app.html' },
+  { label: 'Secure diary app', href: '/secure-diary-app.html' },
+  { label: 'Write diary online', href: '/write-diary-online.html' },
+  { label: 'Diary with password', href: '/diary-with-password.html' },
+  { label: 'My online diary', href: '/my-online-diary.html' },
+  { label: 'Journal app for anxiety', href: '/journal-app-for-anxiety.html' },
+  { label: 'Online diary for students', href: '/online-diary-for-students.html' },
+  { label: 'Private diary online free', href: '/private-diary-online-free.html' },
+  { label: 'Daily self care journal', href: '/daily-self-care-journal.html' },
+  { label: 'Online diary with password', href: '/online-diary-with-password.html' },
+  { label: 'Diary app for teens', href: '/diary-app-for-teens.html' },
+  { label: 'Free online journal with lock', href: '/free-online-journal-with-lock.html' },
+  { label: 'Private journal for stress', href: '/private-journal-for-stress.html' },
+  { label: 'Daily reflection app', href: '/daily-reflection-app.html' },
+  { label: 'Journal app for adults', href: '/journal-app-for-adults.html' },
+  { label: 'Private online notebook', href: '/private-online-notebook.html' },
+  { label: 'Mental wellness journal app', href: '/mental-wellness-journal-app.html' },
+  { label: 'Simple online diary', href: '/simple-online-diary.html' },
+  { label: 'Journal prompts', href: '/journal-prompts.html' },
+  { label: 'Digital journal with prompts', href: '/digital-journal-with-prompts.html' },
+  { label: 'Daily reflection journal', href: '/daily-reflection-journal.html' },
+  { label: 'Daily mental health journal', href: '/daily-mental-health-journal.html' },
+  { label: 'Online journal with lock', href: '/online-journal-with-lock.html' },
+  { label: 'Daily journaling app', href: '/daily-journaling-app.html' },
+  { label: 'Journal for overthinking', href: '/journal-for-overthinking.html' },
+  { label: 'Self reflection journal', href: '/self-reflection-journal.html' }
 ];
 
 const THEME_STORAGE_KEY = 'quiet-journal-theme-v1';
@@ -461,6 +1142,32 @@ const journalAtmospherePresets = [
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
+function getInitialSelectedCalendarDate() {
+  if (typeof window === 'undefined') return todayISO();
+  const dateValue = new URLSearchParams(window.location.search).get('date') || '';
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateValue) ? dateValue : todayISO();
+}
+
+function getInitialActiveTab() {
+  if (typeof window === 'undefined') return 'home';
+  const params = new URLSearchParams(window.location.search);
+  const requestedTab = params.get('tab') || '';
+  const allowedTabs = new Set(['home', 'write', 'notes', 'memories', 'insights', 'design']);
+  if (allowedTabs.has(requestedTab)) return requestedTab;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(params.get('date') || '')) return 'memories';
+  return 'home';
+}
+
+function getInitialHomeSection() {
+  if (typeof window === 'undefined') return 'overview';
+  const hash = window.location.hash.replace('#', '');
+  const allowedSections = new Set(['home', 'overview', 'about', 'guides', 'seo-landing', 'resources', 'articles', 'faq', 'contact']);
+  if (!allowedSections.has(hash)) return 'overview';
+  if (hash === 'home') return 'overview';
+  if (hash === 'seo-landing') return 'guides';
+  return hash;
+}
+
 function formatMonthLabel(monthKey) {
   const [year, month] = monthKey.split('-').map(Number);
   return new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric' }).format(new Date(year, month - 1, 1));
@@ -495,6 +1202,33 @@ function getInitialEntries() {
     return saved ? JSON.parse(saved) : [];
   } catch {
     return [];
+  }
+}
+
+function normalizeImportantDatesRecord(value) {
+  if (!value || typeof value !== 'object') return {};
+  return Object.fromEntries(
+    Object.entries(value).map(([dateKey, item]) => {
+      if (typeof item === 'string') {
+        return [dateKey, { note: item, time: '', remindersEnabled: true, createdAt: new Date().toISOString() }];
+      }
+      return [dateKey, {
+        note: typeof item?.note === 'string' ? item.note : '',
+        time: typeof item?.time === 'string' ? item.time : '',
+        remindersEnabled: item?.remindersEnabled !== false,
+        createdAt: item?.createdAt || new Date().toISOString()
+      }];
+    }).filter(([, item]) => item.note)
+  );
+}
+
+function getInitialImportantDates() {
+  try {
+    const saved = localStorage.getItem(IMPORTANT_DATES_STORAGE_KEY);
+    if (!saved) return {};
+    return normalizeImportantDatesRecord(JSON.parse(saved));
+  } catch {
+    return {};
   }
 }
 
@@ -547,12 +1281,156 @@ function getInitialJournalStyle() {
   };
 }
 
+function normalizePlannerTodo(todo) {
+  const status = todo?.status === 'doing' || todo?.status === 'done' || todo?.status === 'todo'
+    ? todo.status
+    : (todo?.done ? 'done' : 'todo');
+  const priority = todo?.priority === 'low' || todo?.priority === 'high' ? todo.priority : 'medium';
+  const recurrence = todo?.recurrence === 'daily' || todo?.recurrence === 'weekly' || todo?.recurrence === 'monthly' ? todo.recurrence : 'none';
+  const dueDate = typeof todo?.dueDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(todo.dueDate) ? todo.dueDate : '';
+  return {
+    id: typeof todo?.id === 'string' ? todo.id : crypto.randomUUID(),
+    text: typeof todo?.text === 'string' ? todo.text.trim() : '',
+    status,
+    priority,
+    recurrence,
+    dueDate,
+    done: status === 'done'
+  };
+}
+
+function normalizePlannerBoard(value) {
+  return {
+    text: typeof value?.text === 'string' ? value.text : '',
+    todos: Array.isArray(value?.todos)
+      ? value.todos
+        .map(normalizePlannerTodo)
+        .filter((todo) => todo.text)
+      : []
+  };
+}
+
+function getInitialPlannerBoard() {
+  try {
+    const saved = localStorage.getItem(PLANNER_STORAGE_KEY);
+    if (saved) {
+      return normalizePlannerBoard(JSON.parse(saved));
+    }
+  } catch {}
+  return {
+    text: '',
+    todos: []
+  };
+}
+
 function formatDate(dateString) {
   return new Intl.DateTimeFormat('en', {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
   }).format(new Date(dateString));
+}
+
+function formatReminderTime(timeValue) {
+  if (!timeValue) return '';
+  const [hoursString, minutesString] = timeValue.split(':');
+  const hours = Number(hoursString);
+  const minutes = Number(minutesString);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return timeValue;
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  return new Intl.DateTimeFormat('en', {
+    hour: 'numeric',
+    minute: '2-digit'
+  }).format(date);
+}
+
+function formatShortDate(dateString) {
+  if (!dateString) return '';
+  return new Intl.DateTimeFormat('en', {
+    month: 'short',
+    day: 'numeric'
+  }).format(new Date(`${dateString}T00:00:00`));
+}
+
+function getPlannerStatusLabel(status) {
+  if (status === 'doing') return 'In progress';
+  if (status === 'done') return 'Done';
+  return 'To do';
+}
+
+function getPlannerPriorityLabel(priority) {
+  if (priority === 'high') return 'High';
+  if (priority === 'low') return 'Low';
+  return 'Medium';
+}
+
+function getPlannerRecurrenceLabel(recurrence) {
+  if (recurrence === 'daily') return 'Daily';
+  if (recurrence === 'weekly') return 'Weekly';
+  if (recurrence === 'monthly') return 'Monthly';
+  return 'One-time';
+}
+
+function getNextPlannerDueDate(dueDate, recurrence) {
+  if (!dueDate || recurrence === 'none') return '';
+  const nextDate = new Date(`${dueDate}T00:00:00`);
+  if (Number.isNaN(nextDate.getTime())) return '';
+  if (recurrence === 'daily') nextDate.setDate(nextDate.getDate() + 1);
+  if (recurrence === 'weekly') nextDate.setDate(nextDate.getDate() + 7);
+  if (recurrence === 'monthly') nextDate.setMonth(nextDate.getMonth() + 1);
+  return nextDate.toISOString().slice(0, 10);
+}
+
+function isPlannerTodoOverdue(todo) {
+  return Boolean(todo?.dueDate) && todo.status !== 'done' && todo.dueDate < todayISO();
+}
+
+function getReminderDate(dateKey, timeValue = '') {
+  const fallbackTime = timeValue || '09:00';
+  const parsed = new Date(`${dateKey}T${fallbackTime}:00`);
+  return Number.isNaN(parsed.getTime()) ? new Date(dateKey) : parsed;
+}
+
+function getRelativeReminderLabel(dateKey) {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const target = new Date(`${dateKey}T00:00:00`);
+  const diffDays = Math.round((target.getTime() - startOfToday.getTime()) / 86400000);
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Tomorrow';
+  if (diffDays < 0) return `${Math.abs(diffDays)} day${Math.abs(diffDays) === 1 ? '' : 's'} ago`;
+  return `In ${diffDays} day${diffDays === 1 ? '' : 's'}`;
+}
+
+function showImportantReminderNotification({ title, body, dateKey, reminderType, note, time }) {
+  if (typeof window === 'undefined') return Promise.resolve();
+  if ('serviceWorker' in navigator) {
+    return navigator.serviceWorker.ready
+      .then((registration) => registration.showNotification(title, {
+        body,
+        tag: `important-reminder:${dateKey}:${reminderType}`,
+        renotify: false,
+        requireInteraction: reminderType === 'today',
+        data: {
+          dateKey,
+          reminderType,
+          note,
+          time,
+          tab: 'memories'
+        }
+      }))
+      .catch((error) => {
+        console.error('Service worker reminder failed', error);
+        if ('Notification' in window) {
+          new window.Notification(title, { body });
+        }
+      });
+  }
+  if ('Notification' in window) {
+    new window.Notification(title, { body });
+  }
+  return Promise.resolve();
 }
 
 function getPlainTextFromHtml(html = '') {
@@ -592,12 +1470,12 @@ function clampCompanionPosition(size, x, y, containerWidth, containerHeight, isV
 
 function StatCard({ icon: Icon, label, value, tone }) {
   return (
-    <div className="group rounded-[1.75rem] border border-white/80 bg-gradient-to-br from-white/95 to-white/75 p-5 shadow-lift backdrop-blur transition duration-300 hover:-translate-y-1 hover:shadow-soft">
-      <div className="flex items-start justify-between gap-3">
+    <div className="group rounded-[1.75rem] border border-white/80 bg-gradient-to-br from-white/95 to-white/75 p-5 text-center shadow-lift backdrop-blur transition duration-300 hover:-translate-y-1 hover:shadow-soft">
+      <div className="flex flex-col items-center gap-3">
         <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-sm ${tone}`}>
           <Icon size={21} />
         </div>
-        <p className="pt-1 text-right text-xs font-extrabold uppercase tracking-[0.18em] text-sage-800">{label}</p>
+        <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-sage-800">{label}</p>
       </div>
       <p className="mt-4 break-words text-2xl font-extrabold leading-tight tracking-tight text-ink">{value}</p>
     </div>
@@ -939,7 +1817,7 @@ function MoodChart({ entries, weatherOptions }) {
         {recent.map((entry) => {
           const effectiveMoodLabel = legacyMoodMap[entry.mood] || entry.mood;
           const mood = weatherOptions.find((item) => item.label === effectiveMoodLabel) || weatherOptions.find(m => m.label === entry.mood) || weatherOptions[2] || moods[2];
-          const heightClass = ['h-9 sm:h-12', 'h-14 sm:h-20', 'h-20 sm:h-28', 'h-28 sm:h-40', 'h-36 sm:h-52'][mood.value - 1] || 'h-20 sm:h-28';
+          const heightClass = ['h-9 sm:h-12', 'h-12 sm:h-16', 'h-16 sm:h-24', 'h-24 sm:h-32', 'h-32 sm:h-44', 'h-36 sm:h-52'][mood.value - 1] || 'h-20 sm:h-28';
           const entryDate = new Date(entry.createdAt);
           return (
             <div className="flex min-w-0 flex-1 flex-col items-center gap-2 sm:gap-3" key={entry.id}>
@@ -1153,12 +2031,26 @@ function PinSettingsDialog({ isOpen, onClose, onChangePin, onRemovePin }) {
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState('home');
-  const [activeHomeSection, setActiveHomeSection] = useState('overview');
+  const initialActiveTab = getInitialActiveTab();
+  const initialCalendarDate = getInitialSelectedCalendarDate();
+  const [activeTab, setActiveTab] = useState(initialActiveTab);
+  const [activeHomeSection, setActiveHomeSection] = useState(getInitialHomeSection);
   const [entries, setEntries] = useState(getInitialEntries);
   const [selectedMood, setSelectedMood] = useState('Calm');
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
+  const [plannerBoard, setPlannerBoard] = useState(getInitialPlannerBoard);
+  const [plannerTodoDraft, setPlannerTodoDraft] = useState('');
+  const [plannerTodoPriorityDraft, setPlannerTodoPriorityDraft] = useState('medium');
+  const [plannerTodoDueDateDraft, setPlannerTodoDueDateDraft] = useState('');
+  const [plannerTodoRecurrenceDraft, setPlannerTodoRecurrenceDraft] = useState('none');
+  const [plannerTodoFilter, setPlannerTodoFilter] = useState('all');
+  const [editingPlannerTodoId, setEditingPlannerTodoId] = useState(null);
+  const [editingPlannerTodoText, setEditingPlannerTodoText] = useState('');
+  const [editingPlannerTodoPriority, setEditingPlannerTodoPriority] = useState('medium');
+  const [editingPlannerTodoDueDate, setEditingPlannerTodoDueDate] = useState('');
+  const [editingPlannerTodoRecurrence, setEditingPlannerTodoRecurrence] = useState('none');
+  const [draggedPlannerTodoId, setDraggedPlannerTodoId] = useState(null);
   const [saveReward, setSaveReward] = useState('');
   const [customQuotes, setCustomQuotes] = useState(getInitialCustomQuotes);
   const [customQuoteDraft, setCustomQuoteDraft] = useState('');
@@ -1167,18 +2059,28 @@ function App() {
   const [petHappiness, setPetHappiness] = useState(60);
   const [petTreats, setPetTreats] = useState(0);
   const [petMood, setPetMood] = useState('walking');
-  const [importantDates, setImportantDates] = useState(() => {
-    const saved = localStorage.getItem('quiet-journal-important-dates');
-    return saved ? JSON.parse(saved) : {};
-  });
+  const [importantDates, setImportantDates] = useState(getInitialImportantDates);
   const [importanceModalOpen, setImportanceModalOpen] = useState(false);
   const [importanceDraft, setImportanceDraft] = useState('');
+  const [importanceTimeDraft, setImportanceTimeDraft] = useState('');
+  const [importanceReminderEnabled, setImportanceReminderEnabled] = useState(true);
+  const [notificationPermission, setNotificationPermission] = useState(() => {
+    if (typeof window === 'undefined' || !('Notification' in window)) return 'unsupported';
+    return window.Notification.permission;
+  });
+  const [notificationStatusMessage, setNotificationStatusMessage] = useState('');
+  const [webPushStatus, setWebPushStatus] = useState(() => {
+    if (typeof window === 'undefined') return 'Push setup not started.';
+    return localStorage.getItem(WEB_PUSH_STATUS_STORAGE_KEY) || 'Push setup not started.';
+  });
+  const [webPushTokenReady, setWebPushTokenReady] = useState(false);
+  const [serviceWorkerReady, setServiceWorkerReady] = useState(false);
   const [petPosition, setPetPosition] = useState({ x: 20, y: 40 });
   const [petDirection, setPetDirection] = useState(1);
   const [petBubble, setPetBubble] = useState('');
   const [selectedEntry, setSelectedEntry] = useState(null);
-  const [calendarMonth, setCalendarMonth] = useState(() => todayISO().slice(0, 7));
-  const [selectedCalendarDate, setSelectedCalendarDate] = useState(todayISO());
+  const [calendarMonth, setCalendarMonth] = useState(() => initialCalendarDate.slice(0, 7));
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState(initialCalendarDate);
   const [isEditingEntry, setIsEditingEntry] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editBody, setEditBody] = useState('');
@@ -1194,7 +2096,7 @@ function App() {
   const [pinSettingsOpen, setPinSettingsOpen] = useState(false);
   const [quoteIndex, setQuoteIndex] = useState(() => new Date().getDate() % quotes.length);
   const [selectedTheme, setSelectedTheme] = useState(() => localStorage.getItem(THEME_STORAGE_KEY) || 'sage');
-  const [selectedDesign, setSelectedDesign] = useState(() => localStorage.getItem(DESIGN_STORAGE_KEY) || 'soft');
+  const [selectedDesign, setSelectedDesign] = useState(() => localStorage.getItem(DESIGN_STORAGE_KEY) || 'editorial');
   const [customColor, setCustomColor] = useState(() => localStorage.getItem(CUSTOM_COLOR_STORAGE_KEY) || '#587f49');
   const [quoteBg, setQuoteBg] = useState(() => localStorage.getItem(QUOTE_BG_STORAGE_KEY) || '#45643b');
   const [customizerOpen, setCustomizerOpen] = useState(false);
@@ -1204,6 +2106,8 @@ function App() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [cloudStatus, setCloudStatus] = useState('Local mode');
+  const [plannerCloudReady, setPlannerCloudReady] = useState(false);
+  const [importantDatesCloudReady, setImportantDatesCloudReady] = useState(false);
   const [seoStudioApiKey, setSeoStudioApiKey] = useState(() => localStorage.getItem(SEO_STUDIO_API_KEY_STORAGE_KEY) || '');
   const [seoStudioPrompt, setSeoStudioPrompt] = useState(() => localStorage.getItem(SEO_STUDIO_PROMPT_STORAGE_KEY) || DEFAULT_SEO_STUDIO_PROMPT);
   const [seoStudioReport, setSeoStudioReport] = useState(() => localStorage.getItem(SEO_STUDIO_REPORT_STORAGE_KEY) || '');
@@ -1211,11 +2115,14 @@ function App() {
   const [seoStudioLoading, setSeoStudioLoading] = useState(false);
   const [seoStudioError, setSeoStudioError] = useState('');
   const [seoStudioCopied, setSeoStudioCopied] = useState(false);
+  const [cookieConsentAccepted, setCookieConsentAccepted] = useState(() => localStorage.getItem('quiet-journal-cookie-consent') === 'true');
   const [showSeoStudioKey, setShowSeoStudioKey] = useState(false);
   const [adminViewMode, setAdminViewMode] = useState(() => localStorage.getItem(ADMIN_VIEW_MODE_STORAGE_KEY) || 'master');
   const [seoStudioModelUsed, setSeoStudioModelUsed] = useState('');
   const entryBodyRef = useRef(null);
   const companionMediaRef = useRef(null);
+  const plannerBoardRef = useRef(plannerBoard);
+  const importantDatesRef = useRef(importantDates);
 
   const isMasterAdmin = user?.email?.toLowerCase() === MASTER_ADMIN_EMAIL;
   const showAdminTools = isMasterAdmin && adminViewMode === 'master';
@@ -1262,6 +2169,53 @@ function App() {
   const activeTheme = colorThemes.find((theme) => theme.id === selectedTheme) || colorThemes[0];
   const activeDesign = designStyles.find((style) => style.id === selectedDesign) || designStyles[0];
   const weatherOptions = useMemo(() => [...moods, ...customWeathers], [customWeathers]);
+  const selectedMoodOption = useMemo(() => weatherOptions.find((item) => item.label === selectedMood) || moods[2], [selectedMood, weatherOptions]);
+  const selectedMoodGuide = useMemo(() => {
+    if (selectedMood === 'Angry') {
+      return {
+        title: 'Give the heat somewhere safe to land',
+        detail: 'Write the sharp truth first, then the need, hurt, or boundary sitting underneath it.',
+        summary: 'Anger can point to pressure, hurt, or a line that mattered to you.',
+        shellClass: 'border-orange-100 bg-gradient-to-br from-orange-50/95 via-white to-rose-50/85',
+        panelClass: 'bg-orange-50/85 ring-orange-100/90',
+        chipClass: 'border-orange-200 bg-white/95 text-orange-700'
+      };
+    }
+    if (selectedMood === 'Anxious') {
+      return {
+        title: 'Let the page slow the spiral',
+        detail: 'Keep the sentence small and concrete. Start with what feels true right now instead of solving everything at once.',
+        summary: 'A short check-in can turn anxious noise into something more nameable.',
+        shellClass: 'border-rose-100 bg-gradient-to-br from-rose-50/90 via-white to-sage-50/80',
+        panelClass: 'bg-rose-50/85 ring-rose-100/90',
+        chipClass: 'border-rose-200 bg-white/95 text-rose-700'
+      };
+    }
+    if (selectedMood === 'Sad') {
+      return {
+        title: 'Keep this page gentle',
+        detail: 'You can write in fragments, pauses, or one honest line. The page does not need a polished version of the feeling.',
+        summary: 'A quieter mood can still leave a clear and meaningful page behind.',
+        shellClass: 'border-blue-100 bg-gradient-to-br from-blue-50/90 via-white to-sage-50/80',
+        panelClass: 'bg-blue-50/85 ring-blue-100/90',
+        chipClass: 'border-blue-200 bg-white/95 text-blue-700'
+      };
+    }
+    return {
+      title: 'A quick mood marker for today',
+      detail: 'A simple mood label helps you return later and remember what the day actually felt like.',
+      summary: 'Mood check-ins keep the writing flow softer and easier to revisit over time.',
+      shellClass: 'border-sage-100 bg-white/88',
+      panelClass: 'bg-sage-50/85 ring-sage-100/80',
+      chipClass: 'border-sage-100 bg-white/95 text-sage-700'
+    };
+  }, [selectedMood]);
+  const moodStarterPrompts = useMemo(() => {
+    if (selectedMood === 'Angry') return ['What crossed a line today', 'What felt unfair', 'What I need to protect now'];
+    if (selectedMood === 'Anxious') return ['What feels uncertain', 'What would steady me', 'One thing that is true right now'];
+    if (selectedMood === 'Sad') return ['What felt heavy today', 'What I wish someone knew', 'What would feel kind right now'];
+    return ['Today felt like', 'What I keep coming back to', 'Right now I need'];
+  }, [selectedMood]);
   const quoteLibrary = useMemo(() => [...quotes, ...customQuotes], [customQuotes]);
   const activeQuoteFont = quoteFontOptions.find((font) => font.id === quoteStyle.fontId)?.css || quoteFontOptions[0].css;
   const activeQuoteSize = quoteSizeOptions.find((size) => size.id === quoteStyle.sizeId)?.value || quoteSizeOptions[1].value;
@@ -1288,23 +2242,275 @@ function App() {
   }
 
   function openHomeSection(sectionId = 'overview') {
+    const nextSection = homeSectionMap[sectionId] || 'overview';
     setActiveTab('home');
-    setActiveHomeSection(homeSectionMap[sectionId] || 'overview');
+    setActiveHomeSection(nextSection);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.hash = nextSection === 'overview' ? 'home' : nextSection;
+      window.history.replaceState({}, '', url.toString());
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   useEffect(() => {
+    if (user) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-  }, [entries]);
+  }, [entries, user]);
+
+  useEffect(() => {
+    if (user) return;
+    localStorage.setItem(PLANNER_STORAGE_KEY, JSON.stringify(plannerBoard));
+  }, [plannerBoard, user]);
+
+  useEffect(() => {
+    plannerBoardRef.current = plannerBoard;
+  }, [plannerBoard]);
+
+  useEffect(() => {
+    importantDatesRef.current = importantDates;
+  }, [importantDates]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const currentUrl = new URL(window.location.href);
+    if (!currentUrl.searchParams.has('tab') && !currentUrl.searchParams.has('date')) return;
+    currentUrl.searchParams.delete('tab');
+    currentUrl.searchParams.delete('date');
+    window.history.replaceState({}, '', currentUrl.toString());
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+      setWebPushStatus('This browser does not support service workers for richer push handling.');
+      return undefined;
+    }
+    let cancelled = false;
+
+    const registerReminderWorker = async () => {
+      try {
+        const registration = await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}reminder-sw.js`);
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        await navigator.serviceWorker.ready;
+        if (!cancelled) {
+          setServiceWorkerReady(true);
+          setWebPushStatus((current) => (current === 'Push setup not started.' ? 'Service worker is ready for richer reminder delivery.' : current));
+        }
+      } catch (error) {
+        console.error('Reminder service worker registration failed', error);
+        if (!cancelled) {
+          setWebPushStatus('Service worker registration failed, so richer push delivery is not available yet.');
+        }
+      }
+    };
+
+    void registerReminderWorker();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || notificationPermission !== 'granted') return undefined;
+    let unsubscribe = () => {};
+
+    const connectForegroundPush = async () => {
+      const messaging = await getMessagingIfSupported();
+      if (!messaging) {
+        setWebPushStatus('Notifications are allowed, but this browser does not support Firebase web messaging.');
+        return;
+      }
+      unsubscribe = onMessage(messaging, (payload) => {
+        const reminderPayload = payload?.data || {};
+        const notificationTitle = payload?.notification?.title || reminderPayload.title || 'Quiet Journal Journey reminder';
+        const notificationBody = payload?.notification?.body || reminderPayload.body || 'You have an important reminder waiting.';
+        void showImportantReminderNotification({
+          title: notificationTitle,
+          body: notificationBody,
+          dateKey: reminderPayload.dateKey || todayISO(),
+          reminderType: reminderPayload.reminderType || 'push',
+          note: reminderPayload.note || notificationBody,
+          time: reminderPayload.time || ''
+        });
+      });
+    };
+
+    void connectForegroundPush();
+    return () => unsubscribe();
+  }, [notificationPermission]);
+
+  useEffect(() => {
+    if (!user || notificationPermission !== 'granted' || !serviceWorkerReady) {
+      if (!user) {
+        setWebPushTokenReady(false);
+      }
+      return undefined;
+    }
+    let cancelled = false;
+
+    const registerWebPushToken = async () => {
+      try {
+        const messaging = await getMessagingIfSupported();
+        if (!messaging) {
+          if (!cancelled) {
+            setWebPushTokenReady(false);
+            setWebPushStatus('Notifications are allowed, but Firebase web messaging is not supported in this browser.');
+          }
+          return;
+        }
+        const registration = await navigator.serviceWorker.ready;
+        const token = await getToken(messaging, { serviceWorkerRegistration: registration });
+        if (!token) {
+          if (!cancelled) {
+            setWebPushTokenReady(false);
+            setWebPushStatus('Push delivery needs a configured Firebase web push certificate before fully closed-browser alerts can be sent.');
+          }
+          return;
+        }
+        await setDoc(doc(db, 'users', user.uid, 'meta', CLOUD_PUSH_NOTIFICATIONS_DOC_ID), {
+          token,
+          permission: notificationPermission,
+          serviceWorkerReady: true,
+          status: 'connected',
+          updatedAt: new Date().toISOString()
+        });
+        if (!cancelled) {
+          setWebPushTokenReady(true);
+          setWebPushStatus('Real push delivery is connected for this browser. Background messages can now target this journal session.');
+        }
+      } catch (error) {
+        console.error('Web push token registration failed', error);
+        await setDoc(doc(db, 'users', user.uid, 'meta', CLOUD_PUSH_NOTIFICATIONS_DOC_ID), {
+          permission: notificationPermission,
+          serviceWorkerReady,
+          status: 'needs_configuration',
+          error: error?.message || 'Unknown push setup error',
+          updatedAt: new Date().toISOString()
+        }).catch(() => {});
+        if (!cancelled) {
+          setWebPushTokenReady(false);
+          setWebPushStatus('Push infrastructure is wired up, but Firebase web push still needs final project configuration before closed-browser delivery will work everywhere.');
+        }
+      }
+    };
+
+    void registerWebPushToken();
+    return () => {
+      cancelled = true;
+    };
+  }, [notificationPermission, serviceWorkerReady, user]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);
+      setPlannerCloudReady(false);
+      setImportantDatesCloudReady(false);
       setCloudStatus(currentUser ? 'Cloud sync on' : 'Local mode');
     });
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    if (authLoading || user) return;
+    setEntries(getInitialEntries());
+    setPlannerBoard(getInitialPlannerBoard());
+    setImportantDates(getInitialImportantDates());
+    setCloudStatus('Local mode');
+  }, [authLoading, user]);
+
+  useEffect(() => {
+    if (!user) return undefined;
+    const entriesQuery = query(collection(db, 'users', user.uid, 'entries'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(
+      entriesQuery,
+      (snapshot) => {
+        setEntries(snapshot.docs.map((entryDoc) => ({ id: entryDoc.id, ...entryDoc.data() })));
+        setCloudStatus('Cloud sync on');
+      },
+      (error) => {
+        console.error('Cloud diary sync failed', error);
+        setCloudStatus('Cloud sync needs setup');
+      }
+    );
+    return unsubscribe;
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return undefined;
+    const plannerDocRef = doc(db, 'users', user.uid, 'meta', CLOUD_PLANNER_DOC_ID);
+    const unsubscribe = onSnapshot(
+      plannerDocRef,
+      async (snapshot) => {
+        try {
+          if (snapshot.exists()) {
+            setPlannerBoard(normalizePlannerBoard(snapshot.data()));
+          } else {
+            const localPlanner = normalizePlannerBoard(plannerBoardRef.current);
+            if (localPlanner.text || localPlanner.todos.length) {
+              await setDoc(plannerDocRef, { ...localPlanner, updatedAt: new Date().toISOString() });
+            }
+          }
+          setPlannerCloudReady(true);
+        } catch (error) {
+          console.error('Planner snapshot hydration failed', error);
+          setPlannerCloudReady(true);
+        }
+      },
+      (error) => {
+        console.error('Planner sync failed', error);
+        setPlannerCloudReady(true);
+      }
+    );
+    return unsubscribe;
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || !plannerCloudReady) return;
+    const plannerDocRef = doc(db, 'users', user.uid, 'meta', CLOUD_PLANNER_DOC_ID);
+    setDoc(plannerDocRef, { ...normalizePlannerBoard(plannerBoard), updatedAt: new Date().toISOString() }).catch((error) => {
+      console.error('Could not save planner board', error);
+    });
+  }, [plannerBoard, plannerCloudReady, user]);
+
+  useEffect(() => {
+    if (!user) return undefined;
+    const importantDatesDocRef = doc(db, 'users', user.uid, 'meta', CLOUD_IMPORTANT_DATES_DOC_ID);
+    const unsubscribe = onSnapshot(
+      importantDatesDocRef,
+      async (snapshot) => {
+        try {
+          if (snapshot.exists()) {
+            setImportantDates(normalizeImportantDatesRecord(snapshot.data()?.items || snapshot.data()));
+          } else {
+            const localImportantDates = normalizeImportantDatesRecord(importantDatesRef.current);
+            if (Object.keys(localImportantDates).length) {
+              await setDoc(importantDatesDocRef, { items: localImportantDates, updatedAt: new Date().toISOString() });
+            }
+          }
+          setImportantDatesCloudReady(true);
+        } catch (error) {
+          console.error('Important dates snapshot hydration failed', error);
+          setImportantDatesCloudReady(true);
+        }
+      },
+      (error) => {
+        console.error('Important dates sync failed', error);
+        setImportantDatesCloudReady(true);
+      }
+    );
+    return unsubscribe;
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || !importantDatesCloudReady) return;
+    const importantDatesDocRef = doc(db, 'users', user.uid, 'meta', CLOUD_IMPORTANT_DATES_DOC_ID);
+    setDoc(importantDatesDocRef, { items: normalizeImportantDatesRecord(importantDates), updatedAt: new Date().toISOString() }).catch((error) => {
+      console.error('Could not save important dates', error);
+    });
+  }, [importantDates, importantDatesCloudReady, user]);
 
   useEffect(() => {
     localStorage.setItem(SEO_STUDIO_API_KEY_STORAGE_KEY, seoStudioApiKey);
@@ -1327,6 +2533,31 @@ function App() {
   }, [adminViewMode]);
 
   useEffect(() => {
+    localStorage.setItem(WEB_PUSH_STATUS_STORAGE_KEY, webPushStatus);
+  }, [webPushStatus]);
+
+  useEffect(() => {
+    if (notificationPermission !== 'granted') return;
+    if (!user) {
+      setWebPushTokenReady(false);
+      setWebPushStatus((current) => (current === 'Real push delivery is connected for this browser. Background messages can now target this journal session.' ? current : 'Allow notifications, then sign in to connect true push delivery to your synced journal.'));
+    }
+  }, [notificationPermission, user]);
+
+  useEffect(() => {
+    if (notificationPermission !== 'granted') return;
+    setNotificationStatusMessage((current) => {
+      if (serviceWorkerReady) {
+        return 'Service worker-backed reminders are on. Alerts can surface more like an app, and tapping one will reopen the saved date.';
+      }
+      if (!current) {
+        return 'Browser reminders are on. We will notify for important days today and tomorrow while the journal is open.';
+      }
+      return current;
+    });
+  }, [notificationPermission, serviceWorkerReady]);
+
+  useEffect(() => {
     if (!showAdminTools && activeHomeSection === 'seo-studio') {
       setActiveHomeSection('overview');
     }
@@ -1340,23 +2571,6 @@ function App() {
       setAdminViewMode('master');
     }
   }, [isMasterAdmin]);
-
-  useEffect(() => {
-    if (!user) return undefined;
-    const entriesQuery = query(collection(db, 'users', user.uid, 'entries'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(
-      entriesQuery,
-      (snapshot) => {
-        setEntries(snapshot.docs.map((entryDoc) => ({ id: entryDoc.id, ...entryDoc.data() })));
-        setCloudStatus('Cloud sync on');
-      },
-      (error) => {
-        console.error('Cloud diary sync failed', error);
-        setCloudStatus('Cloud sync needs setup');
-      }
-    );
-    return unsubscribe;
-  }, [user]);
 
   useEffect(() => {
     localStorage.setItem(CUSTOM_WEATHER_STORAGE_KEY, JSON.stringify(customWeathers));
@@ -1379,7 +2593,68 @@ function App() {
   }, [companion]);
 
   useEffect(() => {
-    localStorage.setItem('quiet-journal-important-dates', JSON.stringify(importantDates));
+    if (user) return;
+    localStorage.setItem(IMPORTANT_DATES_STORAGE_KEY, JSON.stringify(importantDates));
+  }, [importantDates, user]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('Notification' in window)) return undefined;
+    const checkImportantDateReminders = async () => {
+      if (window.Notification.permission !== 'granted') {
+        setNotificationPermission(window.Notification.permission);
+        return;
+      }
+      setNotificationPermission('granted');
+      const todayKey = todayISO();
+      const tomorrowDate = new Date();
+      tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+      const tomorrowKey = tomorrowDate.toISOString().slice(0, 10);
+      const nextLog = (() => {
+        try {
+          const saved = JSON.parse(localStorage.getItem(IMPORTANT_DATES_REMINDER_LOG_KEY) || '{}');
+          return typeof saved === 'object' && saved ? saved : {};
+        } catch {
+          return {};
+        }
+      })();
+      let logChanged = false;
+      for (const [dateKey, item] of Object.entries(importantDates)) {
+        if (!item?.note || item.remindersEnabled === false) continue;
+        let reminderType = '';
+        if (dateKey === todayKey) reminderType = 'today';
+        if (dateKey === tomorrowKey) reminderType = 'tomorrow';
+        if (!reminderType) continue;
+        const reminderKey = `${dateKey}:${reminderType}:${item.note}:${item.time || ''}`;
+        if (nextLog[reminderKey]) continue;
+        const title = reminderType === 'today' ? 'Important event today' : 'Important event tomorrow';
+        const timeLabel = item.time ? ` at ${formatReminderTime(item.time)}` : '';
+        const body = `${item.note}${timeLabel}${reminderType === 'tomorrow' ? '. Tomorrow is worth planning for.' : '. It is on your schedule today.'}`;
+        await showImportantReminderNotification({
+          title,
+          body,
+          dateKey,
+          reminderType,
+          note: item.note,
+          time: item.time || ''
+        });
+        nextLog[reminderKey] = new Date().toISOString();
+        logChanged = true;
+      }
+      if (logChanged) {
+        const prunedLog = Object.fromEntries(
+          Object.entries(nextLog).filter(([key]) => {
+            const [loggedDate] = key.split(':');
+            return loggedDate >= todayKey;
+          })
+        );
+        localStorage.setItem(IMPORTANT_DATES_REMINDER_LOG_KEY, JSON.stringify(prunedLog));
+      }
+    };
+    void checkImportantDateReminders();
+    const interval = window.setInterval(() => {
+      void checkImportantDateReminders();
+    }, 60000);
+    return () => window.clearInterval(interval);
   }, [importantDates]);
 
   useEffect(() => {
@@ -1418,6 +2693,12 @@ function App() {
   useEffect(() => {
     return enableImageResize(entryBodyRef, setBody);
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== 'write' || !entryBodyRef.current || !body) return;
+    const currentHtml = entryBodyRef.current.innerHTML.trim();
+    if (!currentHtml || currentHtml === '<br>') entryBodyRef.current.innerHTML = body;
+  }, [activeTab, body]);
 
   useEffect(() => {
     if (isEditingEntry) {
@@ -1484,11 +2765,12 @@ function App() {
       const mood = weatherOptions.find((item) => item.label === effectiveMoodLabel) || weatherOptions.find(m => m.label === entry.mood) || moods[2];
       return sum + mood.value;
     }, 0) / entries.length;
-    if (score >= 4.5) return 'Happy';
-    if (score >= 3.5) return 'Calm';
-    if (score >= 2.5) return 'Neutral';
-    if (score >= 1.5) return 'Sad';
-    return 'Anxious';
+    if (score >= 5.5) return 'Happy';
+    if (score >= 4.5) return 'Calm';
+    if (score >= 3.5) return 'Neutral';
+    if (score >= 2.5) return 'Sad';
+    if (score >= 1.5) return 'Anxious';
+    return 'Angry';
   }, [entries, weatherOptions]);
 
   const weeklySummary = useMemo(() => {
@@ -1506,11 +2788,11 @@ function App() {
   const seoStudioContext = useMemo(() => ([
     'Brand: Quiet Journal Journey',
     'Canonical: https://quietjournaljourney.vercel.app/',
-    'Core positioning: private online diary, online journal, mood journal, daily reflection, beginner-friendly diary writing.',
+    'Core positioning: private online diary, private diary, online diary, diary app, best diary app, journal app, online journal app, digital diary, online journal, mood journal, daily reflection, beginner-friendly diary writing.',
     'Hero title: Your quiet corner for honest pages.',
-    'Hero summary: Quiet Journal Journey helps you keep a private online diary, mood journal, and daily reflection space that feels softer to return to.',
-    'Hero support line: If you are wondering where to write a diary online, this calmer journal space gives you private entries, gentle prompts, and a place to notice what the day actually felt like.',
-    'Current guide paths: /private-online-diary.html, /where-to-write-a-diary-online.html, /online-journal.html, /mood-journal.html, /online-diary-with-lock.html, /journal-prompts.html, /daily-reflection-journal.html.',
+    'Hero summary: Quiet Journal Journey helps you keep an online diary, private diary, diary app, journal app, and mood journal space that feels softer to return to.',
+    'Hero support line: If you are wondering where to write a diary online, how to write a diary, which diary app feels calmer, or what makes the best diary app worth keeping, this softer journal space gives you private entries, gentle prompts, and a place to notice what the day actually felt like.',
+    'Current guide paths: /private-online-diary.html, /online-diary.html, /diary-app.html, /best-diary-app.html, /where-to-write-a-diary-online.html, /online-journal.html, /journal-app.html, /digital-diary.html, /mood-journal.html, /online-diary-with-lock.html, /how-to-write-a-diary.html, /journal-prompts.html, /daily-reflection-journal.html, /free-online-diary.html, /daily-journal-app.html, /gratitude-journal.html, /private-journal-app.html, /secure-online-journal.html, /self-care-journal.html, /personal-diary-online.html, /online-diary-for-adults.html, /daily-check-in-journal.html, /morning-journal-prompts.html, /evening-journal-prompts.html, /reflection-prompts-for-adults.html.',
     'Write view framing: A page for your diary. Write today\'s diary page in your own words.',
     'Privacy cues: optional PIN lock, local-first journaling, Google sign-in for sync, entries saved privately per user.',
     `Live product signals: ${entries.length} total entries in this session, ${streak} day streak, average mood ${averageMood}, cloud status ${cloudStatus}.`,
@@ -1527,6 +2809,25 @@ function App() {
   const selectedDateEntries = entriesByDate[selectedCalendarDate] || [];
   const selectedImportantDate = importantDates[selectedCalendarDate] || null;
   const importantDateCount = useMemo(() => Object.keys(importantDates).length, [importantDates]);
+  const upcomingImportantDates = useMemo(() => Object.entries(importantDates)
+    .map(([dateKey, item]) => ({
+      dateKey,
+      note: item?.note || '',
+      time: item?.time || '',
+      remindersEnabled: item?.remindersEnabled !== false,
+      createdAt: item?.createdAt || '',
+      date: getReminderDate(dateKey, item?.time || ''),
+      relativeLabel: getRelativeReminderLabel(dateKey)
+    }))
+    .filter((item) => item.note && item.date.getTime() >= getReminderDate(todayISO()).getTime())
+    .sort((a, b) => a.date.getTime() - b.date.getTime()), [importantDates]);
+  const upcomingReminderPreview = upcomingImportantDates.slice(0, 4);
+  const upcomingReminderCount = upcomingImportantDates.length;
+  const nextUpcomingReminder = upcomingImportantDates[0] || null;
+  const plannerStorageLabel = user ? (plannerCloudReady ? 'Synced with your account' : 'Syncing notes to your account') : 'Auto-saved on this device';
+  const reminderStorageLabel = user ? (importantDatesCloudReady ? 'Synced with your account' : 'Syncing reminders to your account') : 'Stored on this device';
+  const reminderDeliveryLabel = webPushTokenReady ? 'True push connected' : serviceWorkerReady ? 'Push-ready worker' : 'Browser alerts only';
+  const reminderBehaviorLabel = webPushTokenReady ? 'Can target closed-browser messages' : serviceWorkerReady ? 'Tap opens the saved date' : 'Best while the journal stays open';
 
   const rewardLevel = useMemo(() => {
     if (entries.length >= 30) return { title: 'Moon Keeper', emoji: '🌙', next: 'Your quiet archive is glowing.' };
@@ -1541,6 +2842,18 @@ function App() {
     const trimmed = draftText.trim();
     return trimmed ? trimmed.split(/\s+/).length : 0;
   }, [draftText]);
+  const plannerTodoCount = plannerBoard.todos.length;
+  const completedPlannerTodoCount = plannerBoard.todos.filter((todo) => todo.status === 'done').length;
+  const inProgressPlannerTodoCount = plannerBoard.todos.filter((todo) => todo.status === 'doing').length;
+  const openPlannerTodoCount = plannerBoard.todos.filter((todo) => todo.status !== 'done').length;
+  const overduePlannerTodoCount = plannerBoard.todos.filter((todo) => isPlannerTodoOverdue(todo)).length;
+  const filteredPlannerTodos = useMemo(() => plannerBoard.todos.filter((todo) => {
+    if (plannerTodoFilter === 'open') return todo.status !== 'done';
+    if (plannerTodoFilter === 'doing') return todo.status === 'doing';
+    if (plannerTodoFilter === 'done') return todo.status === 'done';
+    if (plannerTodoFilter === 'high') return todo.priority === 'high';
+    return true;
+  }), [plannerBoard.todos, plannerTodoFilter]);
   const weeklyGoal = 5;
   const weeklyCheckIns = useMemo(() => {
     const sevenDaysAgo = new Date();
@@ -1563,6 +2876,7 @@ function App() {
   const journalNudge = useMemo(() => {
     if (streak >= 7) return 'You have made this space feel familiar now. Let your diary stay warm and steady, never pressured.';
     if (weeklyCheckIns >= weeklyGoal) return 'You have already given yourself enough attention this week. Anything extra can simply be a small diary note for yourself.';
+    if (selectedMood === 'Angry') return 'Anger belongs here too. Try naming what felt unfair, crossed a line, or asked for more care than you had to give.';
     if (selectedMood === 'Anxious' || selectedMood === 'Sad') return 'Let this page stay soft. A short diary entry can help you release a feeling without needing to explain everything.';
     if (draftText.length >= 40) return 'There is already something worth keeping here. Add one more detail only if it feels right.';
     return 'You do not need to write a lot. A title, one line, or one honest sentence is already enough for today\'s diary page.';
@@ -1816,6 +3130,132 @@ function App() {
     setSelectedMood('Calm');
   }
 
+  function addPlannerTodo(event) {
+    event.preventDefault();
+    const trimmed = plannerTodoDraft.trim();
+    if (!trimmed) return;
+    setPlannerBoard((current) => ({
+      ...current,
+      todos: [normalizePlannerTodo({
+        id: crypto.randomUUID(),
+        text: trimmed,
+        status: 'todo',
+        priority: plannerTodoPriorityDraft,
+        dueDate: plannerTodoDueDateDraft,
+        recurrence: plannerTodoRecurrenceDraft
+      }), ...current.todos]
+    }));
+    setPlannerTodoDraft('');
+    setPlannerTodoPriorityDraft('medium');
+    setPlannerTodoDueDateDraft('');
+    setPlannerTodoRecurrenceDraft('none');
+  }
+
+  function cyclePlannerTodoStatus(id) {
+    setPlannerBoard((current) => ({
+      ...current,
+      todos: current.todos.flatMap((todo) => {
+        if (todo.id !== id) return [todo];
+        const nextStatus = todo.status === 'todo' ? 'doing' : todo.status === 'doing' ? 'done' : 'todo';
+        const updatedTodo = normalizePlannerTodo({ ...todo, status: nextStatus });
+        if (nextStatus !== 'done' || todo.recurrence === 'none') return [updatedTodo];
+        const nextDueDate = getNextPlannerDueDate(todo.dueDate || todayISO(), todo.recurrence);
+        return [updatedTodo, normalizePlannerTodo({
+          ...todo,
+          id: crypto.randomUUID(),
+          status: 'todo',
+          done: false,
+          dueDate: nextDueDate
+        })];
+      })
+    }));
+  }
+
+  function cyclePlannerTodoPriority(id) {
+    setPlannerBoard((current) => ({
+      ...current,
+      todos: current.todos.map((todo) => {
+        if (todo.id !== id) return todo;
+        const nextPriority = todo.priority === 'low' ? 'medium' : todo.priority === 'medium' ? 'high' : 'low';
+        return normalizePlannerTodo({ ...todo, priority: nextPriority });
+      })
+    }));
+  }
+
+  function startEditingPlannerTodo(todo) {
+    setEditingPlannerTodoId(todo.id);
+    setEditingPlannerTodoText(todo.text);
+    setEditingPlannerTodoPriority(todo.priority);
+    setEditingPlannerTodoDueDate(todo.dueDate || '');
+    setEditingPlannerTodoRecurrence(todo.recurrence || 'none');
+  }
+
+  function cancelEditingPlannerTodo() {
+    setEditingPlannerTodoId(null);
+    setEditingPlannerTodoText('');
+    setEditingPlannerTodoPriority('medium');
+    setEditingPlannerTodoDueDate('');
+    setEditingPlannerTodoRecurrence('none');
+  }
+
+  function savePlannerTodoEdit(id) {
+    const trimmed = editingPlannerTodoText.trim();
+    if (!trimmed) return;
+    setPlannerBoard((current) => ({
+      ...current,
+      todos: current.todos.map((todo) => todo.id === id
+        ? normalizePlannerTodo({
+          ...todo,
+          text: trimmed,
+          priority: editingPlannerTodoPriority,
+          dueDate: editingPlannerTodoDueDate,
+          recurrence: editingPlannerTodoRecurrence
+        })
+        : todo)
+    }));
+    cancelEditingPlannerTodo();
+  }
+
+  function reorderPlannerTodo(activeId, targetId) {
+    if (!activeId || !targetId || activeId === targetId) return;
+    setPlannerBoard((current) => {
+      const todos = [...current.todos];
+      const activeIndex = todos.findIndex((todo) => todo.id === activeId);
+      const targetIndex = todos.findIndex((todo) => todo.id === targetId);
+      if (activeIndex < 0 || targetIndex < 0) return current;
+      const [movedTodo] = todos.splice(activeIndex, 1);
+      todos.splice(targetIndex, 0, movedTodo);
+      return { ...current, todos };
+    });
+  }
+
+  function movePlannerTodo(id, direction) {
+    setPlannerBoard((current) => {
+      const todos = [...current.todos];
+      const currentIndex = todos.findIndex((todo) => todo.id === id);
+      const nextIndex = currentIndex + direction;
+      if (currentIndex < 0 || nextIndex < 0 || nextIndex >= todos.length) return current;
+      const [movedTodo] = todos.splice(currentIndex, 1);
+      todos.splice(nextIndex, 0, movedTodo);
+      return { ...current, todos };
+    });
+  }
+
+  function clearCompletedPlannerTodos() {
+    setPlannerBoard((current) => ({
+      ...current,
+      todos: current.todos.filter((todo) => todo.status !== 'done')
+    }));
+  }
+
+  function deletePlannerTodo(id) {
+    if (editingPlannerTodoId === id) cancelEditingPlannerTodo();
+    setPlannerBoard((current) => ({
+      ...current,
+      todos: current.todos.filter((todo) => todo.id !== id)
+    }));
+  }
+
   async function deleteEntry(id) {
     setEntries(entries.filter((entry) => entry.id !== id));
     if (selectedEntry?.id === id) {
@@ -1919,12 +3359,26 @@ function App() {
     }
   }
 
-  function toggleBulletList(editorRef, updateBody) {
+  function applyEditorCommand(editorRef, updateBody, command) {
     const editor = editorRef.current;
     if (!editor) return;
     editor.focus();
-    document.execCommand('insertUnorderedList');
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || !editor.contains(selection.anchorNode)) return;
+    document.execCommand(command);
     updateBody(editor.innerHTML);
+  }
+
+  function toggleBulletList(editorRef, updateBody) {
+    applyEditorCommand(editorRef, updateBody, 'insertUnorderedList');
+  }
+
+  function toggleBoldText(editorRef, updateBody) {
+    applyEditorCommand(editorRef, updateBody, 'bold');
+  }
+
+  function toggleUnderlineText(editorRef, updateBody) {
+    applyEditorCommand(editorRef, updateBody, 'underline');
   }
 
   function insertImageInEditor(editor, src) {
@@ -2477,15 +3931,43 @@ function App() {
     setQuoteIndex(0);
   }
 
-  function toggleImportantDate(dateKey) {
+  function openImportantDateEditor(dateKey = selectedCalendarDate) {
     setSelectedCalendarDate(dateKey);
     const existing = importantDates[dateKey];
-    if (existing) {
-      const { [dateKey]: _, ...rest } = importantDates;
-      setImportantDates(rest);
+    setImportanceDraft(existing?.note || '');
+    setImportanceTimeDraft(existing?.time || '');
+    setImportanceReminderEnabled(existing ? existing.remindersEnabled !== false : true);
+    setImportanceModalOpen(true);
+  }
+
+  function deleteImportantDate(dateKey) {
+    const { [dateKey]: _, ...rest } = importantDates;
+    setImportantDates(rest);
+    setImportanceModalOpen(false);
+    setImportanceDraft('');
+    setImportanceTimeDraft('');
+    setImportanceReminderEnabled(true);
+  }
+
+  async function requestNotificationPermission() {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      setNotificationStatusMessage('This browser does not support notifications.');
+      setWebPushStatus('This browser does not support notification permission, so push reminders are unavailable.');
+      setNotificationPermission('unsupported');
+      return;
+    }
+    const permission = await window.Notification.requestPermission();
+    setNotificationPermission(permission);
+    if (permission === 'granted') {
+      setNotificationStatusMessage(serviceWorkerReady
+        ? 'Service worker-backed reminders are on. Alerts can surface more like an app, and tapping one will reopen the saved date.'
+        : 'Browser reminders are on. We will notify for important days today and tomorrow while the journal is open.');
+    } else if (permission === 'denied') {
+      setNotificationStatusMessage('Notifications are blocked right now. You can re-enable them in your browser settings.');
+      setWebPushStatus('Push reminders are blocked until browser notification permission is re-enabled.');
     } else {
-      setImportanceDraft('');
-      setImportanceModalOpen(true);
+      setNotificationStatusMessage('Notification permission was dismissed.');
+      setWebPushStatus('Push setup paused because notification permission was dismissed.');
     }
   }
 
@@ -2498,11 +3980,15 @@ function App() {
       ...importantDates,
       [selectedCalendarDate]: {
         note: importanceDraft.trim(),
+        time: importanceTimeDraft,
+        remindersEnabled: importanceReminderEnabled,
         createdAt: new Date().toISOString()
       }
     });
     setImportanceModalOpen(false);
     setImportanceDraft('');
+    setImportanceTimeDraft('');
+    setImportanceReminderEnabled(true);
   }
 
   function addStarterLine(label) {
@@ -2514,6 +4000,20 @@ function App() {
       entryBodyRef.current.focus();
     }
     setBody(nextHtml);
+  }
+
+  function startWritingFromInvitation(invitation) {
+    const starter = `<p><strong>${invitation.opener}</strong></p><p><br></p>`;
+    if (!title.trim()) setTitle(invitation.title);
+    setSelectedMood(invitation.mood);
+    setBody(starter);
+    navigateToTab('write');
+    window.setTimeout(() => {
+      if (entryBodyRef.current) {
+        entryBodyRef.current.innerHTML = starter;
+        entryBodyRef.current.focus();
+      }
+    }, 50);
   }
 
   function deleteCustomWeather(label) {
@@ -2581,8 +4081,8 @@ function App() {
 
 
       <nav className="sticky top-0 z-20 px-4 pt-4">
-        <div className="site-nav-shell mx-auto max-w-7xl rounded-[2rem] border border-white/80 bg-white/78 p-4 shadow-soft backdrop-blur-xl">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <div className="site-nav-shell mx-auto max-w-7xl rounded-[2rem] border border-white/80 bg-white/78 p-3 shadow-soft backdrop-blur-xl lg:p-4">
+          <div className="flex flex-col gap-2.5 lg:gap-3 xl:flex-row xl:items-center xl:justify-between">
             <a className="flex items-center gap-3" href="#home" onClick={() => openHomeSection('home')}>
               <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-sage-700 text-white shadow-lift">
                 <Waves size={23} />
@@ -2592,85 +4092,85 @@ function App() {
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sage-700">Private diary, easy to return to</p>
               </div>
             </a>
-              <div className="site-nav-links hidden flex-1 items-center justify-center gap-8 lg:flex xl:gap-10">
-                {[
-                  { id: 'home', label: 'Home', icon: Waves },
-                  { id: 'write', label: 'Write', icon: PenLine },
-                  { id: 'memories', label: 'Memories', icon: BookOpen },
-                  { id: 'insights', label: 'Insights', icon: Sparkles }
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    className={`flex items-center gap-2 text-sm font-extrabold uppercase tracking-widest transition ${activeTab === tab.id ? 'text-sage-950' : 'text-sage-700 hover:text-sage-900'}`}
-                    onClick={() => navigateToTab(tab.id)}
-                  >
-                    <tab.icon size={16} /> {tab.label}
-                  </button>
-                ))}
-              </div>
+            <div className="site-nav-links hidden flex-1 items-center justify-center gap-7 xl:gap-9">
+              {[
+                { id: 'home', label: 'Home', icon: Waves },
+                { id: 'write', label: 'Write', icon: PenLine },
+                { id: 'notes', label: 'Notes', icon: FileText },
+                { id: 'memories', label: 'Memories', icon: BookOpen },
+                { id: 'insights', label: 'Insights', icon: Sparkles }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  className={`flex items-center gap-2 text-sm font-extrabold uppercase tracking-widest transition ${activeTab === tab.id ? 'text-sage-950' : 'text-sage-700 hover:text-sage-900'}`}
+                  onClick={() => navigateToTab(tab.id)}
+                >
+                  <tab.icon size={16} /> {tab.label}
+                </button>
+              ))}
+            </div>
 
-              <div className="site-nav-actions flex w-full flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end xl:w-auto xl:flex-1">
-                {user ? (
-                  <div className="flex w-full items-center gap-3 rounded-[1.7rem] border border-sage-200 bg-white px-4 py-3 text-left shadow-lift sm:w-auto sm:text-right">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sage-100 text-sage-800 shadow-sm">
-                      <ShieldCheck size={16} />
-                    </div>
-                    <div className="text-xs font-extrabold text-sage-950">
-                      <p>{user.displayName || user.email}</p>
-                      <p className="text-sage-500">{cloudStatus}</p>
-                    </div>
+            <div className="site-nav-actions flex w-full flex-wrap items-center gap-2 lg:justify-end xl:w-auto xl:max-w-[34rem] xl:flex-none xl:flex-nowrap">
+              {user ? (
+                <div className="flex min-w-[210px] flex-1 items-center justify-between gap-3 rounded-full border border-sage-200 bg-white/92 px-4 py-2.5 shadow-lift xl:flex-none">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-extrabold text-sage-950">{user.displayName || user.email}</p>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-sage-600">{cloudStatus}</p>
                   </div>
-                ) : (
-                  <div className="flex w-full flex-wrap items-center gap-3 rounded-[1.7rem] border border-sage-200 bg-white px-4 py-3 shadow-lift">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sage-900 text-white shadow-sm">
-                      <ShieldCheck size={16} />
-                    </div>
-                    <div className="min-w-0 flex-1 text-sm font-bold text-sage-950 sm:min-w-[220px]">
-                      <p>{authLoading ? 'Checking login...' : 'Private by default, sync only when you want it.'}</p>
-                      <p className="text-sage-700">Use Google to keep entries across devices later.</p>
-                    </div>
-                    <button className="w-full rounded-full border border-sage-200 bg-white/95 px-5 py-3 text-sm font-bold text-sage-800 shadow-sm transition hover:-translate-y-1 hover:bg-white sm:w-auto" onClick={signInWithGoogle} disabled={authLoading} type="button">
-                      Sign in with Google
-                    </button>
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-sage-100 text-sage-700 shadow-sm">
+                    <ShieldCheck size={15} />
                   </div>
-                )}
+                </div>
+              ) : (
+                <button className="flex min-w-[208px] flex-1 items-center justify-between gap-3 rounded-full border border-sage-200 bg-white/92 px-4 py-2.5 text-left shadow-lift transition hover:-translate-y-0.5 hover:bg-white xl:flex-none" onClick={signInWithGoogle} disabled={authLoading} type="button">
+                  <div>
+                    <p className="text-sm font-extrabold text-sage-950">{authLoading ? 'Checking login...' : 'Sign in with Google'}</p>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-sage-600">Sync across devices</p>
+                  </div>
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-sage-900 text-white shadow-sm">
+                    <ShieldCheck size={15} />
+                  </div>
+                </button>
+              )}
+              <div className="flex flex-wrap items-center gap-2 rounded-full border border-sage-100 bg-white/82 p-1.5 shadow-sm xl:flex-nowrap">
                 {user && (
-                  <button className="w-full rounded-full border border-sage-200 bg-white/90 px-5 py-3 text-sm font-bold text-sage-800 shadow-lift transition hover:-translate-y-1 hover:bg-white sm:w-auto" onClick={handleSignOut} type="button">
+                  <button className="rounded-full border border-sage-200 bg-white/90 px-3.5 py-2 text-sm font-bold text-sage-800 transition hover:-translate-y-0.5 hover:bg-white" onClick={handleSignOut} type="button">
                     Sign out
                   </button>
                 )}
                 {isMasterAdmin && (
-                  <div className="flex w-full overflow-hidden rounded-full border border-sage-200 bg-white/90 p-1 shadow-lift sm:w-auto">
+                  <div className="flex overflow-hidden rounded-full border border-sage-200 bg-white/90 p-1">
                     <button
-                      className={`flex-1 rounded-full px-4 py-2.5 text-sm font-extrabold transition ${adminViewMode === 'master' ? 'bg-sage-900 text-white shadow-sm' : 'text-sage-700 hover:bg-sage-50'}`}
+                      className={`rounded-full px-3.5 py-2 text-sm font-extrabold transition ${adminViewMode === 'master' ? 'bg-sage-900 text-white shadow-sm' : 'text-sage-700 hover:bg-sage-50'}`}
                       onClick={() => setAdminViewMode('master')}
                       type="button"
                     >
-                      Master view
+                      Master
                     </button>
                     <button
-                      className={`flex-1 rounded-full px-4 py-2.5 text-sm font-extrabold transition ${adminViewMode === 'user' ? 'bg-sage-900 text-white shadow-sm' : 'text-sage-700 hover:bg-sage-50'}`}
+                      className={`rounded-full px-3.5 py-2 text-sm font-extrabold transition ${adminViewMode === 'user' ? 'bg-sage-900 text-white shadow-sm' : 'text-sage-700 hover:bg-sage-50'}`}
                       onClick={() => setAdminViewMode('user')}
                       type="button"
                     >
-                      User view
+                      User
                     </button>
                   </div>
                 )}
                 {showAdminTools && (
-                  <button className="w-full rounded-full border border-sage-800 bg-sage-900 px-5 py-3 text-sm font-bold text-white shadow-lift transition hover:-translate-y-1 hover:bg-sage-800 sm:w-auto" onClick={() => openHomeSection('seo-studio')} type="button">
+                  <button className="rounded-full border border-sage-800 bg-sage-900 px-3.5 py-2 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-sage-800" onClick={() => openHomeSection('seo-studio')} type="button">
                     SEO studio
                   </button>
                 )}
-                <button className={`w-full rounded-full border px-5 py-3 text-sm font-bold shadow-lift transition hover:-translate-y-1 sm:w-auto ${comfortMode ? 'border-sage-800 bg-sage-900 text-white' : 'border-sage-200 bg-white/90 text-sage-800 hover:bg-white'}`} onClick={() => setComfortMode(!comfortMode)} type="button">
-                  Comfort mode
+                <button className={`rounded-full border px-3.5 py-2 text-sm font-bold transition hover:-translate-y-0.5 ${comfortMode ? 'border-sage-800 bg-sage-900 text-white' : 'border-sage-200 bg-white/90 text-sage-800 hover:bg-white'}`} onClick={() => setComfortMode(!comfortMode)} type="button">
+                  Comfort
                 </button>
-                <button className="w-full rounded-full border border-sage-200 bg-white/90 px-5 py-3 text-sm font-bold text-sage-800 shadow-lift transition hover:-translate-y-1 hover:bg-white sm:w-auto" onClick={() => (hasPin ? setPinSettingsOpen(true) : setLocked(true))} type="button">
-                  {hasPin ? 'Privacy settings' : 'Set lock'}
+                <button className="rounded-full border border-sage-200 bg-white/90 px-3.5 py-2 text-sm font-bold text-sage-800 transition hover:-translate-y-0.5 hover:bg-white" onClick={() => (hasPin ? setPinSettingsOpen(true) : setLocked(true))} type="button">
+                  {hasPin ? 'Privacy' : 'Set lock'}
                 </button>
               </div>
+            </div>
           </div>
-          <div className="site-nav-links mt-5 hidden flex-wrap items-center justify-center gap-2 rounded-[1.6rem] border border-sage-100 bg-sage-50/65 p-2 lg:flex">
+          <div className="site-nav-links mt-2 hidden flex-wrap items-center justify-center gap-2 rounded-[1.5rem] border border-sage-100 bg-white/88 p-1.5 lg:flex">
             <a className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="#journal" onClick={() => navigateToTab('write')}>Journal</a>
             <button className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" onClick={() => setCustomizerOpen(true)} type="button">Design</button>
             <a className="rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-extrabold text-sage-950 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="#guides" onClick={() => openHomeSection('guides')}>Guides</a>
@@ -2682,30 +4182,30 @@ function App() {
       </nav>
 
       {activeTab === 'home' && activeHomeSection === 'overview' && (
-      <section id="home" className="mx-auto grid max-w-7xl gap-8 px-6 pb-10 pt-8 lg:grid-cols-12 lg:pt-10 xl:gap-10">
+      <section id="home" className="mx-auto grid max-w-7xl gap-8 px-6 pb-28 pt-8 lg:grid-cols-12 lg:pb-10 lg:pt-10 xl:gap-10">
         <div className="lg:col-span-8">
-          <div className="relative overflow-hidden rounded-[2.2rem] border border-white/85 bg-white/80 p-8 shadow-soft backdrop-blur-xl lg:p-10 xl:p-11">
-            <div className="pointer-events-none absolute -left-12 top-10 h-36 w-36 rounded-full bg-sage-100/70 blur-3xl"></div>
-            <div className="pointer-events-none absolute right-0 top-0 h-48 w-48 rounded-full bg-sand-100/70 blur-3xl"></div>
+          <div className="relative overflow-hidden rounded-[2rem] border border-sage-100/80 bg-white/92 p-8 shadow-soft backdrop-blur-xl lg:p-10 xl:p-11">
+            <div className="pointer-events-none absolute -left-10 top-12 h-28 w-28 rounded-full bg-sage-100/45 blur-3xl"></div>
+            <div className="pointer-events-none absolute right-4 top-4 h-32 w-32 rounded-full bg-sand-100/40 blur-3xl"></div>
             <div className="relative">
               <div className="mb-8 flex flex-wrap items-center gap-3">
-                <div className="inline-flex items-center gap-2 rounded-full bg-sage-200/90 px-4 py-2 text-sm font-bold text-sage-950 shadow-sm">
-                  <Sparkles size={17} /> A calm place to write a diary online
+                <div className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-white/95 px-4 py-2 text-sm font-bold text-sage-950 shadow-sm">
+                  <Sparkles size={16} /> Quiet online diary
                 </div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-sage-300 bg-sage-50 px-4 py-2 text-sm font-bold text-sage-950 shadow-sm">
-                  <Quote size={15} /> Private online diary · journal · mood check-in
+                <div className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-sage-50/75 px-4 py-2 text-sm font-bold text-sage-800 shadow-sm">
+                  <Quote size={14} /> Private · minimal · gentle
                 </div>
               </div>
-              <h1 className="max-w-3xl font-display text-5xl font-bold leading-[0.96] tracking-tight text-sage-950 md:text-6xl">Your quiet corner for honest pages.</h1>
-              <p className="mt-5 max-w-3xl text-[1.35rem] font-semibold leading-9 text-sage-900">Quiet Journal Journey helps you keep a private online diary, mood journal, and daily reflection space that feels softer to return to.</p>
-              <p className="mt-4 max-w-[42rem] text-lg leading-8 text-sage-800">If you are wondering where to write a diary online, this calmer journal space gives you private entries, gentle prompts, and a place to notice what the day actually felt like.</p>
+              <h1 className="max-w-3xl font-display text-5xl font-bold leading-[0.96] tracking-tight text-sage-950 md:text-6xl">A quiet place for honest writing.</h1>
+              <p className="mt-5 max-w-3xl text-[1.28rem] font-semibold leading-9 text-sage-900">Quiet Journal Journey keeps the page light — enough guidance to begin, enough privacy to be real, and enough calm to return tomorrow.</p>
+              <p className="mt-4 max-w-[42rem] text-lg leading-8 text-sage-700">Write one sentence, keep a feeling, or leave a small note for yourself. Nothing here needs to be polished before it matters.</p>
 
               <div className="mt-9 flex flex-wrap gap-3">
                 <a className="inline-flex items-center gap-2 rounded-full bg-sage-900 px-5 py-3 text-sm font-extrabold text-white shadow-lift transition hover:-translate-y-1 hover:bg-sage-800" href="#journal" onClick={() => navigateToTab('write')}>
                   <PenLine size={17} /> Write today’s entry
                 </a>
                 <button className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-white px-5 py-3 text-sm font-extrabold text-sage-900 shadow-sm transition hover:-translate-y-1 hover:border-sage-300 hover:bg-sage-50" onClick={() => setCustomizerOpen(true)} type="button">
-                  <Palette size={17} /> Open design studio
+                  <Palette size={17} /> Choose your theme
                 </button>
                 {hasPin && (
                   <button className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-white px-5 py-3 text-sm font-extrabold text-sage-900 shadow-sm transition hover:-translate-y-1 hover:border-sage-300 hover:bg-sage-50" onClick={() => setPinSettingsOpen(true)} type="button">
@@ -2714,7 +4214,17 @@ function App() {
                 )}
               </div>
 
-              <div className="mt-6 flex flex-wrap gap-3 text-sm font-semibold text-sage-900">
+              <div className="mt-7 grid gap-3 lg:grid-cols-3">
+                {writingInvitations.map((invitation) => (
+                  <button key={invitation.title} className="group rounded-[1.55rem] border border-sage-100 bg-white/88 p-4 text-left shadow-sm transition hover:-translate-y-1 hover:border-sage-200 hover:bg-white hover:shadow-lift" onClick={() => startWritingFromInvitation(invitation)} type="button">
+                    <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-sage-500">Start with</p>
+                    <h3 className="mt-2 text-lg font-extrabold leading-tight text-sage-950 group-hover:text-sage-800">{invitation.opener}...</h3>
+                    <p className="mt-2 text-sm leading-6 text-sage-700">{invitation.detail}</p>
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-7 flex flex-wrap gap-3 text-sm font-semibold text-sage-900">
                 <div className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-white/92 px-4 py-2.5 shadow-sm">
                   <ShieldCheck size={16} /> {hasPin ? 'Protected with a private PIN' : 'Add a soft lock any time'}
                 </div>
@@ -2723,57 +4233,70 @@ function App() {
                 </div>
               </div>
 
+              <div className="mt-8 flex flex-wrap items-center gap-3 text-sm">
+                <span className="text-xs font-extrabold uppercase tracking-[0.22em] text-sage-600">Popular guides</span>
+                <a className="rounded-full border border-sage-200 bg-white/92 px-4 py-2 font-bold text-sage-900 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="/private-online-diary.html">Private online diary</a>
+                <a className="rounded-full border border-sage-200 bg-white/92 px-4 py-2 font-bold text-sage-900 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="/online-diary.html">Online diary</a>
+                <a className="rounded-full border border-sage-200 bg-white/92 px-4 py-2 font-bold text-sage-900 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="/diary-app.html">Diary app</a>
+                <a className="rounded-full border border-sage-200 bg-white/92 px-4 py-2 font-bold text-sage-900 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="/journal-app.html">Journal app</a>
+                <a className="rounded-full border border-sage-200 bg-white/92 px-4 py-2 font-bold text-sage-900 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="/best-diary-app.html">Best diary app</a>
+                <a className="rounded-full border border-sage-200 bg-white/92 px-4 py-2 font-bold text-sage-900 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href="/how-to-write-a-diary.html">How to write a diary</a>
+              </div>
+
               <div className="mt-8 grid gap-4 sm:grid-cols-3 xl:grid-cols-3">
                 <StatCard icon={BookOpen} label="Entries" value={entries.length} tone="bg-sage-100 text-sage-800" />
                 <StatCard icon={Sunrise} label="Current streak" value={`${streak} day${streak === 1 ? '' : 's'}`} tone="bg-sand-100 text-sand-500" />
                 <StatCard icon={HeartHandshake} label="Average mood" value={averageMood} tone="bg-teal-100 text-teal-700" />
               </div>
 
-              <div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
+              <div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1.28fr)_minmax(280px,0.72fr)]">
                 <div className="flex min-h-[290px] flex-col justify-between rounded-[1.8rem] border border-white/80 bg-gradient-to-br from-white/90 to-sage-50/70 p-5 shadow-lift backdrop-blur">
                   <div>
                     <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">How people use it</p>
                     <h3 className="mt-3 text-2xl font-extrabold leading-tight text-ink">Start with the page that matches what you were actually searching for.</h3>
                     <p className="mt-3 max-w-2xl text-sm leading-7 text-sage-800">Some visitors want a private online diary, some want an online journal, and some are simply looking for the easiest place to begin. These guide pages help them land in the right mood without making the homepage feel crowded.</p>
                   </div>
-                  <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                    <a className="rounded-[1.25rem] border border-sage-200 bg-white/95 px-4 py-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-sage-50" href="/private-online-diary.html">
+                  <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    <a className="rounded-[1.35rem] border border-sage-200 bg-white/95 px-5 py-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-sage-50" href="/private-online-diary.html">
                       <span className="block text-sm font-extrabold text-sage-900">Private online diary</span>
                       <span className="mt-2 block text-[13px] leading-5 text-sage-700">Private entries, mood tracking, and a diary that stays personal.</span>
                     </a>
-                    <a className="rounded-[1.25rem] border border-sage-200 bg-white/95 px-4 py-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-sage-50" href="/where-to-write-a-diary-online.html">
-                      <span className="block text-sm font-extrabold text-sage-900">Where to write a diary online</span>
+                    <a className="rounded-[1.35rem] border border-sage-200 bg-white/95 px-5 py-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-sage-50" href="/where-to-write-a-diary-online.html">
+                      <span className="block text-sm font-extrabold text-sage-900">Where to write online diary</span>
                       <span className="mt-2 block text-[13px] leading-5 text-sage-700">A beginner-friendly path if you are still deciding where to start.</span>
                     </a>
-                    <a className="rounded-[1.25rem] border border-sage-200 bg-white/95 px-4 py-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-sage-50" href="/online-journal.html">
+                    <a className="rounded-[1.35rem] border border-sage-200 bg-white/95 px-5 py-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-sage-50" href="/online-journal.html">
                       <span className="block text-sm font-extrabold text-sage-900">Online journal</span>
                       <span className="mt-2 block text-[13px] leading-5 text-sage-700">Reflection writing with gentle structure and a softer rhythm.</span>
                     </a>
                   </div>
                   <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-sage-700">Useful starting points for diary, journal, and reflection searches.</p>
                 </div>
-                <div className="flex min-h-[290px] flex-col justify-between rounded-[1.8rem] border border-sage-100 bg-white/88 p-5 shadow-sm backdrop-blur">
+                <div className={`flex min-h-[290px] flex-col justify-between rounded-[1.8rem] border p-5 shadow-sm backdrop-blur ${selectedMoodGuide.shellClass}`}>
                   <div>
-                    <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Mood check-in</p>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Mood check-in</p>
+                      <span className={`rounded-full border px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] shadow-sm ${selectedMoodGuide.chipClass}`}>{selectedMood}</span>
+                    </div>
                     <div className="mt-4 flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-50 text-sage-800 shadow-sm">
-                        <WeatherGlyph mood={weatherOptions.find((item) => item.label === selectedMood) || moods[2]} size="text-xl" />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/90 text-sage-800 shadow-sm">
+                        <WeatherGlyph mood={selectedMoodOption} size="text-xl" />
                       </div>
                       <div>
-                        <p className="text-lg font-extrabold text-ink">{selectedMood}</p>
-                        <p className="text-sm font-semibold text-sage-600">A quick emotional marker for today’s page.</p>
+                        <p className="text-lg font-extrabold text-ink">{selectedMoodGuide.title}</p>
+                        <p className="text-sm font-semibold text-sage-600">{selectedMoodGuide.summary}</p>
                       </div>
                     </div>
                   </div>
-                  <div className="mt-5 flex flex-wrap gap-2 text-xs font-bold text-sage-700">
-                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Mood journal</span>
-                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Private reflection</span>
-                    <span className="rounded-full border border-sage-100 bg-white/95 px-3 py-1 shadow-sm">Easy check-ins</span>
+                  <div className="mt-5 flex flex-wrap gap-2.5 text-xs font-bold text-sage-700">
+                    <span className={`rounded-full border px-3.5 py-1.5 shadow-sm ${selectedMoodGuide.chipClass}`}>Mood journal</span>
+                    <span className={`rounded-full border px-3.5 py-1.5 shadow-sm ${selectedMoodGuide.chipClass}`}>Private reflection</span>
+                    <span className={`rounded-full border px-3.5 py-1.5 shadow-sm ${selectedMoodGuide.chipClass}`}>Easy check-ins</span>
                   </div>
-                  <div className="mt-5 grid gap-3 rounded-2xl bg-sage-50/85 px-4 py-4 text-sm text-sage-700 ring-1 ring-sage-100/80">
+                  <div className={`mt-5 grid gap-3 rounded-2xl px-4 py-4 text-sm text-sage-700 ring-1 ${selectedMoodGuide.panelClass}`}>
                     <div>
                       <p className="font-extrabold text-sage-900">Carried into today’s page</p>
-                      <p className="mt-1 leading-6">A quick mood label makes it easier to return later, notice patterns, and keep the writing flow softer instead of more complicated.</p>
+                      <p className="mt-1 leading-6">{selectedMoodGuide.detail}</p>
                     </div>
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-sage-700">
                       <Sparkles size={14} /> Gentle pattern-tracking
@@ -2791,11 +4314,12 @@ function App() {
               <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Start where it helps most</p>
               <span className="rounded-full border border-sage-100 bg-sage-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-sage-800">Core spaces</span>
             </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:gap-4">
               {[
                 { id: 'write', label: 'Write', detail: 'Begin with one honest line', icon: PenLine, tone: 'bg-sage-100 text-sage-800' },
+                { id: 'notes', label: 'Notes', detail: 'Keep important things nearby', icon: FileText, tone: 'bg-teal-100 text-teal-700' },
                 { id: 'memories', label: 'Memories', detail: 'Return to saved pages', icon: BookOpen, tone: 'bg-sand-100 text-sand-600' },
-                { id: 'insights', label: 'Insights', detail: 'See moods over time', icon: Sparkles, tone: 'bg-teal-100 text-teal-700' }
+                { id: 'insights', label: 'Insights', detail: 'See moods over time', icon: Sparkles, tone: 'bg-rose-100 text-rose-700' }
               ].map((tab) => (
                 <button key={tab.id} className="group flex items-center gap-3 rounded-2xl border border-sage-100 bg-white/92 px-4 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-white hover:shadow-lift" onClick={() => navigateToTab(tab.id)} type="button">
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl shadow-sm transition group-hover:scale-105 ${tab.tone}`}>
@@ -2810,22 +4334,22 @@ function App() {
             </div>
           </div>
 
-          <div className="rounded-[1.9rem] border border-white/80 bg-gradient-to-br from-white/80 to-sand-50/80 p-6 shadow-soft backdrop-blur-xl">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Designed to feel calm</p>
-            <h3 className="mt-3 text-2xl font-extrabold leading-tight text-ink">A cleaner first screen on both phone and desktop.</h3>
-            <p className="mt-3 text-sm leading-7 text-sage-700">This pass keeps the writing flow more obvious, the navigation more balanced, and the support areas clearer so the journal feels calmer to move through.</p>
-            <div className="mt-5 grid gap-3 text-sm font-semibold text-sage-900">
-              <div className="flex items-center gap-3 rounded-2xl border border-sage-200 bg-white/95 px-4 py-3 shadow-sm">
+          <div className="rounded-[1.9rem] border border-white/80 bg-gradient-to-br from-white/84 to-sand-50/70 p-6 shadow-soft backdrop-blur-xl">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-800">Why it feels good to write here</p>
+            <h3 className="mt-3 text-2xl font-extrabold leading-tight text-ink">The page stays quiet enough for real thoughts to arrive.</h3>
+            <p className="mt-3 max-w-sm text-sm leading-7 text-sage-800">There is a clear place to begin, soft privacy cues, and just enough support to help a first sentence feel easy instead of exposed.</p>
+            <div className="mt-6 grid gap-3.5 text-sm font-semibold text-sage-900">
+              <div className="flex items-center gap-3 rounded-2xl border border-sage-200 bg-white/96 px-4 py-3.5 shadow-sm">
                 <Sparkles size={15} className="text-sage-700" />
-                <span>Stronger contrast and cleaner spacing above the fold</span>
+                <span>Starter lines help you begin without filling the page with noise</span>
               </div>
-              <div className="flex items-center gap-3 rounded-2xl border border-sage-200 bg-white/95 px-4 py-3 shadow-sm">
+              <div className="flex items-center gap-3 rounded-2xl border border-sage-200 bg-white/96 px-4 py-3.5 shadow-sm">
                 <ShieldCheck size={15} className="text-sage-700" />
-                <span>Privacy and saved-entry cues that stay easy to notice</span>
+                <span>Privacy cues keep the space personal before you write a word</span>
               </div>
-              <div className="flex items-center gap-3 rounded-2xl border border-sage-200 bg-white/95 px-4 py-3 shadow-sm">
+              <div className="flex items-center gap-3 rounded-2xl border border-sage-200 bg-white/96 px-4 py-3.5 shadow-sm">
                 <BookOpen size={15} className="text-sage-700" />
-                <span>Guide links that read more naturally for both people and search</span>
+                <span>Saved pages stay easy to revisit when you want perspective later</span>
               </div>
             </div>
           </div>
@@ -2837,10 +4361,17 @@ function App() {
               Another calming quote
             </button>
 
-            <div className="mt-8 rounded-[1.6rem] bg-white/12 px-5 py-5 ring-1 ring-white/12">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-white/80">Quiet reminder</p>
-              <p className="mt-3 text-sm leading-7 text-white/95">You can leave one small honest note today and return tomorrow. The page will still be here when you are ready.</p>
-              <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-white/85">{streak > 0 ? `${streak} day${streak === 1 ? '' : 's'} of rhythm` : 'Begin with one gentle page'}</p>
+            <div className="mt-8 rounded-[1.6rem] bg-white/12 px-5 py-5 text-center ring-1 ring-white/12">
+              <div className="mx-auto max-w-xl">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-white/90">Quiet reminder</p>
+                <p className="mt-3 text-sm leading-7 text-white/95">You can leave one small honest note today and return tomorrow. The page will still be here when you are ready.</p>
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                  <p className="text-sm font-semibold tracking-[0.08em] text-white/90">{streak > 0 ? `${streak} day${streak === 1 ? '' : 's'} of rhythm` : 'Begin with one gentle page'}</p>
+                  <a className="inline-flex items-center rounded-full bg-white px-4 py-2 text-xs font-extrabold uppercase tracking-[0.14em] text-sage-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-sage-50" href="#journal" onClick={() => navigateToTab('write')}>
+                    Write now
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </aside>
@@ -2851,22 +4382,22 @@ function App() {
       <section className="mx-auto max-w-7xl px-6 py-4">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex-1">
-            <div className="rounded-[2.5rem] border border-sage-100 bg-white p-8 shadow-soft backdrop-blur lg:p-10">
+            <div className="rounded-[2.5rem] border border-sage-100/90 bg-white/96 p-7 shadow-soft backdrop-blur lg:p-10">
               <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <h2 className="font-display text-4xl font-bold leading-tight text-ink lg:text-5xl">{homeSections.find((s) => s.id === activeHomeSection)?.label || 'Overview'}</h2>
-                  <p className="mt-4 max-w-2xl text-lg leading-relaxed text-sage-800">{activeHomeSection === 'overview' ? (latestEntry ? `Your last page is still here. ${rewardLevel.next}` : 'This is your quiet corner. One page at a time is enough.') : 'Browse gently. Only one section stays open to keep your screen calm.'}</p>
+                  <p className="mt-4 max-w-2xl text-lg leading-relaxed text-sage-800">{activeHomeSection === 'overview' ? (latestEntry ? `Your last page is still here. ${rewardLevel.next}` : 'Start with the smallest true thing. This space is built to make writing feel safe, simple, and worth returning to.') : 'Browse gently. The layout stays simple so each section feels easier to read.'}</p>
                 </div>
                 <a className="inline-flex shrink-0 items-center gap-2 rounded-full bg-sage-900 px-6 py-4 text-sm font-extrabold text-white shadow-lift transition hover:-translate-y-1 hover:bg-sage-800" href="#journal" onClick={() => navigateToTab('write')}>
                   <PenLine size={18} /> Open today’s page
                 </a>
               </div>
 
-              <div className="mt-10 grid gap-3 rounded-[2rem] bg-sage-50/70 p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+              <div className="mt-10 grid gap-2.5 rounded-[2rem] border border-sage-100/70 bg-sage-50/45 p-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                 {primaryHomeSections.map((section) => (
                   <button
                     key={section.id}
-                    className={`rounded-[1.5rem] px-5 py-4 text-left transition ${activeHomeSection === section.id ? 'bg-white text-sage-950 shadow-md' : 'text-sage-700 hover:bg-white/70 hover:text-sage-950'}`}
+                    className={`rounded-[1.4rem] px-4 py-4 text-left transition ${activeHomeSection === section.id ? 'bg-white text-sage-950 shadow-sm ring-1 ring-sage-100' : 'text-sage-700 hover:bg-white/75 hover:text-sage-950'}`}
                     onClick={() => openHomeSection(section.id)}
                     type="button"
                   >
@@ -2876,18 +4407,57 @@ function App() {
               </div>
 
               {activeHomeSection === 'overview' && (
-              <div className="mt-10 grid gap-4 sm:grid-cols-3">
-                <div className="rounded-3xl bg-sage-50/50 p-6 text-center ring-1 ring-sage-100/50">
-                  <p className="text-xs font-extrabold uppercase tracking-widest text-sage-500">Streak</p>
-                  <p className="mt-2 text-3xl font-extrabold text-ink">{streak} day{streak === 1 ? '' : 's'}</p>
+              <div className="mt-10 space-y-5">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="rounded-3xl bg-sage-50/50 p-6 text-center ring-1 ring-sage-100/50">
+                    <p className="text-xs font-extrabold uppercase tracking-widest text-sage-500">Streak</p>
+                    <p className="mt-2 text-3xl font-extrabold text-ink">{streak} day{streak === 1 ? '' : 's'}</p>
+                  </div>
+                  <div className="rounded-3xl bg-rose-50/50 p-6 text-center ring-1 ring-rose-100/50">
+                    <p className="text-xs font-extrabold uppercase tracking-widest text-rose-500">This week</p>
+                    <p className="mt-2 text-3xl font-extrabold text-ink">{weeklyCheckIns}/{weeklyGoal}</p>
+                  </div>
+                  <div className="rounded-3xl bg-sand-50/50 p-6 text-center ring-1 ring-sand-100/50">
+                    <p className="text-xs font-extrabold uppercase tracking-widest text-sand-500">Reward</p>
+                    <p className="mt-2 text-3xl font-extrabold text-ink">{rewardLevel.emoji}</p>
+                  </div>
                 </div>
-                <div className="rounded-3xl bg-rose-50/50 p-6 text-center ring-1 ring-rose-100/50">
-                  <p className="text-xs font-extrabold uppercase tracking-widest text-rose-500">This week</p>
-                  <p className="mt-2 text-3xl font-extrabold text-ink">{weeklyCheckIns}/{weeklyGoal}</p>
+                <div className="rounded-[2rem] border border-sage-100 bg-gradient-to-r from-sage-50/85 via-white to-sand-50/80 p-5 shadow-inner">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-600">Most useful paths</p>
+                      <h3 className="mt-2 text-2xl font-extrabold leading-tight text-ink">Pick what you came here to do.</h3>
+                    </div>
+                    <p className="max-w-md text-sm font-semibold leading-6 text-sage-700">The homepage now gives first-time visitors a clearer route into writing, notes, memories, or practical guide pages.</p>
+                  </div>
+                  <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                    {[
+                      { label: 'Write one line', detail: 'Open a calm page with prompts and a visible save action.', action: () => navigateToTab('write'), icon: PenLine },
+                      { label: 'Plan important things', detail: 'Keep tasks, recurring habits, and notes away from diary entries.', action: () => navigateToTab('notes'), icon: FileText },
+                      { label: 'Revisit memories', detail: 'Browse saved diary pages when you want to reflect.', action: () => navigateToTab('memories'), icon: BookOpen },
+                      { label: 'Read guides', detail: 'Find diary, prompt, privacy, and habit guides grouped by need.', action: () => openHomeSection('guides'), icon: Compass }
+                    ].map((item) => (
+                      <button key={item.label} className="group rounded-[1.5rem] border border-white/85 bg-white/90 p-4 text-left shadow-sm transition hover:-translate-y-1 hover:border-sage-200 hover:bg-white hover:shadow-lift" onClick={item.action} type="button">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sage-100 text-sage-800 transition group-hover:bg-sage-900 group-hover:text-white"><item.icon size={17} /></div>
+                        <h4 className="mt-3 text-base font-extrabold text-ink">{item.label}</h4>
+                        <p className="mt-2 text-sm leading-6 text-sage-700">{item.detail}</p>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="rounded-3xl bg-sand-50/50 p-6 text-center ring-1 ring-sand-100/50">
-                  <p className="text-xs font-extrabold uppercase tracking-widest text-sand-500">Reward</p>
-                  <p className="mt-2 text-3xl font-extrabold text-ink">{rewardLevel.emoji}</p>
+                <div className="rounded-[1.8rem] border border-sage-100/80 bg-white/85 p-5 shadow-sm">
+                  <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-600">Popular diary searches</p>
+                      <h3 className="mt-2 text-xl font-extrabold text-ink">Quick links for the most common journaling questions.</h3>
+                    </div>
+                    <button className="text-sm font-extrabold text-sage-800 underline decoration-sage-300 underline-offset-4" onClick={() => openHomeSection('guides')} type="button">View all guide collections</button>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2.5">
+                    {seoPopularSearches.map((item) => (
+                      <a className="rounded-full border border-sage-200 bg-sage-50/70 px-4 py-2 text-sm font-bold text-sage-800 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href={item.href} key={item.href}>{item.label}</a>
+                    ))}
+                  </div>
                 </div>
               </div>
               )}
@@ -2912,6 +4482,10 @@ function App() {
               </div>
 
               <div className="grid gap-2 border-t border-sage-100 pt-5">
+                <button className="flex items-center justify-between rounded-2xl bg-white/80 px-5 py-4 text-sm font-extrabold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-white" onClick={() => navigateToTab('notes')} type="button">
+                  <span className="inline-flex items-center gap-2"><FileText size={16} /> Notes</span>
+                  <span className="opacity-50">{openPlannerTodoCount}</span>
+                </button>
                 <button className="flex items-center justify-between rounded-2xl bg-white/80 px-5 py-4 text-sm font-extrabold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-white" onClick={() => navigateToTab('memories')} type="button">
                   <span className="inline-flex items-center gap-2"><BookOpen size={16} /> Memories</span>
                   <span className="opacity-50">{entries.length}</span>
@@ -2961,17 +4535,18 @@ function App() {
         onRemovePin={removePin}
       />
 
-      <section id="journal" className="relative z-10 mx-auto -mt-2 max-w-7xl px-6 py-8 lg:-mt-6">
+      <section id="journal" className="relative z-10 mx-auto -mt-2 max-w-7xl px-6 py-8 pb-28 lg:-mt-6 lg:pb-8">
         <div className="mb-6 overflow-hidden rounded-[2rem] border border-white/85 bg-gradient-to-r from-white/88 via-sage-50/78 to-sand-50/75 p-3 shadow-soft backdrop-blur xl:p-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-sage-600">Choose your diary space</p>
-              <h2 className="mt-2 text-2xl font-extrabold text-ink">Writing stays central, with memories and insights waiting nearby.</h2>
-              <p className="mt-2 text-sm font-semibold leading-6 text-sage-700">The journal is easy to enter, easy to return to, and designed to feel calm on both mobile and desktop.</p>
+              <h2 className="mt-2 text-2xl font-extrabold text-ink">Writing stays central, with notes, memories, and insights waiting nearby.</h2>
+              <p className="mt-2 text-sm font-semibold leading-6 text-sage-700">The journal is easy to enter, easy to return to, and now has a separate place for important things and to-dos too.</p>
             </div>
-            <div className="grid gap-2 rounded-[1.5rem] bg-white/70 p-2 shadow-inner sm:grid-cols-3">
+            <div className="grid gap-2 rounded-[1.5rem] bg-white/70 p-2 shadow-inner sm:grid-cols-4">
               {[
                 { id: 'write', label: 'Write', detail: draftWordCount ? `${draftWordCount} words in progress` : 'Start here', icon: PenLine },
+                { id: 'notes', label: 'Notes', detail: plannerTodoCount ? `${openPlannerTodoCount} still open` : 'Keep important things', icon: FileText },
                 { id: 'memories', label: 'Memories', detail: `${entries.length} saved`, icon: BookOpen },
                 { id: 'insights', label: 'Insights', detail: `${weeklyCheckIns}/${weeklyGoal} this week`, icon: Sparkles }
               ].map((tab) => (
@@ -2990,88 +4565,94 @@ function App() {
         </div>
 
         {activeTab === 'write' && (
-        <form className="rounded-[2rem] border border-white/85 bg-white/90 p-4 shadow-soft backdrop-blur sm:p-6 xl:p-8" onSubmit={saveEntry}>
-          <div className="mb-5 overflow-hidden rounded-[1.9rem] border border-sage-100 bg-gradient-to-r from-white via-sage-50/60 to-sand-50/70 p-4 shadow-sm sm:p-5">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <form className="rounded-[2rem] border border-sage-100/80 bg-white/94 p-4 shadow-soft backdrop-blur sm:p-6 xl:p-8" onSubmit={saveEntry}>
+          <div className="mb-5 overflow-hidden rounded-[1.75rem] border border-sage-100/90 bg-gradient-to-r from-white via-sage-50/35 to-white p-4 shadow-sm sm:p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-3xl">
-                <p className="text-sm font-extrabold uppercase tracking-[0.22em] text-sage-600">A page for your diary</p>
-                <h2 className="mt-2 text-3xl font-extrabold text-ink">Write today\'s diary page in your own words.</h2>
-                <p className="mt-2 text-sm leading-7 text-sage-700">There is no right amount here. Start with today\'s date, one feeling, or a single sentence. A diary can begin small and still help you understand yourself more clearly.</p>
+                <p className="text-sm font-extrabold uppercase tracking-[0.22em] text-sage-600">Your page for today</p>
+                <h2 className="mt-2 text-[2rem] font-extrabold leading-tight text-ink sm:text-3xl">Keep it simple. Write what feels true.</h2>
+                <p className="mt-2 text-sm leading-7 text-sage-700">This page does not need a polished story. A sentence, a fragment, or a few plain words are already enough.</p>
               </div>
-              <div className="inline-flex items-center gap-2 self-start rounded-full border border-sage-100 bg-white px-4 py-2 text-sm font-bold text-sage-700 shadow-sm">
+              <div className="inline-flex items-center gap-2 self-start rounded-full border border-sage-100 bg-white/98 px-4 py-2 text-sm font-bold text-sage-700 shadow-sm">
                 <CalendarDays size={16} /> {formatDate(new Date().toISOString())}
               </div>
             </div>
             <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-sage-600 sm:text-xs">
-              <span className="rounded-full bg-white/90 px-3 py-2 shadow-sm">{selectedMood} mood</span>
-              <span className="rounded-full bg-white/90 px-3 py-2 shadow-sm">{draftWordCount} words</span>
-              <span className="rounded-full bg-white/90 px-3 py-2 shadow-sm">{completedQuestCount}/{journalQuest.length} ritual steps</span>
+              <span className="rounded-full border border-white/80 bg-white/90 px-3 py-2 shadow-sm">{selectedMood} mood</span>
+              <span className="rounded-full border border-white/80 bg-white/90 px-3 py-2 shadow-sm">{draftWordCount} words</span>
+              <span className="rounded-full border border-white/80 bg-white/90 px-3 py-2 shadow-sm">{completedQuestCount}/{journalQuest.length} ritual steps</span>
             </div>
           </div>
 
-          <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-            <label className="block text-sm font-bold text-sage-800" htmlFor="entry-title">What is this diary page about?</label>
-            <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.24em] text-sage-500 sm:text-xs">
-              <span className="rounded-full border border-sage-100 bg-white px-3 py-1.5 shadow-sm">A short title is enough</span>
-              <span className="rounded-full border border-sage-100 bg-white px-3 py-1.5 shadow-sm">Keep it honest</span>
-            </div>
+          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+            <label className="block text-sm font-bold text-sage-800" htmlFor="entry-title">Title, if you want one</label>
+            <p className="text-sm font-semibold text-sage-500">It can stay short, plain, or even blank.</p>
           </div>
           <input
             className="journal-title-input mb-5 w-full rounded-[1.75rem] px-5 py-4 text-lg font-semibold outline-none"
             id="entry-title"
             onChange={(event) => setTitle(event.target.value)}
-            placeholder="A small title for today"
+            placeholder="e.g. The part of today I want to keep"
             value={title}
           />
 
-          <div className="mb-4 rounded-[1.6rem] border border-amber-100/80 bg-white/70 p-3 shadow-sm backdrop-blur-sm sm:p-4">
-            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-              <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[31rem] xl:grid-cols-3">
-                <label className="block text-xs font-extrabold uppercase tracking-[0.22em] text-sage-600">
-                  Mood
-                  <select className="mt-2 w-full rounded-2xl border border-amber-100 bg-white/90 px-3 py-2.5 text-sm font-semibold text-ink outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100/70" onChange={(event) => setSelectedMood(event.target.value)} value={selectedMood}>
-                    {weatherOptions.map((mood) => (
-                      <option key={mood.label} value={mood.label}>{mood.label}</option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block text-xs font-extrabold uppercase tracking-[0.22em] text-sage-600">
-                  Font
-                  <select className="mt-2 w-full rounded-2xl border border-amber-100 bg-white/90 px-3 py-2.5 text-sm font-semibold text-ink outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100/70" onChange={(event) => setJournalStyle({ ...journalStyle, fontId: event.target.value })} value={journalStyle.fontId}>
-                    {journalFontOptions.map((font) => (
-                      <option key={font.id} value={font.id}>{font.label}</option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block text-xs font-extrabold uppercase tracking-[0.22em] text-sage-600">
-                  Size
-                  <select className="mt-2 w-full rounded-2xl border border-amber-100 bg-white/90 px-3 py-2.5 text-sm font-semibold text-ink outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100/70" onChange={(event) => setJournalStyle({ ...journalStyle, sizeId: event.target.value })} value={journalStyle.sizeId}>
-                    {journalSizeOptions.map((size) => (
-                      <option key={size.id} value={size.id}>{size.label}</option>
-                    ))}
-                  </select>
-                </label>
+          <div className="mb-4 rounded-[1.6rem] border border-sage-100/90 bg-gradient-to-r from-white via-sage-50/45 to-white p-3.5 shadow-sm backdrop-blur-sm sm:p-4">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div className="space-y-3">
+                <div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-500">Light controls</p>
+                  <p className="mt-1 text-sm font-semibold text-sage-600">Keep only what helps, then let the page stay quiet.</p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[31rem] xl:grid-cols-3">
+                  <label className="block text-[11px] font-extrabold uppercase tracking-[0.22em] text-sage-500">
+                    Mood
+                    <select className="mt-2 w-full rounded-[1.15rem] border border-sage-100 bg-white/95 px-3.5 py-3 text-sm font-semibold text-ink outline-none transition focus:border-sage-300 focus:ring-4 focus:ring-sage-100/70" onChange={(event) => setSelectedMood(event.target.value)} value={selectedMood}>
+                      {weatherOptions.map((mood) => (
+                        <option key={mood.label} value={mood.label}>{mood.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block text-[11px] font-extrabold uppercase tracking-[0.22em] text-sage-500">
+                    Font
+                    <select className="mt-2 w-full rounded-[1.15rem] border border-sage-100 bg-white/95 px-3.5 py-3 text-sm font-semibold text-ink outline-none transition focus:border-sage-300 focus:ring-4 focus:ring-sage-100/70" onChange={(event) => setJournalStyle({ ...journalStyle, fontId: event.target.value })} value={journalStyle.fontId}>
+                      {journalFontOptions.map((font) => (
+                        <option key={font.id} value={font.id}>{font.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block text-[11px] font-extrabold uppercase tracking-[0.22em] text-sage-500">
+                    Size
+                    <select className="mt-2 w-full rounded-[1.15rem] border border-sage-100 bg-white/95 px-3.5 py-3 text-sm font-semibold text-ink outline-none transition focus:border-sage-300 focus:ring-4 focus:ring-sage-100/70" onChange={(event) => setJournalStyle({ ...journalStyle, sizeId: event.target.value })} value={journalStyle.sizeId}>
+                      {journalSizeOptions.map((size) => (
+                        <option key={size.id} value={size.id}>{size.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2 xl:justify-end">
-                <button className="rounded-full bg-white px-3.5 py-2 text-sm font-bold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-sage-50" onClick={() => toggleBulletList(entryBodyRef, setBody)} title="Bullet points" type="button">List</button>
-                {quickEmojis.slice(0, 6).map((emoji, index) => (
-                  <button key={emoji} className={`rounded-full bg-white px-3 py-1.5 text-base shadow-sm transition hover:-translate-y-0.5 hover:bg-sage-50 ${index > 3 ? 'hidden sm:inline-flex' : ''}`} onClick={() => insertQuickEmoji(emoji)} type="button">
+              <div className="flex flex-wrap items-center gap-2 xl:max-w-[22rem] xl:justify-end">
+                <button className="rounded-full border border-sage-100 bg-white px-3.5 py-2 text-sm font-bold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50" onClick={() => toggleBoldText(entryBodyRef, setBody)} title="Bold selected text" type="button">Bold</button>
+                <button className="rounded-full border border-sage-100 bg-white px-3.5 py-2 text-sm font-bold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50" onClick={() => toggleUnderlineText(entryBodyRef, setBody)} title="Underline selected text" type="button">Underline</button>
+                <button className="rounded-full border border-sage-100 bg-white px-3.5 py-2 text-sm font-bold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50" onClick={() => toggleBulletList(entryBodyRef, setBody)} title="Bullet points" type="button">List</button>
+                {quickEmojis.slice(0, 4).map((emoji) => (
+                  <button key={emoji} className="rounded-full border border-sage-100 bg-white px-3 py-1.5 text-base shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50" onClick={() => insertQuickEmoji(emoji)} type="button">
                     {emoji}
                   </button>
                 ))}
-                <label className="flex cursor-pointer items-center gap-2 rounded-full bg-sage-800 px-3 py-2 text-sm font-extrabold text-white shadow-lift transition hover:-translate-y-0.5 hover:bg-sage-700 sm:px-3.5">
+                <label className="flex cursor-pointer items-center gap-2 rounded-full border border-sage-100 bg-white px-3.5 py-2 text-sm font-extrabold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50">
                   <ImagePlus size={14} /> Photo
                   <input accept="image/*" className="hidden" onChange={handleEntryImageUpload} type="file" />
                 </label>
+                <button className="rounded-full bg-ink px-4 py-2 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sage-800" type="submit">Save page</button>
               </div>
             </div>
           </div>
 
           <div className="journal-editor-shell mt-2 rounded-[2rem] p-3 md:p-4">
-            <div className="journal-editor-ribbon">quiet diary</div>
+            <div className="journal-editor-ribbon">quiet page</div>
             <div className="journal-editor-meta journal-editor-top mb-3 flex flex-wrap items-center justify-between gap-2 px-3 text-[11px] font-bold uppercase tracking-[0.22em] text-sage-500 sm:text-xs sm:tracking-[0.24em]">
-              <span>{selectedMood} mood · {formatDate(new Date().toISOString())}</span>
-              <span>{draftWordCount} words · soft, unfinished, enough</span>
+              <span>{selectedMood} mood · today</span>
+              <span>{draftWordCount === 0 ? 'slow is still writing' : `${draftWordCount} words so far`}</span>
             </div>
             <div
               ref={entryBodyRef}
@@ -3080,10 +4661,10 @@ function App() {
               suppressContentEditableWarning
               style={{ fontFamily: activeJournalFont, fontSize: activeJournalSize, lineHeight: 1.95, color: '#24312e', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
               onInput={(e) => setBody(e.currentTarget.innerHTML)}
-              data-placeholder=""
+              data-placeholder="Start with one true sentence."
             />
             <div className="journal-editor-meta journal-editor-bottom mt-4 flex flex-wrap items-center justify-between gap-2 px-3 text-[11px] font-bold uppercase tracking-[0.22em] text-sage-500 sm:text-xs sm:tracking-[0.24em]">
-              <span>A few honest lines are enough for a real diary page.</span>
+              <span>A few clear lines are enough for today.</span>
               <span>{streak} day{streak === 1 ? '' : 's'} of returning</span>
             </div>
           </div>
@@ -3092,23 +4673,23 @@ function App() {
               {journalNudge}
             </div>
             <button className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-7 py-4 font-bold text-white shadow-lift transition hover:-translate-y-1 hover:bg-sage-800 sm:w-auto" type="submit">
-              <Plus size={19} /> Keep this page
+              <Plus size={19} /> Save page
             </button>
           </div>
 
-          <div className="mt-6 rounded-[1.75rem] bg-gradient-to-r from-sage-50 via-white to-sand-50 p-4 shadow-inner ring-1 ring-white/70 sm:p-6">
+          <div className="mt-6 rounded-[1.75rem] border border-white/80 bg-gradient-to-r from-sage-50/60 via-white to-sand-50/40 p-4 shadow-inner ring-1 ring-white/70 sm:p-6">
             <div className="grid gap-6 lg:grid-cols-12">
               <div className="lg:col-span-7">
-                <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-sage-700"><Feather size={16} /> Writing prompt</div>
+                <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-sage-700"><Feather size={16} /> If you want a starting line</div>
                 <p className="max-w-2xl font-display text-2xl font-bold leading-relaxed text-sage-950">{activePrompt}</p>
-                <p className="mt-3 text-sm font-semibold text-sage-700">Take what helps, skip the rest, and use the prompt as a gentle way into your diary when you are not sure how to begin.</p>
-                <button className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-extrabold text-sage-900 shadow-lift transition hover:-translate-y-1 hover:bg-sage-50" onClick={() => setActivePrompt(prompts[(prompts.indexOf(activePrompt) + 1) % prompts.length])} type="button">
+                <p className="mt-3 text-sm font-semibold text-sage-700">Use the prompt if it helps, or leave it and begin exactly where your mind already is.</p>
+                <button className="mt-5 inline-flex items-center gap-2 rounded-full border border-sage-100 bg-white px-4 py-2 text-sm font-extrabold text-sage-900 shadow-sm transition hover:-translate-y-1 hover:border-sage-200 hover:bg-sage-50" onClick={() => setActivePrompt(prompts[(prompts.indexOf(activePrompt) + 1) % prompts.length])} type="button">
                   <Sparkles size={15} /> New prompt
                 </button>
               </div>
 
               <div className="flex flex-col gap-4 lg:col-span-5">
-                <div className="rounded-3xl bg-white/75 p-4 shadow-sm ring-1 ring-sage-100/70">
+                <div className="rounded-3xl bg-white/82 p-4 shadow-sm ring-1 ring-sage-100/70">
                   <div className="flex items-start gap-3">
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-100 text-xl shadow-sm">
                       {companionIsUploadedMedia ? <HeartHandshake size={20} className="text-sage-700" /> : <span>{companion.character || '💛'}</span>}
@@ -3116,18 +4697,18 @@ function App() {
                     <div>
                       <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Diary start</p>
                       <h3 className="mt-2 text-lg font-extrabold leading-tight text-sage-950">Write it the way it happened, felt, or stayed with you.</h3>
-                      <p className="mt-2 text-sm leading-7 text-sage-700">Try “Today felt…”, “What I keep coming back to is…”, or “Right now I need…”.</p>
+                      <p className="mt-2 text-sm leading-7 text-sage-700">Try “Today felt…”, “I keep coming back to…”, or “Right now I need…”.</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white/75 p-4 shadow-sm ring-1 ring-sage-100/70">
-                  <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Today's little joys</p>
+                <div className="rounded-3xl bg-white/82 p-4 shadow-sm ring-1 ring-sage-100/70">
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Little markers</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {quickEmojis.slice(0, 8).map((emoji) => (
                       <button
                         key={emoji}
-                        className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-xl shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:ring-2 hover:ring-sage-200"
+                        className="flex h-10 w-10 items-center justify-center rounded-2xl border border-sage-100 bg-white text-xl shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:shadow-md"
                         onClick={() => addStarterLine(emoji)}
                         type="button"
                       >
@@ -3135,13 +4716,13 @@ function App() {
                       </button>
                     ))}
                   </div>
-                  <p className="mt-3 text-[11px] font-bold text-sage-600">Tap to add a small spark to your entry.</p>
+                  <p className="mt-3 text-[11px] font-bold text-sage-600">Tap one if you want a tiny bit of texture on the page.</p>
                 </div>
 
-                <div className="rounded-3xl bg-white/75 p-4 shadow-sm ring-1 ring-sage-100/70">
+                <div className="rounded-3xl bg-white/82 p-4 shadow-sm ring-1 ring-sage-100/70">
                   <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Small ways to begin</p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {['Today felt like', 'What I keep coming back to', 'Right now I need'].map((starter) => (
+                    {moodStarterPrompts.map((starter) => (
                       <button key={starter} className="rounded-full border border-sage-100 bg-white px-3.5 py-2 text-sm font-bold text-sage-700 transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-sage-50" onClick={() => addStarterLine(starter)} type="button">
                         {starter}
                       </button>
@@ -3149,28 +4730,28 @@ function App() {
                   </div>
                 </div>
 
-                <div className="rounded-[1.75rem] bg-gradient-to-br from-sage-900 via-sage-800 to-sage-700 p-5 text-white shadow-soft">
+                <div className="rounded-[1.75rem] border border-sage-100 bg-white/88 p-5 shadow-sm ring-1 ring-sage-100/70">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-white/80">Kept close</p>
-                      <h3 className="mt-2 text-xl font-extrabold leading-tight">These pages are becoming a diary you can return to.</h3>
+                      <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Kept gently</p>
+                      <h3 className="mt-2 text-xl font-extrabold leading-tight text-sage-950">A quiet record is forming.</h3>
                     </div>
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-2xl shadow-inner">{rewardLevel.emoji}</div>
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sage-50 text-2xl text-sage-800 shadow-sm">{rewardLevel.emoji}</div>
                   </div>
                   <div className="mt-5 grid grid-cols-2 gap-3">
-                    <div className="rounded-2xl bg-white/10 p-3 backdrop-blur">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/75">Pages kept</p>
-                      <p className="mt-2 text-2xl font-extrabold">{entries.length}</p>
+                    <div className="rounded-2xl border border-sage-100 bg-sage-50/60 p-3">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-sage-600">Pages saved</p>
+                      <p className="mt-2 text-2xl font-extrabold text-sage-950">{entries.length}</p>
                     </div>
-                    <div className="rounded-2xl bg-white/10 p-3 backdrop-blur">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/75">Soft streak</p>
-                      <p className="mt-2 text-2xl font-extrabold">{streak}</p>
+                    <div className="rounded-2xl border border-sage-100 bg-sage-50/60 p-3">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-sage-600">Current rhythm</p>
+                      <p className="mt-2 text-2xl font-extrabold text-sage-950">{streak}</p>
                     </div>
                   </div>
-                  <div className="mt-4 rounded-2xl bg-white/10 px-4 py-3 text-sm leading-7 text-white/92 ring-1 ring-white/10">
+                  <div className="mt-4 rounded-2xl border border-sage-100 bg-sage-50/55 px-4 py-3 text-sm leading-7 text-sage-700">
                     {weeklyCheckIns >= weeklyGoal ? 'This week already has enough gentle attention in it.' : `${weeklyGoal - weeklyCheckIns} more check-in${weeklyGoal - weeklyCheckIns === 1 ? '' : 's'} if you want to fill this week softly.`}
                   </div>
-                  <button className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-extrabold text-sage-900 shadow-lift transition hover:-translate-y-0.5 hover:bg-sage-50" onClick={() => navigateToTab('memories')} type="button">
+                  <button className="mt-4 inline-flex items-center gap-2 rounded-full border border-sage-200 bg-white px-4 py-2 text-sm font-extrabold text-sage-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-sage-50" onClick={() => navigateToTab('memories')} type="button">
                     <BookOpen size={15} /> Visit your memories
                   </button>
                 </div>
@@ -3240,19 +4821,19 @@ function App() {
             </div>
 
             <aside className="flex flex-col gap-6 lg:sticky lg:top-28 lg:self-start">
-              <div className="group relative overflow-hidden rounded-[2rem] border border-white/80 bg-gradient-to-br from-white/95 to-white/75 p-6 shadow-lift backdrop-blur transition duration-300 hover:shadow-soft">
+              <div className={`group relative overflow-hidden rounded-[2rem] border p-6 shadow-lift backdrop-blur transition duration-300 hover:shadow-soft ${selectedMoodGuide.shellClass}`}>
                 <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-sage-50/50 blur-2xl group-hover:bg-sage-100/60"></div>
                 <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-sage-600">Atmosphere</p>
                 <div className="mt-5 flex items-center gap-4">
                   <div className="flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-white text-3xl shadow-soft transition group-hover:scale-110">
-                    <WeatherGlyph mood={weatherOptions.find((item) => item.label === selectedMood) || moods[2]} size="text-2xl" />
+                    <WeatherGlyph mood={selectedMoodOption} size="text-2xl" />
                   </div>
                   <div>
-                    <p className="text-xl font-extrabold text-ink">{selectedMood}</p>
-                    <p className="text-sm font-semibold text-sage-700">Matching your energy today.</p>
+                    <p className="text-xl font-extrabold text-ink">{selectedMoodGuide.title}</p>
+                    <p className="text-sm font-semibold text-sage-700">{selectedMoodGuide.summary}</p>
                   </div>
                 </div>
-                <p className="mt-5 text-sm leading-7 text-sage-700">{latestEntry ? `Continuing "${latestEntry.title}".` : 'Ready for your first detail.'}</p>
+                <p className="mt-5 text-sm leading-7 text-sage-700">{latestEntry ? `Continuing "${latestEntry.title}".` : selectedMoodGuide.detail}</p>
               </div>
 
               <div className="rounded-[2rem] border border-white/80 bg-white/78 p-6 shadow-soft backdrop-blur-xl">
@@ -3280,7 +4861,7 @@ function App() {
                 <div className="grid gap-3">
                   {[
                     { label: 'Name the feeling', icon: Feather, onClick: () => addStarterLine('Today feels'), color: 'text-sage-700' },
-                    { label: 'Keep one detail', icon: Sparkles, onClick: () => addStarterLine('A small thing I want to remember'), color: 'text-amber-700' },
+                    { label: 'Open notes', icon: FileText, onClick: () => navigateToTab('notes'), count: openPlannerTodoCount, color: 'text-teal-700' },
                     { label: 'View check-ins', icon: CalendarDays, onClick: () => navigateToTab('insights'), count: importantDateCount, color: 'text-rose-700' }
                   ].map((btn) => (
                     <button key={btn.label} className="group flex items-center justify-between rounded-2xl bg-sage-50/50 px-5 py-3.5 text-left text-sm font-extrabold text-sage-800 ring-1 ring-sage-100/50 transition duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-soft hover:ring-white" onClick={btn.onClick} type="button">
@@ -3289,7 +4870,7 @@ function App() {
                     </button>
                   ))}
                 </div>
-                <p className="mt-5 border-t border-sage-100 pt-5 text-sm leading-relaxed text-sage-700 italic">"You do not need to finish the whole story today."</p>
+                <p className="mt-5 border-t border-sage-100 pt-5 text-sm leading-relaxed text-sage-700 italic">&ldquo;You do not need to finish the whole story today.&rdquo;</p>
               </div>
             </aside>
           </div>
@@ -3301,9 +4882,266 @@ function App() {
         </form>
         )}
 
+        {activeTab === 'notes' && (
+        <div className="mt-6 grid gap-6 pb-28 xl:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)] xl:pb-0">
+          <div className="overflow-hidden rounded-[2rem] border border-white/80 bg-white/84 p-6 shadow-soft backdrop-blur xl:p-8">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-3xl">
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-sage-600 sm:text-sm sm:tracking-widest">Important things</p>
+                <h2 className="mt-2 text-3xl font-extrabold leading-tight text-ink sm:text-4xl">One cleaner page for reminders, practical notes, and the things you cannot afford to forget.</h2>
+                <p className="mt-3 max-w-2xl text-sm font-semibold leading-7 text-sage-700">Keep your diary reflective, and let this page hold the useful side of life: plans, deadlines, reminders, and little admin details.</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-3xl bg-sage-50 text-sage-700 shadow-sm ring-1 ring-sage-100">
+                <FileText size={20} />
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-4">
+              {[
+                { label: 'Open tasks', value: openPlannerTodoCount },
+                { label: 'In progress', value: inProgressPlannerTodoCount },
+                { label: 'Completed', value: completedPlannerTodoCount },
+                { label: 'Overdue', value: overduePlannerTodoCount }
+              ].map((stat) => (
+                <div key={stat.label} className="rounded-[1.4rem] border border-sage-100 bg-sage-50/55 px-4 py-4 shadow-sm">
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-sage-500">{stat.label}</p>
+                  <p className="mt-2 text-2xl font-extrabold text-sage-950">{stat.value}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 rounded-[1.8rem] border border-sage-100/80 bg-sage-50/45 p-5 shadow-sm">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-500">Important notes</p>
+                  <p className="mt-1 text-sm font-semibold text-sage-600">Keep deadlines, reminders, shopping needs, travel details, or anything else you want in one calmer place.</p>
+                </div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-sage-400">{plannerStorageLabel}</p>
+              </div>
+              <textarea
+                className="mt-4 min-h-[22rem] w-full rounded-[1.5rem] border border-sage-100 bg-white px-5 py-4 text-sm leading-7 text-sage-900 outline-none transition focus:border-sage-300 focus:ring-4 focus:ring-sage-100/70"
+                onChange={(event) => setPlannerBoard((current) => ({ ...current, text: event.target.value }))}
+                placeholder="Keep important things here: dates, calls, shopping needs, ideas, and practical details you want nearby."
+                value={plannerBoard.text}
+              />
+            </div>
+          </div>
+
+          <aside className="flex flex-col gap-5">
+            <div className="rounded-[1.9rem] border border-white/80 bg-white/78 p-5 shadow-soft backdrop-blur-xl">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Task board</p>
+                  <p className="mt-1 text-sm font-semibold text-sage-600">Small, clear tasks with priority, status, and optional due dates so the page stays useful without feeling noisy.</p>
+                </div>
+                <div className="flex flex-wrap gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-sage-700">
+                  <button className={`rounded-full border px-3 py-1 transition ${plannerTodoFilter === 'all' ? 'border-sage-900 bg-sage-900 text-white' : 'border-sage-100 bg-white text-sage-700 hover:bg-sage-50'}`} onClick={() => setPlannerTodoFilter('all')} type="button">All {plannerTodoCount}</button>
+                  <button className={`rounded-full border px-3 py-1 transition ${plannerTodoFilter === 'open' ? 'border-sage-900 bg-sage-900 text-white' : 'border-sage-100 bg-white text-sage-700 hover:bg-sage-50'}`} onClick={() => setPlannerTodoFilter('open')} type="button">Open {openPlannerTodoCount}</button>
+                  <button className={`rounded-full border px-3 py-1 transition ${plannerTodoFilter === 'doing' ? 'border-sage-900 bg-sage-900 text-white' : 'border-sage-100 bg-white text-sage-700 hover:bg-sage-50'}`} onClick={() => setPlannerTodoFilter('doing')} type="button">Doing {inProgressPlannerTodoCount}</button>
+                  <button className={`rounded-full border px-3 py-1 transition ${plannerTodoFilter === 'done' ? 'border-sage-900 bg-sage-900 text-white' : 'border-sage-100 bg-white text-sage-700 hover:bg-sage-50'}`} onClick={() => setPlannerTodoFilter('done')} type="button">Done {completedPlannerTodoCount}</button>
+                  <button className={`rounded-full border px-3 py-1 transition ${plannerTodoFilter === 'high' ? 'border-sage-900 bg-sage-900 text-white' : 'border-sage-100 bg-white text-sage-700 hover:bg-sage-50'}`} onClick={() => setPlannerTodoFilter('high')} type="button">High {plannerBoard.todos.filter((todo) => todo.priority === 'high').length}</button>
+                </div>
+              </div>
+
+              <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={addPlannerTodo}>
+                <input
+                  className="flex-1 rounded-[1.15rem] border border-sage-100 bg-white px-4 py-3 text-sm font-semibold text-sage-900 outline-none transition focus:border-sage-300 focus:ring-4 focus:ring-sage-100/70 sm:col-span-2"
+                  onChange={(event) => setPlannerTodoDraft(event.target.value)}
+                  placeholder="Add a task"
+                  value={plannerTodoDraft}
+                />
+                <select
+                  className="rounded-[1.15rem] border border-sage-100 bg-white px-4 py-3 text-sm font-semibold text-sage-800 outline-none transition focus:border-sage-300 focus:ring-4 focus:ring-sage-100/70"
+                  onChange={(event) => setPlannerTodoPriorityDraft(event.target.value)}
+                  value={plannerTodoPriorityDraft}
+                >
+                  <option value="low">Low priority</option>
+                  <option value="medium">Medium priority</option>
+                  <option value="high">High priority</option>
+                </select>
+                <input
+                  className="rounded-[1.15rem] border border-sage-100 bg-white px-4 py-3 text-sm font-semibold text-sage-800 outline-none transition focus:border-sage-300 focus:ring-4 focus:ring-sage-100/70"
+                  min={todayISO()}
+                  onChange={(event) => setPlannerTodoDueDateDraft(event.target.value)}
+                  type="date"
+                  value={plannerTodoDueDateDraft}
+                />
+                <select
+                  className="rounded-[1.15rem] border border-sage-100 bg-white px-4 py-3 text-sm font-semibold text-sage-800 outline-none transition focus:border-sage-300 focus:ring-4 focus:ring-sage-100/70"
+                  onChange={(event) => setPlannerTodoRecurrenceDraft(event.target.value)}
+                  value={plannerTodoRecurrenceDraft}
+                >
+                  <option value="none">One-time</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+                <button className="inline-flex items-center justify-center rounded-[1.15rem] bg-sage-900 px-4 py-3 text-white shadow-lift transition hover:-translate-y-0.5 hover:bg-sage-800 sm:col-span-2" type="submit">
+                  <Plus size={18} />
+                </button>
+              </form>
+
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-[10px] font-extrabold uppercase tracking-[0.18em] text-sage-500">
+                <span>{filteredPlannerTodos.length} shown · {overduePlannerTodoCount} overdue</span>
+                {completedPlannerTodoCount > 0 && (
+                  <button className="rounded-full border border-sage-100 bg-white px-3 py-2 text-sage-700 transition hover:bg-sage-50" onClick={clearCompletedPlannerTodos} type="button">
+                    Clear done tasks
+                  </button>
+                )}
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {filteredPlannerTodos.length ? filteredPlannerTodos.map((todo) => {
+                  const statusTone = todo.status === 'done'
+                    ? 'border-sage-700 bg-sage-700 text-white'
+                    : todo.status === 'doing'
+                      ? 'border-teal-200 bg-teal-50 text-teal-700'
+                      : 'border-sage-200 bg-white text-sage-500 hover:border-sage-300 hover:text-sage-600';
+                  const priorityTone = todo.priority === 'high'
+                    ? 'border-rose-200 bg-rose-50 text-rose-700'
+                    : todo.priority === 'low'
+                      ? 'border-sage-100 bg-sage-50 text-sage-600'
+                      : 'border-amber-200 bg-amber-50 text-amber-700';
+                  const isEditingTodo = editingPlannerTodoId === todo.id;
+                  return (
+                    <div
+                      key={todo.id}
+                      className={`rounded-[1.4rem] border bg-white px-4 py-3 shadow-sm transition ${draggedPlannerTodoId === todo.id ? 'border-teal-200 opacity-60' : 'border-sage-100'}`}
+                      draggable={!isEditingTodo}
+                      onDragEnd={() => setDraggedPlannerTodoId(null)}
+                      onDragOver={(event) => event.preventDefault()}
+                      onDragStart={() => setDraggedPlannerTodoId(todo.id)}
+                      onDrop={(event) => { event.preventDefault(); reorderPlannerTodo(draggedPlannerTodoId, todo.id); setDraggedPlannerTodoId(null); }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <button
+                          className={`mt-0.5 flex min-h-[2.4rem] min-w-[2.4rem] shrink-0 items-center justify-center rounded-full border px-2 text-[10px] font-extrabold uppercase tracking-[0.14em] transition ${statusTone}`}
+                          onClick={() => cyclePlannerTodoStatus(todo.id)}
+                          type="button"
+                        >
+                          {todo.status === 'done' ? 'Done' : todo.status === 'doing' ? 'Doing' : 'To do'}
+                        </button>
+                        <div className="min-w-0 flex-1">
+                          {isEditingTodo ? (
+                            <div className="space-y-3">
+                              <input
+                                className="w-full rounded-2xl border border-sage-100 bg-sage-50/60 px-4 py-3 text-sm font-semibold text-sage-900 outline-none transition focus:border-sage-300 focus:ring-4 focus:ring-sage-100/70"
+                                onChange={(event) => setEditingPlannerTodoText(event.target.value)}
+                                value={editingPlannerTodoText}
+                              />
+                              <div className="grid gap-2 sm:grid-cols-3">
+                                <select className="rounded-2xl border border-sage-100 bg-white px-3 py-2 text-xs font-bold text-sage-700 outline-none" onChange={(event) => setEditingPlannerTodoPriority(event.target.value)} value={editingPlannerTodoPriority}>
+                                  <option value="low">Low priority</option>
+                                  <option value="medium">Medium priority</option>
+                                  <option value="high">High priority</option>
+                                </select>
+                                <input className="rounded-2xl border border-sage-100 bg-white px-3 py-2 text-xs font-bold text-sage-700 outline-none" min={todayISO()} onChange={(event) => setEditingPlannerTodoDueDate(event.target.value)} type="date" value={editingPlannerTodoDueDate} />
+                                <select className="rounded-2xl border border-sage-100 bg-white px-3 py-2 text-xs font-bold text-sage-700 outline-none" onChange={(event) => setEditingPlannerTodoRecurrence(event.target.value)} value={editingPlannerTodoRecurrence}>
+                                  <option value="none">One-time</option>
+                                  <option value="daily">Daily</option>
+                                  <option value="weekly">Weekly</option>
+                                  <option value="monthly">Monthly</option>
+                                </select>
+                              </div>
+                              <div className="flex flex-wrap gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em]">
+                                <button className="rounded-full bg-sage-900 px-3 py-2 text-white transition hover:bg-sage-800" onClick={() => savePlannerTodoEdit(todo.id)} type="button">Save edit</button>
+                                <button className="rounded-full border border-sage-100 bg-white px-3 py-2 text-sage-600 transition hover:bg-sage-50" onClick={cancelEditingPlannerTodo} type="button">Cancel</button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className={`text-sm font-semibold leading-6 ${todo.status === 'done' ? 'text-sage-400 line-through' : 'text-sage-800'}`}>{todo.text}</p>
+                                <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em]">
+                                  <span className={`rounded-full border px-2.5 py-1 ${todo.status === 'done' ? 'border-sage-200 bg-white text-sage-500' : 'border-sage-100 bg-white text-sage-600'}`}>{getPlannerStatusLabel(todo.status)}</span>
+                                  <button className={`rounded-full border px-2.5 py-1 transition ${priorityTone}`} onClick={() => cyclePlannerTodoPriority(todo.id)} type="button">
+                                    {getPlannerPriorityLabel(todo.priority)} priority
+                                  </button>
+                                  {todo.dueDate ? <span className={`rounded-full border px-2.5 py-1 ${isPlannerTodoOverdue(todo) ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-sage-100 bg-white text-sage-600'}`}>{isPlannerTodoOverdue(todo) ? 'Overdue' : 'Due'} {formatShortDate(todo.dueDate)}</span> : null}
+                                  <span className="rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-teal-700">{getPlannerRecurrenceLabel(todo.recurrence)}</span>
+                                </div>
+                              </div>
+                              <div className="flex shrink-0 flex-col gap-2 text-sage-400">
+                                <button className="rounded-full border border-sage-100 bg-white p-1.5 transition hover:text-sage-700" onClick={() => startEditingPlannerTodo(todo)} type="button" aria-label="Edit task">
+                                  <PenLine size={15} />
+                                </button>
+                                <button className="rounded-full border border-sage-100 bg-white p-1.5 transition hover:text-sage-700" onClick={() => movePlannerTodo(todo.id, -1)} type="button" aria-label="Move task up">
+                                  <ArrowUp size={15} />
+                                </button>
+                                <button className="rounded-full border border-sage-100 bg-white p-1.5 text-xs font-black transition hover:text-sage-700" onClick={() => movePlannerTodo(todo.id, 1)} type="button" aria-label="Move task down">
+                                  ↓
+                                </button>
+                                <button className="rounded-full border border-sage-100 bg-white p-1.5 transition hover:text-rose-500" onClick={() => deletePlannerTodo(todo.id)} type="button" aria-label="Delete task">
+                                  <Trash2 size={15} />
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }) : (
+                  <div className="rounded-[1.4rem] border border-dashed border-sage-200 bg-sage-50/45 px-4 py-5 text-sm font-semibold leading-6 text-sage-500">
+                    No tasks match this view yet. Try another filter or add a new task with a priority, due date, or recurring rhythm.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-[1.9rem] border border-white/80 bg-white/78 p-5 shadow-soft backdrop-blur-xl">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Upcoming reminders</p>
+                  <p className="mt-1 text-sm font-semibold text-sage-600">A calm shortlist of the dates that are coming up next.</p>
+                </div>
+                <div className="flex flex-wrap gap-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-sage-700">
+                  <span className="rounded-full border border-sage-100 bg-sage-50 px-3 py-1">{upcomingReminderCount} upcoming</span>
+                  <span className="rounded-full border border-sage-100 bg-white px-3 py-1">{reminderStorageLabel}</span>
+                </div>
+              </div>
+              <div className="mt-4 space-y-3">
+                {upcomingReminderPreview.length ? upcomingReminderPreview.map((item) => (
+                  <button className="w-full rounded-[1.4rem] border border-sage-100 bg-sage-50/45 px-4 py-3 text-left transition hover:-translate-y-0.5 hover:bg-white hover:shadow-sm" key={item.dateKey} onClick={() => { setSelectedCalendarDate(item.dateKey); navigateToTab('memories'); }} type="button">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-extrabold leading-6 text-sage-900">{item.note}</p>
+                        <p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-sage-500">{formatDate(item.dateKey)}{item.time ? ` · ${formatReminderTime(item.time)}` : ''}</p>
+                      </div>
+                      <span className="rounded-full border border-sage-100 bg-white px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-sage-700">{item.relativeLabel}</span>
+                    </div>
+                  </button>
+                )) : (
+                  <div className="rounded-[1.4rem] border border-dashed border-sage-200 bg-sage-50/45 px-4 py-5 text-sm font-semibold leading-6 text-sage-500">
+                    No upcoming reminders yet. Mark an important date in the calendar and it will show up here.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-[1.9rem] border border-white/80 bg-white/78 p-5 shadow-soft backdrop-blur-xl">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-sage-700">Keep it simple</p>
+              <div className="mt-4 space-y-3 text-sm font-semibold leading-7 text-sage-700">
+                <p>Use this page for practical life details, not emotional journaling.</p>
+                <p>Keep the to-do list short enough that it still feels calm to open.</p>
+                <p>Move back to writing when you want reflection instead of admin.</p>
+              </div>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <button className="inline-flex items-center gap-2 rounded-full bg-sage-900 px-4 py-2 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-sage-800" onClick={() => navigateToTab('write')} type="button">
+                  <PenLine size={15} /> Go back to writing
+                </button>
+                <button className="inline-flex items-center gap-2 rounded-full border border-sage-200 bg-white px-4 py-2 text-sm font-extrabold text-sage-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-sage-50" onClick={() => navigateToTab('insights')} type="button">
+                  <CalendarDays size={15} /> Open calendar
+                </button>
+              </div>
+            </div>
+          </aside>
+        </div>
+        )}
+
         {activeTab === 'insights' && (
-        <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-          <div className="overflow-hidden rounded-[2rem] border border-white/80 bg-gradient-to-br from-white/88 via-sage-50/68 to-sand-50/72 p-6 shadow-soft backdrop-blur xl:p-8">
+        <div className="mt-6 grid gap-6 pb-28 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] xl:pb-0">
+          <div className="overflow-hidden rounded-[2rem] border border-white/80 bg-gradient-to-br from-white/88 via-sage-50/68 to-sand-50/72 p-4 shadow-soft backdrop-blur sm:p-6 xl:p-8">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
                 <p className="text-xs font-bold uppercase tracking-[0.24em] text-sage-600 sm:text-sm sm:tracking-widest">Reflection pattern</p>
@@ -3388,7 +5226,7 @@ function App() {
         <div className="mt-6 grid gap-6 pb-24 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:pb-0">
 
           <div className="overflow-hidden rounded-[2rem] border border-white/80 bg-gradient-to-br from-white/88 via-sage-50/68 to-sand-50/72 p-4 shadow-soft backdrop-blur sm:p-6 lg:p-8">
-            <div className="mb-5 flex items-start justify-between gap-3">
+            <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-sage-600 sm:text-sm sm:tracking-widest">Journal calendar</p>
                 <h2 className="mt-1 text-2xl font-extrabold text-ink sm:text-3xl">Keep the diary pages you want to revisit.</h2>
@@ -3400,10 +5238,11 @@ function App() {
             </div>
             <div className="mb-5 flex flex-wrap gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-sage-700 sm:text-xs sm:tracking-[0.18em]">
               <span className="rounded-full border border-white/90 bg-white/88 px-3 py-2 shadow-sm">{importantDateCount} marked dates</span>
+              <span className="rounded-full border border-white/90 bg-white/88 px-3 py-2 shadow-sm">{upcomingReminderCount} upcoming reminders</span>
               <span className="rounded-full border border-white/90 bg-white/88 px-3 py-2 shadow-sm">{selectedDateEntries.length} page{selectedDateEntries.length === 1 ? '' : 's'} on this day</span>
             </div>
             <div className="mb-4 rounded-[1.5rem] bg-white/82 p-2.5 shadow-inner sm:rounded-[1.75rem] sm:p-3">
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-between gap-2 rounded-[1.2rem] bg-white/75 px-2 py-2 shadow-sm">
                 <button className="rounded-full bg-white px-3 py-2 text-sm font-extrabold text-sage-800 shadow-sm" onClick={() => setCalendarMonth(shiftMonthKey(calendarMonth, -1))} type="button">‹</button>
                 <p className="text-center text-sm font-extrabold text-sage-950 sm:text-base">{formatMonthLabel(calendarMonth)}</p>
                 <button className="rounded-full bg-white px-3 py-2 text-sm font-extrabold text-sage-800 shadow-sm" onClick={() => setCalendarMonth(shiftMonthKey(calendarMonth, 1))} type="button">›</button>
@@ -3438,36 +5277,128 @@ function App() {
                 ) : <div key={`blank-${index}`} />;
               })}
             </div>
-            <div className="mt-5 rounded-[1.75rem] bg-white/92 p-4 shadow-inner sm:p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
-                <div>
+            <div className="mt-5 rounded-[1.75rem] border border-white/80 bg-white/92 p-4 shadow-inner sm:p-5">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div className="max-w-2xl">
                   <p className="text-xs font-extrabold uppercase tracking-widest text-sage-600">{selectedCalendarDate}</p>
-                  <p className="mt-1 text-sm font-semibold text-sage-700">Mark meaningful days and keep one small note with them.</p>
+                  <p className="mt-1 text-sm font-semibold leading-6 text-sage-700">Keep the calendar focused on the days that matter, then let notification permission and service-worker support surface today and tomorrow reminders more cleanly.</p>
                 </div>
-                <button className={`w-full rounded-full px-4 py-2 text-sm font-extrabold transition sm:w-auto ${selectedImportantDate ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' : 'bg-sage-900 text-white hover:bg-sage-800'}`} onClick={() => toggleImportantDate(selectedCalendarDate)} type="button">
-                  {selectedImportantDate ? 'Remove important date' : 'Mark as important'}
-                </button>
+                <div className="flex w-full flex-col gap-2 sm:w-auto lg:min-w-[230px]">
+                  <button className={`w-full rounded-full px-4 py-2.5 text-sm font-extrabold transition ${selectedImportantDate ? 'bg-sage-100 text-sage-800 hover:bg-sage-200' : 'bg-sage-900 text-white hover:bg-sage-800'}`} onClick={() => openImportantDateEditor(selectedCalendarDate)} type="button">
+                    {selectedImportantDate ? 'Edit reminder' : 'Add reminder'}
+                  </button>
+                  <button className={`w-full rounded-full border px-4 py-2.5 text-sm font-extrabold transition ${notificationPermission === 'granted' ? 'border-sage-200 bg-white text-sage-700 hover:bg-sage-50' : 'border-sage-900 bg-white text-sage-900 hover:bg-sage-50'}`} onClick={requestNotificationPermission} type="button">
+                    {notificationPermission === 'granted' ? 'Notifications allowed' : 'Allow browser notifications'}
+                  </button>
+                  {selectedImportantDate && (
+                    <button className="w-full rounded-full bg-rose-100 px-4 py-2.5 text-sm font-extrabold text-rose-700 transition hover:bg-rose-200" onClick={() => deleteImportantDate(selectedCalendarDate)} type="button">
+                      Remove reminder
+                    </button>
+                  )}
+                </div>
               </div>
-              {selectedImportantDate && (
-                <div className="mt-4 rounded-2xl border border-rose-100 bg-rose-50/80 p-4">
-                  <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-rose-600">Important note</p>
-                  <p className="mt-2 text-sm font-semibold leading-6 text-sage-800">{selectedImportantDate.note}</p>
+
+              <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-sage-700">
+                <span className="rounded-full border border-sage-100 bg-sage-50 px-3 py-2">{notificationPermission === 'granted' ? 'Browser permission on' : notificationPermission === 'unsupported' ? 'Notifications unsupported' : 'Permission needed'}</span>
+                <span className="rounded-full border border-sage-100 bg-white px-3 py-2">{reminderStorageLabel}</span>
+                <span className="rounded-full border border-sage-100 bg-white px-3 py-2">{reminderDeliveryLabel}</span>
+                <span className="rounded-full border border-sage-100 bg-white px-3 py-2">{reminderBehaviorLabel}</span>
+                <span className={`rounded-full border px-3 py-2 ${webPushTokenReady ? 'border-teal-200 bg-teal-50 text-teal-700' : 'border-sage-100 bg-white text-sage-700'}`}>{webPushTokenReady ? 'True push ready' : 'Push setup in progress'}</span>
+              </div>
+
+              <div className="mt-4 rounded-2xl border border-sage-100 bg-white/90 px-4 py-3 text-sm font-semibold leading-6 text-sage-700">
+                {webPushStatus}
+              </div>
+
+              {notificationStatusMessage && (
+                <div className="mt-4 rounded-2xl border border-sage-100 bg-sage-50/80 px-4 py-3 text-sm font-semibold leading-6 text-sage-700">
+                  {notificationStatusMessage}
                 </div>
               )}
+
+              {nextUpcomingReminder && (
+                <button className="mt-4 w-full rounded-2xl border border-sage-100 bg-sage-50/75 p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:bg-white" onClick={() => setSelectedCalendarDate(nextUpcomingReminder.dateKey)} type="button">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-sage-600">Next reminder</p>
+                      <p className="mt-2 text-sm font-extrabold leading-6 text-sage-900">{nextUpcomingReminder.note}</p>
+                      <p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-sage-500">{formatDate(nextUpcomingReminder.dateKey)}{nextUpcomingReminder.time ? ` · ${formatReminderTime(nextUpcomingReminder.time)}` : ''}</p>
+                    </div>
+                    <span className="rounded-full border border-sage-100 bg-white px-3 py-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-sage-700">{nextUpcomingReminder.relativeLabel}</span>
+                  </div>
+                </button>
+              )}
+
+              {selectedImportantDate && (
+                <div className="mt-4 rounded-2xl border border-rose-100 bg-rose-50/70 p-4 shadow-sm">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-rose-600">Important reminder</p>
+                      <p className="mt-2 text-sm font-semibold leading-6 text-sage-800">{selectedImportantDate.note}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-rose-700">
+                      {selectedImportantDate.time && <span className="rounded-full border border-rose-100 bg-white/90 px-3 py-2">{formatReminderTime(selectedImportantDate.time)}</span>}
+                      <span className="rounded-full border border-rose-100 bg-white/90 px-3 py-2">{selectedImportantDate.remindersEnabled ? 'Reminders on' : 'Reminders off'}</span>
+                      <span className="rounded-full border border-rose-100 bg-white/90 px-3 py-2">{getRelativeReminderLabel(selectedCalendarDate)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-4 rounded-2xl border border-sage-100 bg-white/90 p-4 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-sage-600">Upcoming reminders</p>
+                    <p className="mt-1 text-sm font-semibold leading-6 text-sage-700">See the next few important dates in one place, then jump straight to the day you want.</p>
+                  </div>
+                  <span className="rounded-full border border-sage-100 bg-sage-50 px-3 py-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-sage-700">{upcomingReminderCount} saved</span>
+                </div>
+                <div className="mt-4 space-y-3">
+                  {upcomingReminderPreview.length ? upcomingReminderPreview.map((item) => (
+                    <button className={`w-full rounded-2xl border px-4 py-3 text-left transition hover:-translate-y-0.5 hover:bg-sage-50 ${item.dateKey === selectedCalendarDate ? 'border-sage-300 bg-sage-50' : 'border-sage-100 bg-white'}`} key={item.dateKey} onClick={() => setSelectedCalendarDate(item.dateKey)} type="button">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-extrabold leading-6 text-sage-900">{item.note}</p>
+                          <p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-sage-500">{formatDate(item.dateKey)}{item.time ? ` · ${formatReminderTime(item.time)}` : ''}</p>
+                        </div>
+                        <span className="rounded-full border border-sage-100 bg-sage-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-sage-700">{item.relativeLabel}</span>
+                      </div>
+                    </button>
+                  )) : (
+                    <p className="rounded-2xl border border-dashed border-sage-200 bg-sage-50/50 px-4 py-4 text-sm font-semibold leading-6 text-sage-500">No upcoming reminders yet. Add one for birthdays, meetings, travel, deadlines, or anything you want to see ahead of time.</p>
+                  )}
+                </div>
+              </div>
+
               {importanceModalOpen && (
-                <div className="mt-4 rounded-2xl border border-sage-100 bg-sage-50/90 p-4">
+                <div className="mt-4 rounded-2xl border border-sage-100 bg-sage-50/80 p-4 shadow-sm">
                   <label className="block text-sm font-bold text-sage-800">
-                    Why does this day matter?
+                    What should they remember?
                     <textarea
                       className="mt-3 min-h-[96px] w-full rounded-2xl border border-sage-100 bg-white px-4 py-3 font-semibold leading-6 text-sage-900 outline-none transition focus:border-sage-300"
                       maxLength={180}
                       onChange={(event) => setImportanceDraft(event.target.value)}
-                      placeholder="Birthday, milestone, hard day, sweet memory..."
+                      placeholder="Client call, interview, exam, anniversary, family plan..."
                       value={importanceDraft}
                     />
                   </label>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button className="rounded-full bg-sage-900 px-4 py-2 text-sm font-extrabold text-white transition hover:bg-sage-800" onClick={saveImportantDate} type="button">Save note</button>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,220px)_minmax(0,1fr)]">
+                    <label className="block text-sm font-bold text-sage-800">
+                      Time (optional)
+                      <input
+                        className="mt-2 w-full rounded-2xl border border-sage-100 bg-white px-4 py-3 font-semibold text-sage-900 outline-none transition focus:border-sage-300"
+                        onChange={(event) => setImportanceTimeDraft(event.target.value)}
+                        type="time"
+                        value={importanceTimeDraft}
+                      />
+                    </label>
+                    <label className="flex items-center gap-3 rounded-2xl border border-sage-100 bg-white px-4 py-3 text-sm font-semibold text-sage-800">
+                      <input checked={importanceReminderEnabled} className="h-4 w-4 rounded border-sage-300 text-sage-700 focus:ring-sage-300" onChange={(event) => setImportanceReminderEnabled(event.target.checked)} type="checkbox" />
+                      Notify me on the day and the day before if browser notifications are allowed
+                    </label>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button className="rounded-full bg-sage-900 px-4 py-2 text-sm font-extrabold text-white transition hover:bg-sage-800" onClick={saveImportantDate} type="button">Save reminder</button>
                     <button className="rounded-full border border-sage-200 bg-white px-4 py-2 text-sm font-extrabold text-sage-700 transition hover:bg-sage-50" onClick={() => setImportanceModalOpen(false)} type="button">Cancel</button>
                   </div>
                 </div>
@@ -3486,7 +5417,7 @@ function App() {
           </div>
 
           <div className="flex h-full flex-col overflow-hidden rounded-[2rem] border border-white/80 bg-gradient-to-br from-white/90 via-white/84 to-sand-50/72 p-4 shadow-soft backdrop-blur sm:p-6 lg:p-8">
-            <div className="mb-5 flex items-start justify-between gap-3">
+            <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex items-center gap-3">
                 <CalendarDays className="text-sage-700" size={18} />
                 <div>
@@ -3595,10 +5526,24 @@ function App() {
         <SectionHeader
           eyebrow="Gentle journaling guides"
           title="Find the kind of journaling support that fits what you need today."
-          text="Some people want a private diary, some want an online journal, and some are simply asking where to write a diary online. These pages help readers find the calmest place to begin."
+          text="Some people want a private diary, some want an online diary, some want a diary app or journal app, some want an online journal, and some want help with how to write a diary. These pages help readers find the calmest place to begin."
         />
+        <div className="mb-6 rounded-[1.8rem] border border-white/80 bg-white/82 p-5 shadow-lift backdrop-blur">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-sage-700">Most searched topics</p>
+              <h3 className="mt-2 text-2xl font-extrabold text-ink">Jump straight to the guide that matches the search intent.</h3>
+            </div>
+            <p className="max-w-xl text-sm leading-7 text-sage-800">These quick links strengthen internal linking for SEO and make the guide area easier to scan for visitors who already know what they want.</p>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2.5">
+            {seoPopularSearches.map((item) => (
+              <a className="rounded-full border border-sage-200 bg-sage-50/70 px-4 py-2 text-sm font-bold text-sage-800 transition hover:-translate-y-0.5 hover:border-sage-300 hover:bg-white" href={item.href} key={item.href}>{item.label}</a>
+            ))}
+          </div>
+        </div>
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {seoLandingBlocks.map((item) => (
+          {seoLandingBlocks.slice(0, 6).map((item) => (
             <article className="customizable-card rounded-3xl border border-white/70 bg-white/80 p-6 shadow-lift backdrop-blur transition hover:-translate-y-1 hover:bg-white/95" key={item.title}>
               <div className="rounded-full bg-sage-100 px-3 py-1 text-xs font-extrabold uppercase tracking-widest text-sage-800">Reader guide</div>
               <h3 className="mt-4 text-2xl font-extrabold leading-tight text-ink">{item.title}</h3>
@@ -3614,19 +5559,27 @@ function App() {
               <h3 className="mt-3 text-3xl font-extrabold text-ink">Read the guide that matches the way you want to journal.</h3>
               <p className="mt-3 max-w-3xl leading-8 text-sage-800">Whether you want privacy, mood check-ins, prompts, or a calmer evening reflection, these pages give visitors something useful to read before they begin.</p>
             </div>
-            <a className="inline-flex items-center justify-center rounded-full bg-sage-900 px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-sage-800" href="/private-online-diary.html">
+            <a className="inline-flex items-center justify-center rounded-full bg-sage-900 px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-sage-800" href="/online-diary.html">
               Browse guides
             </a>
           </div>
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {seoGuidePages.map((page) => (
-              <article className="rounded-3xl border border-sage-100/80 bg-sand-50/70 p-5" key={page.href}>
-                <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-sage-700">{page.label}</p>
-                <h4 className="mt-3 text-xl font-extrabold leading-tight text-ink">{page.title}</h4>
-                <p className="mt-3 text-sm leading-7 text-sage-800">{page.text}</p>
-                <a className="mt-5 inline-flex text-sm font-bold text-sage-900 underline decoration-sage-300 underline-offset-4" href={page.href}>
-                  Read page
-                </a>
+          <div className="mt-6 grid gap-5 lg:grid-cols-2">
+            {seoGuideGroups.map((group) => (
+              <article className="rounded-[1.8rem] border border-sage-100/80 bg-sand-50/70 p-5 shadow-sm" key={group.title}>
+                <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-sage-700">Guide collection</p>
+                <h4 className="mt-3 text-2xl font-extrabold leading-tight text-ink">{group.title}</h4>
+                <p className="mt-3 text-sm leading-7 text-sage-800">{group.description}</p>
+                <div className="mt-5 grid gap-2">
+                  {group.links.map((page) => (
+                    <a className="group flex items-start justify-between gap-3 rounded-2xl border border-white/80 bg-white/82 px-4 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sage-200 hover:bg-white" href={page.href} key={page.href}>
+                      <span>
+                        <span className="block text-sm font-extrabold text-sage-950 group-hover:text-sage-800">{page.title}</span>
+                        <span className="mt-1 block text-xs font-semibold leading-5 text-sage-600">{page.text}</span>
+                      </span>
+                      <span className="shrink-0 rounded-full bg-sage-100 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-sage-700">Read</span>
+                    </a>
+                  ))}
+                </div>
               </article>
             ))}
           </div>
@@ -3641,11 +5594,11 @@ function App() {
               </div>
             </div>
             <div className="rounded-3xl border border-sage-100/80 bg-white/85 p-6 shadow-lift backdrop-blur">
-              <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-sage-700">Layout note</p>
+              <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-sage-700">Why this reader area stays separate</p>
               <ul className="mt-4 space-y-3 text-sm leading-7 text-sage-800">
-                <li>• Keeps the reading pages flexible for future monetization.</li>
-                <li>• Protects the writing and memory areas from unexpected movement.</li>
-                <li>• Gives mobile visitors a clear, separate block instead of intrusive overlays.</li>
+                <li>• Future recommendations can live here without interrupting the writing screen.</li>
+                <li>• Your diary, memories, and prompts stay stable instead of shifting around.</li>
+                <li>• Mobile visitors get a clean block to explore, rather than overlays or crowded panels.</li>
               </ul>
             </div>
           </div>
@@ -3682,19 +5635,33 @@ function App() {
       <section id="articles" className="mx-auto max-w-7xl px-6 py-14">
         <SectionHeader
           eyebrow="Wellness Library"
-          title="Original short articles for gentler self-reflection."
-          text="These short reflections help visitors begin private journaling with more clarity, kindness, and curiosity."
+          title="Articles and reflections for a gentler journaling practice."
+          text="These guides and short reflections help visitors begin private journaling with more clarity, kindness, and curiosity."
         />
         <div className="grid gap-5 md:grid-cols-2">
           {wellnessArticles.map((article, index) => (
-            <article className="customizable-card rounded-3xl border border-white/70 bg-white/80 p-6 shadow-lift backdrop-blur transition hover:-translate-y-1 hover:bg-white/95" key={article.title}>
-              <div className="mb-4 flex items-center justify-between gap-4">
-                <span className="rounded-full bg-sage-100 px-3 py-1 text-xs font-extrabold uppercase tracking-widest text-sage-800">Article {index + 1}</span>
-                <span className="text-sm font-bold text-sage-600">{article.read}</span>
-              </div>
-              <h3 className="text-2xl font-extrabold leading-tight text-ink">{article.title}</h3>
-              <p className="mt-4 leading-8 text-sage-800">{article.body}</p>
-            </article>
+            article.href ? (
+              <a href={article.href} className="customizable-card rounded-3xl border border-white/70 bg-white/80 p-6 shadow-lift backdrop-blur transition hover:-translate-y-1 hover:bg-white/95 text-left block" key={article.title}>
+                <div className="mb-4 flex items-center justify-between gap-4">
+                  <span className="rounded-full bg-sage-900 px-3 py-1 text-xs font-extrabold uppercase tracking-widest text-white">{article.read.split('•')[0]}</span>
+                  <span className="text-sm font-bold text-sage-600">{article.read.split('•')[1] || ''}</span>
+                </div>
+                <h3 className="text-2xl font-extrabold leading-tight text-ink">{article.title}</h3>
+                <p className="mt-4 leading-8 text-sage-800">{article.body}</p>
+                <div className="mt-6 flex items-center gap-2 text-sm font-bold text-sage-900">
+                  Read full article &rarr;
+                </div>
+              </a>
+            ) : (
+              <article className="customizable-card rounded-3xl border border-white/70 bg-white/80 p-6 shadow-lift backdrop-blur transition hover:-translate-y-1 hover:bg-white/95" key={article.title}>
+                <div className="mb-4 flex items-center justify-between gap-4">
+                  <span className="rounded-full bg-sage-100 px-3 py-1 text-xs font-extrabold uppercase tracking-widest text-sage-800">Note</span>
+                  <span className="text-sm font-bold text-sage-600">{article.read}</span>
+                </div>
+                <h3 className="text-2xl font-extrabold leading-tight text-ink">{article.title}</h3>
+                <p className="mt-4 leading-8 text-sage-800">{article.body}</p>
+              </article>
+            )
           ))}
         </div>
       </section>
@@ -3989,21 +5956,41 @@ function App() {
             <a href="#resources" onClick={() => openHomeSection('resources')}>Resources</a>
             <a href="#articles" onClick={() => openHomeSection('articles')}>Articles</a>
             <a href="#tips" onClick={() => openHomeSection('tips')}>Tips</a>
-            <a href="#privacy" onClick={() => openHomeSection('privacy')}>Privacy</a>
-            <a href="#terms" onClick={() => openHomeSection('terms')}>Terms</a>
-            <a href="#contact" onClick={() => openHomeSection('contact')}>Contact</a>
+            <a href="/privacy.html">Privacy</a>
+            <a href="/terms.html">Terms</a>
+            <a href="/contact.html">Contact</a>
           </div>
-          Quiet Journal Journey is a private positivity journal for noticing your thoughts, collecting small good moments, and understanding what you want next.
+          Quiet Journal Journey is an online diary, private diary, diary app, journal app, and mood journal for noticing your thoughts, collecting small good moments, and understanding what you want next.
         </div>
       </footer>
       </>
       )}
 
-      <div className="fixed inset-x-4 bottom-4 z-30 mx-auto max-w-xl rounded-[1.8rem] border border-white/85 bg-white/82 p-2 shadow-soft backdrop-blur-xl lg:hidden">
-        <div className="grid grid-cols-5 gap-1.5">
+      {!cookieConsentAccepted && (
+        <div className="fixed bottom-24 left-0 right-0 z-50 p-4 sm:bottom-0 sm:p-6 flex justify-center pointer-events-none">
+          <div className="pointer-events-auto flex w-full max-w-2xl flex-col gap-4 rounded-[1.75rem] border border-sage-200 bg-white/95 p-5 shadow-2xl backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm font-medium leading-relaxed text-sage-800">
+              We use cookies to improve your experience and serve personalized ads. By using this site, you agree to our <a href="/privacy.html" className="font-bold text-sage-900 underline decoration-sage-300 hover:decoration-sage-500">Privacy Policy</a> and <a href="/terms.html" className="font-bold text-sage-900 underline decoration-sage-300 hover:decoration-sage-500">Terms</a>.
+            </p>
+            <button
+              onClick={() => {
+                localStorage.setItem('quiet-journal-cookie-consent', 'true');
+                setCookieConsentAccepted(true);
+              }}
+              className="shrink-0 rounded-full bg-sage-900 px-6 py-2.5 text-sm font-extrabold text-white shadow-lift transition hover:-translate-y-0.5 hover:bg-sage-800"
+            >
+              I understand
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="fixed inset-x-3 bottom-3 z-30 mx-auto max-w-lg rounded-[1.7rem] border border-white/90 bg-white/90 p-1.5 shadow-soft backdrop-blur-xl lg:hidden">
+        <div className="grid grid-cols-6 gap-1">
         {[
           { id: 'home', label: 'Home', icon: Waves },
           { id: 'write', label: 'Write', icon: PenLine },
+          { id: 'notes', label: 'Notes', icon: FileText },
           { id: 'memories', label: 'Memory', icon: BookOpen },
           { id: 'insights', label: 'Insight', icon: Sparkles },
           { id: 'design', label: 'Design', icon: Palette }
@@ -4013,7 +6000,7 @@ function App() {
           return (
           <button
             key={tab.id}
-            className={`flex min-w-0 flex-col items-center gap-1 rounded-2xl px-1 py-2.5 transition ${isActive ? 'bg-white text-sage-950 shadow-lift ring-1 ring-white' : isWrite ? 'text-sage-900' : 'text-sage-600 hover:bg-white/70 hover:text-sage-800'}`}
+            className={`flex min-w-0 flex-col items-center gap-1.5 rounded-[1.2rem] px-1 py-2 transition ${isActive ? 'bg-white text-sage-950 shadow-sm ring-1 ring-sage-100' : isWrite ? 'text-sage-900' : 'text-sage-600 hover:bg-white/70 hover:text-sage-800'}`}
             onClick={() => {
               if (tab.id === 'design') {
                 setCustomizerOpen(true);
@@ -4025,11 +6012,11 @@ function App() {
             }}
             type="button"
           >
-            <div className={`flex h-9 w-9 items-center justify-center rounded-2xl transition ${isActive ? 'bg-sage-900 text-white shadow-sm' : isWrite ? 'bg-sage-900 text-white shadow-sm' : 'bg-sage-50 text-sage-700'}`}>
-              <tab.icon size={17} />
+            <div className={`flex h-8 w-8 items-center justify-center rounded-2xl transition ${isActive ? 'bg-sage-900 text-white shadow-sm' : isWrite ? 'bg-sage-900 text-white shadow-sm' : 'bg-sage-50 text-sage-700'}`}>
+              <tab.icon size={16} />
             </div>
-            <span className="text-[11px] font-bold uppercase tracking-[0.14em]">{tab.label}</span>
-            <span className={`h-1.5 w-1.5 rounded-full transition ${isActive ? 'bg-sage-700 opacity-100' : 'opacity-0'}`}></span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.1em]">{tab.label}</span>
+            <span className={`h-1 w-5 rounded-full transition ${isActive ? 'bg-sage-700 opacity-100' : 'opacity-0'}`}></span>
           </button>
           );
         })}
@@ -4087,6 +6074,8 @@ function App() {
             {isEditingEntry ? (
               <>
                 <div className="mb-3 flex flex-wrap items-center gap-2 rounded-[1.4rem] border border-amber-100/80 bg-white/75 p-3 shadow-sm backdrop-blur-sm">
+                  <button className="rounded-full bg-white px-3.5 py-2 text-sm font-bold text-sage-800 shadow-sm transition hover:bg-sage-50" onClick={() => toggleBoldText(editBodyRef, setEditBody)} title="Bold selected text" type="button">Bold</button>
+                  <button className="rounded-full bg-white px-3.5 py-2 text-sm font-bold text-sage-800 shadow-sm transition hover:bg-sage-50" onClick={() => toggleUnderlineText(editBodyRef, setEditBody)} title="Underline selected text" type="button">Underline</button>
                   <button className="rounded-full bg-white px-3.5 py-2 text-sm font-bold text-sage-800 shadow-sm transition hover:bg-sage-50" onClick={() => toggleBulletList(editBodyRef, setEditBody)} title="Bullet points" type="button">List</button>
                   {quickEmojis.slice(0, 6).map((emoji) => (
                     <button key={emoji} className="rounded-full bg-white px-2.5 py-1 text-base shadow-sm transition hover:-translate-y-0.5 hover:bg-sage-50" onClick={() => insertEditQuickEmoji(emoji)} type="button">

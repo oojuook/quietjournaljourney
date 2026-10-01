@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Online Diary for Gentle Daily Writing | Quiet Journal Journey</title>
+    <meta name="description" content="Use Quiet Journal Journey as an online diary for gentle daily writing, private reflection, mood check-ins, and an easier journaling habit." />
+    <meta name="keywords" content="online diary, diary online, private online diary, digital diary, diary app, mood journal" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://quietjournaljourney.vercel.app/online-diary.html" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Online Diary for Gentle Daily Writing | Quiet Journal Journey" />
+    <meta property="og:description" content="A calm online diary page for private writing, mood check-ins, and softer daily reflection." />
+    <meta property="og:url" content="https://quietjournaljourney.vercel.app/online-diary.html" />
+    <meta property="og:site_name" content="Quiet Journal Journey" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Online Diary for Gentle Daily Writing | Quiet Journal Journey" />
+    <meta name="twitter:description" content="A gentle online diary guide for daily writing, private reflection, and mood-aware journaling." />
+    <style>
+      :root {
+        color-scheme: light;
+        --sage-50: #f5faf6;
+        --sage-100: #e4f0e7;
+        --sage-200: #d2e4d7;
+        --sage-700: #35533d;
+        --sage-900: #203327;
+        --sand-50: #fcf8f0;
+        --ink: #1d2a22;
+        --white: rgba(255, 255, 255, 0.9);
+        --shadow: 0 20px 45px rgba(35, 52, 40, 0.08);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: linear-gradient(180deg, #f8fbf8 0%, #f4efe5 100%);
+        color: var(--ink);
+        line-height: 1.7;
+      }
+      a { color: inherit; }
+      .shell { width: min(1100px, calc(100% - 32px)); margin: 0 auto; }
+      .hero { padding: 40px 0 22px; }
+      .hero-card, .card, .faq, .cta {
+        border: 1px solid rgba(255,255,255,0.82);
+        background: var(--white);
+        border-radius: 30px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(16px);
+      }
+      .hero-card { padding: 32px; }
+      .eyebrow {
+        display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 999px;
+        background: var(--sage-100); color: var(--sage-900); font-size: 12px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase;
+      }
+      h1 { margin: 20px 0 12px; font-size: clamp(2.3rem, 5vw, 4.2rem); line-height: 0.98; letter-spacing: -0.04em; }
+      .lead { max-width: 780px; font-size: 1.15rem; color: var(--sage-700); }
+      .hero-links, .grid, .faq-grid, .stack { display: grid; gap: 18px; }
+      .hero-links { margin-top: 26px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+      .chip { display: inline-flex; padding: 10px 14px; border-radius: 999px; border: 1px solid var(--sage-200); background: rgba(255,255,255,0.92); font-weight: 700; font-size: 0.95rem; }
+      main { padding: 18px 0 56px; }
+      .grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+      .card, .faq, .cta { padding: 26px; }
+      h2 { margin: 0 0 14px; font-size: clamp(1.5rem, 3vw, 2.2rem); line-height: 1.1; }
+      h3 { margin: 0 0 10px; font-size: 1.1rem; }
+      p { margin: 0; }
+      .section-large { margin-top: 34px; }
+      .faq-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+      ul { margin: 0; padding-left: 20px; }
+      .cta a, .back-link {
+        display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border-radius: 999px; padding: 12px 18px; font-weight: 800;
+      }
+      .cta a { background: var(--sage-900); color: white; margin-top: 18px; }
+      .back-link { margin-top: 20px; border: 1px solid var(--sage-200); background: rgba(255,255,255,0.92); }
+      @media (max-width: 720px) {
+        .hero-card, .card, .faq, .cta { padding: 22px; border-radius: 24px; }
+        .shell { width: min(100% - 20px, 1100px); }
+      }
+    </style>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {"@type": "ListItem", "position": 1, "name": "Quiet Journal Journey", "item": "https://quietjournaljourney.vercel.app/"},
+              {"@type": "ListItem", "position": 2, "name": "Online Diary Guide", "item": "https://quietjournaljourney.vercel.app/online-diary.html"}
+            ]
+          },
+          {
+            "@type": "Article",
+            "headline": "Online Diary for Gentle Daily Writing",
+            "description": "A calm online diary page for private writing, mood check-ins, and softer daily reflection.",
+            "author": {"@type": "Organization", "name": "Quiet Journal Journey"},
+            "publisher": {"@type": "Organization", "name": "Quiet Journal Journey"},
+            "mainEntityOfPage": "https://quietjournaljourney.vercel.app/online-diary.html"
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is an online diary?",
+                "acceptedAnswer": {"@type": "Answer", "text": "An online diary is a personal writing space you use on the web for thoughts, memories, mood check-ins, and daily reflection."}
+              },
+              {
+                "@type": "Question",
+                "name": "Why do people choose an online diary?",
+                "acceptedAnswer": {"@type": "Answer", "text": "People often choose an online diary because it is easier to return to, easier to keep private, and easier to fit into daily life than a more rigid journaling routine."}
+              },
+              {
+                "@type": "Question",
+                "name": "Can an online diary be private?",
+                "acceptedAnswer": {"@type": "Answer", "text": "Yes. A good online diary should make privacy clear and let the writing space feel personal, soft, and easy to trust."}
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6094559377350805" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="shell">
+        <div class="hero-card">
+          <div class="eyebrow">Online diary guide</div>
+          <h1>Online diary for gentle daily writing and reflection.</h1>
+          <p class="lead">If you are looking for an online diary, the best version is usually the one that feels easy to begin, easy to revisit, and soft enough to keep using on ordinary days. Quiet Journal Journey is designed to make private writing feel calmer instead of busier.</p>
+          <div class="hero-links">
+            <div class="chip">Private online diary</div>
+            <div class="chip">Mood check-ins</div>
+            <div class="chip">Prompt-based writing</div>
+            <div class="chip">Daily reflection</div>
+          </div>
+          <a class="back-link" href="/">Return to Quiet Journal Journey</a>
+        </div>
+      </div>
+    </header>
+    <main>
+      <div class="shell stack">
+        <section class="grid">
+          <article class="card stack">
+            <h3>It stays close to real life</h3>
+            <p>An online diary works best when it is available in the moments people actually need it: a quiet evening, a short pause, or the few minutes after an emotional day.</p>
+          </article>
+          <article class="card stack">
+            <h3>It lowers the pressure to write</h3>
+            <p>You should be able to write one line, one memory, or one feeling and still feel like the page counts. That is what makes the habit easier to keep.</p>
+          </article>
+          <article class="card stack">
+            <h3>It supports privacy and reflection together</h3>
+            <p>A good online diary does not only store words. It helps the writing feel personal, private, and calm enough to be honest.</p>
+          </article>
+        </section>
+        <section class="card section-large stack">
+          <h2>What people want from an online diary</h2>
+          <div class="grid">
+            <div class="stack">
+              <h3>A softer writing rhythm</h3>
+              <p>The page should feel welcoming whether you want to write a paragraph, add a photo, or simply note what the day felt like.</p>
+            </div>
+            <div class="stack">
+              <h3>Something easy to return to</h3>
+              <p>An online diary becomes more valuable when it helps you revisit older entries and notice how your thoughts or moods change over time.</p>
+            </div>
+            <div class="stack">
+              <h3>Prompts without pressure</h3>
+              <p>Gentle prompts can help you begin, especially when you want reflection without feeling told what to say.</p>
+            </div>
+            <div class="stack">
+              <h3>Clear privacy cues</h3>
+              <p>Trust matters. A calmer online diary should make it obvious how your writing is kept personal.</p>
+            </div>
+          </div>
+        </section>
+        <section class="grid section-large">
+          <article class="card stack">
+            <h2>Why Quiet Journal Journey fits this search</h2>
+            <p>Quiet Journal Journey is made for people who want an online diary that feels personal instead of crowded. It combines private writing, mood check-ins, beginner-friendly prompts, photo memories, and a softer visual rhythm on mobile or desktop.</p>
+            <p>That makes it useful for both quick daily notes and deeper reflection, without forcing one writing style every time you visit.</p>
+          </article>
+          <article class="card stack">
+            <h2>What this online diary includes</h2>
+            <ul>
+              <li>Private online diary writing flow</li>
+              <li>Mood journaling and pattern-tracking</li>
+              <li>Beginner-friendly prompts</li>
+              <li>Optional lock support</li>
+              <li>Saved entries and memories that stay easy to revisit</li>
+            </ul>
+          </article>
+        </section>
+        <section class="faq-grid section-large">
+          <article class="faq stack">
+            <h3>What is an online diary?</h3>
+            <p>An online diary is a personal writing space on the web for thoughts, memories, moods, and everyday reflection.</p>
+          </article>
+          <article class="faq stack">
+            <h3>Why choose an online diary?</h3>
+            <p>It can feel easier to keep, easier to revisit, and easier to fit into real life than a journaling habit that asks too much all at once.</p>
+          </article>
+          <article class="faq stack">
+            <h3>Can an online diary still feel intimate?</h3>
+            <p>Yes. When the design is gentle and the privacy cues are clear, an online diary can still feel like a very personal place to write.</p>
+          </article>
+        </section>
+        <section class="cta section-large">
+          <h2>Try a calmer online diary</h2>
+          <p>If you want an online diary that feels softer to start and easier to keep, Quiet Journal Journey is built for private reflection, mood journaling, and a quieter daily writing rhythm.</p>
+          <a href="/">Open Quiet Journal Journey</a>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
