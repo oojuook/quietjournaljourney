@@ -1,8 +1,9 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getMessaging, isSupported } from 'firebase/messaging';
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: 'AIzaSyBnP_TuWAq0eE3hpCOdSgMv1FmzAdZhExA',
   authDomain: 'quiet-journal-journey-f3905.firebaseapp.com',
   projectId: 'quiet-journal-journey-f3905',
@@ -12,7 +13,14 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const messagingSupportPromise = isSupported().catch(() => false);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
+
+export async function getMessagingIfSupported() {
+  const supported = await messagingSupportPromise;
+  if (!supported) return null;
+  return getMessaging(app);
+}

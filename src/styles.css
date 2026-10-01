@@ -79,9 +79,9 @@ input::placeholder {
 
 .personalized-site {
   background:
-    radial-gradient(circle at 8% 6%, color-mix(in srgb, var(--accent-glow) 58%, transparent), transparent 28rem),
-    radial-gradient(circle at 92% 28%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 26rem),
-    linear-gradient(180deg, var(--accent-soft), #fffaf2 42%, #fffaf2);
+    radial-gradient(circle at 10% 8%, color-mix(in srgb, var(--accent-glow) 26%, transparent), transparent 24rem),
+    radial-gradient(circle at 90% 24%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 22rem),
+    linear-gradient(180deg, color-mix(in srgb, var(--accent-soft) 72%, white), #fffaf2 44%, #fffaf2);
 }
 
 .personalized-site .customizable-card,
@@ -393,25 +393,28 @@ input::placeholder {
 
 /* Journal Editor Styles */
 .journal-title-input {
-  border: 1px solid rgba(214, 197, 164, 0.72);
-  background: linear-gradient(180deg, rgba(255, 250, 242, 0.96), rgba(248, 239, 223, 0.94));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 24px rgba(145, 122, 83, 0.08);
-  color: #5d4a31;
-  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+  border: 1px solid rgba(214, 226, 221, 0.96);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.98), 0 10px 24px rgba(95, 122, 113, 0.05);
+  color: #24312e;
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease, background 220ms ease;
+}
+
+.journal-title-input::placeholder {
+  color: rgba(109, 137, 127, 0.72);
 }
 
 .journal-title-input:focus {
-  border-color: rgba(171, 139, 80, 0.76);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96), 0 16px 30px rgba(145, 122, 83, 0.12), 0 0 0 5px rgba(242, 228, 198, 0.36);
+  border-color: rgba(145, 181, 168, 0.9);
+  background: rgba(255, 255, 255, 1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), 0 14px 30px rgba(95, 122, 113, 0.08), 0 0 0 4px rgba(230, 239, 235, 0.78);
   transform: translateY(-1px);
 }
 
 .journal-editor-shell {
   position: relative;
-  background:
-    radial-gradient(circle at top left, rgba(255, 249, 232, 0.96), transparent 42%),
-    linear-gradient(180deg, rgba(250, 244, 232, 0.96), rgba(243, 234, 216, 0.98));
-  box-shadow: 0 22px 44px rgba(133, 117, 84, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.985), rgba(247, 250, 248, 0.98));
+  box-shadow: 0 16px 36px rgba(95, 122, 113, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95);
   transition: transform 220ms ease, box-shadow 220ms ease, background 220ms ease;
 }
 
@@ -421,7 +424,7 @@ input::placeholder {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(211, 182, 126, 0.42), rgba(255, 246, 228, 0.92));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(193, 219, 209, 0.82), rgba(255, 255, 255, 0.94));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -431,38 +434,35 @@ input::placeholder {
 .journal-editor-shell::after {
   content: '';
   position: absolute;
-  top: 0.9rem;
+  top: 1rem;
   right: 1rem;
-  width: 2.4rem;
-  height: 2.4rem;
-  border-radius: 0 1rem 0.35rem 1rem;
-  background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(240, 224, 192, 0.94));
-  box-shadow: 0 8px 18px rgba(140, 113, 72, 0.12);
-  transform: rotate(6deg);
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.52), rgba(221, 236, 229, 0.05));
   pointer-events: none;
 }
 
 .journal-editor-shell:focus-within {
   transform: translateY(-1px);
-  background:
-    radial-gradient(circle at top left, rgba(255, 251, 238, 0.98), transparent 44%),
-    linear-gradient(180deg, rgba(252, 247, 236, 0.98), rgba(245, 237, 223, 1));
-  box-shadow: 0 28px 56px rgba(133, 117, 84, 0.2), 0 0 0 6px rgba(241, 228, 198, 0.42);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(248, 251, 249, 0.99));
+  box-shadow: 0 20px 42px rgba(95, 122, 113, 0.11), 0 0 0 4px rgba(230, 239, 235, 0.76);
 }
 
 .journal-editor-ribbon {
   position: absolute;
   left: 1.35rem;
-  top: -0.8rem;
-  padding: 0.45rem 0.9rem;
+  top: -0.7rem;
+  padding: 0.42rem 0.88rem;
   border-radius: 999px;
-  background: linear-gradient(135deg, #b98568, #d6a585);
-  color: rgba(255, 248, 240, 0.96);
-  font-size: 0.7rem;
+  border: 1px solid rgba(216, 228, 223, 0.98);
+  background: rgba(255, 255, 255, 0.97);
+  color: #6a847b;
+  font-size: 0.63rem;
   font-weight: 800;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-  box-shadow: 0 10px 22px rgba(150, 104, 75, 0.2);
+  box-shadow: 0 8px 18px rgba(95, 122, 113, 0.08);
 }
 
 .journal-editor-meta {
@@ -470,24 +470,32 @@ input::placeholder {
   z-index: 1;
 }
 
+.journal-editor-bottom {
+  border-top: 1px solid rgba(191, 214, 205, 0.34);
+  padding-top: 0.9rem;
+}
+
+.journal-editor-top {
+  padding-top: 0.15rem;
+}
+
 .journal-editor-soft {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(196, 174, 131, 0.5);
-  background-color: #fff9f0;
+  border: 1px solid rgba(207, 221, 215, 0.78);
+  background-color: #fcfdfc;
   background-image:
-    radial-gradient(circle at top center, rgba(255, 251, 241, 0.95), transparent 38%),
-    linear-gradient(180deg, rgba(255, 252, 246, 0.82), rgba(249, 242, 228, 0.98)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(249, 252, 250, 1)),
     repeating-linear-gradient(
       to bottom,
       transparent 0,
-      transparent 2.02rem,
-      rgba(195, 176, 139, 0.16) 2.02rem,
-      rgba(195, 176, 139, 0.16) 2.1rem
+      transparent 2.1rem,
+      rgba(196, 214, 206, 0.12) 2.1rem,
+      rgba(196, 214, 206, 0.12) 2.16rem
     );
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), inset 0 -18px 30px rgba(205, 182, 142, 0.1), 0 14px 30px rgba(151, 126, 84, 0.08);
-  caret-color: #8b6f47;
-  padding-left: 4.75rem !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.98), 0 10px 24px rgba(95, 122, 113, 0.05);
+  caret-color: #6f9687;
+  padding-left: 4.1rem !important;
   padding-right: 2rem !important;
   transition: border-color 220ms ease, box-shadow 220ms ease, background 220ms ease;
 }
@@ -495,28 +503,27 @@ input::placeholder {
 .journal-editor-soft::before {
   content: '';
   position: absolute;
-  top: 1.4rem;
-  bottom: 1.4rem;
-  left: 3.4rem;
-  width: 2px;
-  background: linear-gradient(180deg, rgba(205, 125, 118, 0.2), rgba(205, 125, 118, 0.5), rgba(205, 125, 118, 0.2));
+  top: 1.3rem;
+  bottom: 1.3rem;
+  left: 2.95rem;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(170, 204, 190, 0.08), rgba(170, 204, 190, 0.3), rgba(170, 204, 190, 0.08));
   border-radius: 999px;
   pointer-events: none;
 }
 
 .journal-editor-soft:focus {
-  border-color: rgba(171, 139, 80, 0.72);
+  border-color: rgba(145, 181, 168, 0.82);
   background-image:
-    radial-gradient(circle at top center, rgba(255, 252, 244, 0.98), transparent 40%),
-    linear-gradient(180deg, rgba(255, 253, 248, 0.9), rgba(250, 244, 232, 1)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(250, 252, 251, 1)),
     repeating-linear-gradient(
       to bottom,
       transparent 0,
-      transparent 2.02rem,
-      rgba(195, 176, 139, 0.18) 2.02rem,
-      rgba(195, 176, 139, 0.18) 2.1rem
+      transparent 2.1rem,
+      rgba(196, 214, 206, 0.16) 2.1rem,
+      rgba(196, 214, 206, 0.16) 2.16rem
     );
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.98), inset 0 -18px 32px rgba(205, 182, 142, 0.12), 0 20px 36px rgba(151, 126, 84, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), 0 14px 30px rgba(95, 122, 113, 0.08);
 }
 
 .journal-editor-soft::selection,
@@ -524,9 +531,11 @@ input::placeholder {
   background: rgba(195, 214, 179, 0.6);
 }
 
-.journal-editor:empty::before {
+.journal-editor:empty::after {
   content: attr(data-placeholder);
-  color: #a68458;
+  display: block;
+  max-width: 34rem;
+  color: #7f9d93;
   font-style: italic;
   line-height: 2.1;
   pointer-events: none;
@@ -534,9 +543,15 @@ input::placeholder {
 
 @media (max-width: 640px) {
   .journal-editor-ribbon {
-    left: 1rem;
-    top: -0.65rem;
-    letter-spacing: 0.2em;
+    left: 0.9rem;
+    top: -0.45rem;
+    padding: 0.36rem 0.72rem;
+    font-size: 0.56rem;
+    letter-spacing: 0.18em;
+  }
+
+  .journal-editor-top {
+    padding-top: 1.45rem;
   }
 
   .journal-editor-soft {
